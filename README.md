@@ -39,8 +39,10 @@ mais elle ne contient que les paris et les réglages.
 
 ### 3. Installer sur Android (version hébergée)
 
-Ouvre l'adresse de l'application dans Chrome, puis **Réglages → Installer l'application**
+L'application est hébergée sur GitHub Pages : https://phoenixgott.github.io/carnet-foot/
+Ouvre cette adresse dans Chrome, puis **Réglages → Installer l'application**
 (ou menu ⋮ → « Installer l'application »). Elle fonctionne ensuite sans réseau.
+Tes données sont liées à cette adresse : garde toujours la même.
 
 ### Notifications
 
@@ -62,7 +64,10 @@ npm run typecheck    # TypeScript strict : app, service worker, tests
 npm test             # tests unitaires (lanceur intégré à Node)
 npm run e2e          # tests de bout en bout dans Chromium (Playwright)
 npm run check        # tout : types + unitaires + bout en bout
+bash scripts/publier-pages.sh   # construit et publie sur la branche gh-pages (GitHub Pages)
 ```
+
+Pour reprendre le projet dans une nouvelle session : lire `docs/REPRISE.md`.
 
 ### Organisation du code
 
