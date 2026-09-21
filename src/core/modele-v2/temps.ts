@@ -39,17 +39,28 @@ export function partJouee(minute: number, rep: readonly number[] = REPARTITION_P
 }
 
 /**
- * Buts attendus sur le reste du match, à 0-0 à cette minute.
+ * Buts attendus sur le reste du match, quand `buts` buts sont tombés à cette minute.
  *
- * Deux effets : il reste une part (1 − partJouee) des buts ; et le fait qu'aucun but ne soit
- * tombé est une information (le match est peut-être plus fermé que prévu). On le prend en compte
- * avec l'incertitude de l'estimation (écart type `sigma`) : plus on est sûr des buts attendus,
- * moins le 0-0 les fait baisser. (Loi Gamma sur λ, mise à jour après 0 but observé.)
+ * Deux effets : il reste une part (1 − partJouee) des buts ; et ce qui s'est passé est une
+ * information (0-0 : le match est peut-être plus fermé que prévu ; un but : plus ouvert). On la prend
+ * en compte avec l'incertitude de l'estimation (écart type `sigma`) : plus on est sûr des buts
+ * attendus, moins le score les fait bouger. (Loi Gamma sur λ, mise à jour après `buts` buts observés.)
  */
-export function lambdaRestantA00(lambda: number, sigma: number, minute: number, rep: readonly number[] = REPARTITION_PAR_DEFAUT): number {
+export function lambdaRestantApres(
+  lambda: number,
+  sigma: number,
+  minute: number,
+  buts: number,
+  rep: readonly number[] = REPARTITION_PAR_DEFAUT,
+): number {
   const joue = partJouee(minute, rep);
   if (!Number.isFinite(lambda) || lambda <= 0) return NaN;
   const forme = Number.isFinite(sigma) && sigma > 0 ? (lambda / sigma) ** 2 : Infinity;
-  const lambdaApres = Number.isFinite(forme) ? (lambda * forme) / (forme + lambda * joue) : lambda;
+  const lambdaApres = Number.isFinite(forme) ? ((forme + buts) * lambda) / (forme + lambda * joue) : lambda;
   return lambdaApres * (1 - joue);
+}
+
+/** Buts attendus sur le reste du match, à 0-0 à cette minute. */
+export function lambdaRestantA00(lambda: number, sigma: number, minute: number, rep: readonly number[] = REPARTITION_PAR_DEFAUT): number {
+  return lambdaRestantApres(lambda, sigma, minute, 0, rep);
 }

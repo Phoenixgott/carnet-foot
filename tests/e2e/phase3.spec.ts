@@ -155,7 +155,7 @@ test("Historiques : avantage du terrain du championnat dans le calcul, fiche éq
   await m25.getByText("Pourquoi ?").click();
   await expect(m25.locator(".pourquoi")).toContainText(/Avantage du terrain : 1,\d\d buts à domicile pour 1,\d\d à l'extérieur \(41 matchs, 2025-2026\)/);
 
-  await carte(page, "PSG").getByRole("link", { name: "PSG" }).click();
+  await carte(page, "PSG").getByRole("link", { name: "PSG", exact: true }).click();
   await expect(page.getByRole("heading", { level: 1, name: "PSG" })).toBeVisible();
   await expect(page.getByText("Dans les historiques : « Paris SG ».")).toBeVisible();
   await expect(page.locator('[data-test="forme"] p.forme .pastille-ico')).toHaveCount(10);

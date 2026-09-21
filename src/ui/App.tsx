@@ -16,12 +16,13 @@ import { ContexteAppli, lireRoute, ROUTES, type Appli, type OptionsConfirmation,
 import { Accueil } from "./ecrans/Accueil";
 import { Donnees } from "./ecrans/Donnees";
 import { Equipe } from "./ecrans/Equipe";
+import { Live } from "./ecrans/Live";
 import { Matchs } from "./ecrans/Matchs";
 import { Paris } from "./ecrans/Paris";
 import { Reglages } from "./ecrans/Reglages";
 import { appliquerTheme, type Theme } from "./theme";
 
-const ECRANS: Record<Route, () => any> = { accueil: Accueil, matchs: Matchs, paris: Paris, donnees: Donnees, reglages: Reglages, equipe: Equipe };
+const ECRANS: Record<Route, () => any> = { accueil: Accueil, matchs: Matchs, live: Live, paris: Paris, donnees: Donnees, reglages: Reglages, equipe: Equipe };
 
 export function App() {
   const [route, setRoute] = useState<Route>(lireRoute());

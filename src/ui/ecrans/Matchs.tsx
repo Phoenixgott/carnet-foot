@@ -18,7 +18,7 @@ import { interet, type Interet } from "../../core/modele-v2/interet";
 import type { Match } from "../../core/types";
 import { jourLocal } from "../../data/versions";
 import { Inconnu, PastilleVerdict } from "../composants";
-import { lienEquipe, useAppli } from "../contexte";
+import { lienEquipe, lienLive, useAppli } from "../contexte";
 import { Recuperer } from "../matchs/Recuperer";
 import { AlerteCotes, margeAffichee, pourcent, SuiviCotes } from "../matchs/SuiviCotes";
 
@@ -185,9 +185,12 @@ function CarteMatch({ x, rang, comparer, compare }: { x: AnalyseMatch; rang: num
             <Inconnu titre="Il faut les cotes « plus de » et « moins de » d'une même ligne" />
           )}
         </span>
-        <button type="button" className="btn discret" aria-pressed={compare} onClick={comparer}>
-          {compare ? "✓ Dans la comparaison" : "Comparer"}
-        </button>
+        <div className="rangee">
+          <a className="btn discret" href={lienLive(m.id)} aria-label={`Suivre ${nomMatch(m)} en live`}>Suivre en live (+1.5)</a>
+          <button type="button" className="btn discret" aria-pressed={compare} onClick={comparer}>
+            {compare ? "✓ Dans la comparaison" : "Comparer"}
+          </button>
+        </div>
         <SuiviCotes m={m} />
       </div>
     </article>

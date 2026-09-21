@@ -58,7 +58,23 @@ règlent dans **Réglages → Analyse des matchs**.
 
 Rappel : ces chances sont des estimations. Seul le Freebet est garanti.
 
-### 4. Sauvegarder
+### 4. Suivre un match en live (méthode +1.5)
+
+Onglet **Live** (ou « Suivre en live » sur un match) :
+
+1. **Coup d'envoi** au début du match ; cale le chronomètre si besoin (−1 / +1 min, ou « Caler »).
+   La fenêtre **15ᵉ-20ᵉ minute** est annoncée par un bandeau, une vibration et une notification.
+2. **J'entre ?** : tape la cote « plus de 1,5 but », choisis 0-0 et « Animé » ou « Fermé ». Tu vois le
+   verdict, la cote juste et la cote minimale à cette minute, la value, et le tableau jusqu'à la 40ᵉ.
+   Touche **J'ai parié** (mise conseillée par défaut).
+3. **BUT !** dès qu'un but est marqué : choisis pari contraire, exchange ou cash-out, tape la cote
+   proposée. L'écran donne la mise à placer, le gain garanti et le résultat de chaque scénario, avec et
+   sans couverture.
+
+Le live est gardé sur ton téléphone : tu peux fermer l'app et la rouvrir. Il n'est pas dans la
+sauvegarde. Note ton pari dans le journal du carnet (l'ajout de paris dans l'app arrive en phase 6).
+
+### 5. Sauvegarder
 
 - **Données → Sauvegarde en un fichier** : « Enregistrer le fichier », « Partager (Drive, mail…) »
   ou « Copier le texte ». Garde ce fichier hors du téléphone : si le navigateur efface ses
@@ -68,7 +84,7 @@ Rappel : ces chances sont des estimations. Seul le Freebet est garanti.
 - **Restaurer** : choisis le fichier ou colle son texte. Une empreinte vérifie que le fichier
   n'a pas été abîmé ou modifié ; sinon il est refusé.
 
-### 5. Installer sur Android (version hébergée)
+### 6. Installer sur Android (version hébergée)
 
 L'application est hébergée sur GitHub Pages : https://phoenixgott.github.io/carnet-foot/
 Ouvre cette adresse dans Chrome, puis **Réglages → Installer l'application**
@@ -118,7 +134,8 @@ src/
     saison.ts      saison d'après la date
     modele-v2/     nouveau modèle (phase 3) : buts attendus et incertitude (modele.ts), analyse par
                    méthode (analyse.ts), répartition des buts dans le temps (temps.ts), chiffres
-                   des championnats (championnat.ts), intérêt, fiches équipe, réglages
+                   des championnats (championnat.ts), intérêt, fiches équipe, réglages,
+                   live +1.5 : fenêtre, décision d'entrée, couverture et scénarios (live.ts)
   data/            stockage IndexedDB, import du carnet, import des matchs (import-matchs.ts),
                    historiques CSV (import-csv.ts), vérification, sauvegardes, versions
   pwa/             service worker (hors ligne), installation, notifications
@@ -168,6 +185,7 @@ téléchargements : pas de hors ligne, pas d'installation, sauvegarde par copie 
   `cotes.under25`, et deux champs propres à l'application : `historiqueCotes` (relevés datés) et
   `coteCible` (cote minimale choisie). Un champ absent ou `null` est une donnée inconnue, affichée ⏳.
 - **Résultat** (historiques CSV) : magasin `resultats` à part, hors sauvegarde (données publiques).
+- **Live** : réglage local `live` (`src/data/live.ts`), hors sauvegarde et jamais remplacé par une restauration.
 - **Sauvegarde** : `{ app: "carnet-foot", type: "sauvegarde", schema: 1, creeLe, versionApp,
   contenu: { matchs, paris, reglages }, controle: { nbMatchs, nbParis, bankroll, gainsTotal, empreinte } }`.
   L'empreinte est un SHA-256 du contenu trié.

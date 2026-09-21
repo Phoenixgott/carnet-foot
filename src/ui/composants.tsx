@@ -18,6 +18,8 @@ export function Icone({ nom }: { nom: Route }) {
       return <svg {...p}><path d="M3 11.5 12 4l9 7.5" /><path d="M5.5 10v9.5h13V10" /><path d="M10 19.5v-5h4v5" /></svg>;
     case "matchs":
       return <svg {...p}><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M12 5v14" /><circle cx="12" cy="12" r="3" /></svg>;
+    case "live":
+      return <svg {...p}><circle cx="12" cy="13.5" r="7.5" /><path d="M12 9.5v4l2.5 2M9.5 3h5" /></svg>;
     case "paris":
       return <svg {...p}><path d="M5 4h14v16l-3-2-2 2-2-2-2 2-2-2-3 2z" /><path d="M9 9h6M9 13h6" /></svg>;
     case "donnees":

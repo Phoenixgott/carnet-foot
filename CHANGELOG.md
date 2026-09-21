@@ -2,6 +2,41 @@
 
 Format : chaque version liste ce qui a été ajouté, modifié ou corrigé.
 
+## 0.4.0 — 22 septembre 2026 — Phase 4 : mode live
+
+### Ajouté
+- **Onglet Live +1.5**, pensé pour une main : gros boutons, champs de cote avec − et + (pas de 0,05),
+  saisie au clavier numérique. Ouvert depuis un match (« Suivre en live (+1.5) ») ou sans match
+  (buts attendus saisis à la main).
+- **Chronomètre** : « Coup d'envoi », −1 / +1 min, calage sur la minute du match. Il garde l'heure du
+  coup d'envoi (pas un compteur) : la minute est toujours juste, même écran éteint ou app fermée.
+- **Fenêtre 15ᵉ-20ᵉ minute** : trop tôt, prépare-toi (dès la 12ᵉ), fenêtre ouverte (avec le temps restant),
+  passée, trop tard. Alerte à chaque changement : bandeau, message, vibration, notification si l'app est
+  en arrière-plan. Elles partent tant que l'app reste ouverte (le téléphone peut les retarder).
+- **« J'entre ? »** avec le nouveau modèle : mêmes règles et mêmes textes que le carnet (0-0, critères du
+  match, cote, match animé, trop tôt), chances avec fourchette à la minute exacte, cote juste, cote
+  minimale, value. Entre la cote juste et la cote minimale : « Oui, mais mise la moitié ». Tableau de
+  la cote minimale de la 15ᵉ à la 40ᵉ minute.
+- **Pari pris → BUT !** : rappel de ce que rapporte un 2ᵉ but et de la cote « moins de 1,5 » à partir de
+  laquelle couvrir rapportera ; « But annulé (VAR) » pour revenir en arrière.
+- **Couverture instantanée** : pari contraire, exchange (lay, commission réglable) ou cash-out. Mise à
+  placer, gain garanti, cote limite de rentabilité, et le **résultat de chaque scénario** (2ᵉ but / plus
+  de but) sans couvrir et en couvrant, avec l'espérance (chances d'un 2ᵉ but d'après le modèle).
+- L'état du live est gardé sur l'appareil (réglage local : ni dans la sauvegarde fichier, ni remplacé par
+  une restauration). Un autre match demandé pendant un live ne l'efface qu'avec ton accord.
+
+### Corrigé par rapport au carnet
+- Quand la couverture par pari contraire n'est pas rentable, le carnet conseillait d'attendre que la cote
+  « moins de 1,5 but » baisse. C'est l'inverse : sans nouveau but, cette cote baisse avec le temps et la
+  couverture coûte plus cher. Les formules restent celles du carnet ; le texte dit maintenant la cote
+  minimale à trouver et que l'attente n'aide pas.
+
+### Choix
+- Le pari pris en live n'est pas encore écrit dans le journal : l'ajout et la modification des paris sont
+  prévus en phase 6 (et un réimport du carnet remplace le journal). Pour l'instant, le pari se note
+  dans le carnet.
+- « Match animé » est à valider à chaque fois (« Fermé » par défaut) : c'est ton appréciation, pas un calcul.
+
 ## 0.3.0 — 21 septembre 2026 — Phase 3 : analyse
 
 ### Ajouté

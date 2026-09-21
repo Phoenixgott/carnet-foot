@@ -12,7 +12,7 @@ export interface Contenu {
 }
 
 /** Réglages propres à cet appareil : jamais inclus dans une sauvegarde ni écrasés par une restauration. */
-export const REGLAGES_LOCAUX: readonly string[] = ["dernierExportFichier"];
+export const REGLAGES_LOCAUX: readonly string[] = ["dernierExportFichier", "live"];
 
 export const BANKROLL_PAR_DEFAUT: ReglagesBankroll = { depart: 200, pctMise: 2 };
 

@@ -37,11 +37,12 @@ export function useAppli(): Appli {
   return a;
 }
 
-export type Route = "accueil" | "matchs" | "paris" | "donnees" | "reglages" | "equipe";
+export type Route = "accueil" | "matchs" | "live" | "paris" | "donnees" | "reglages" | "equipe";
 
 export const ROUTES: ReadonlyArray<{ route: Route; libelle: string; titre: string }> = [
   { route: "accueil", libelle: "Accueil", titre: "Accueil" },
   { route: "matchs", libelle: "Matchs", titre: "Matchs" },
+  { route: "live", libelle: "Live", titre: "Live +1.5" },
   { route: "paris", libelle: "Paris", titre: "Mes paris" },
   { route: "donnees", libelle: "Données", titre: "Mes données" },
   { route: "reglages", libelle: "Réglages", titre: "Réglages" },
@@ -58,6 +59,11 @@ export function parametresRoute(): URLSearchParams {
   const h = window.location.hash;
   const i = h.indexOf("?");
   return new URLSearchParams(i >= 0 ? h.slice(i + 1) : "");
+}
+
+/** Adresse de l'écran live pour un match. */
+export function lienLive(matchId: string): string {
+  return "#/live?" + new URLSearchParams({ match: matchId }).toString();
 }
 
 /** Adresse de la fiche d'une équipe. */
