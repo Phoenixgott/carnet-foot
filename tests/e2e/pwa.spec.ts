@@ -1,0 +1,102 @@
+/**
+ * Application installable et hors ligne, thème, notifications locales.
+ */
+import { readFileSync, writeFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { expect, test } from "playwright/test";
+import { donneesCarnet } from "./outils";
+
+const SW = fileURLToPath(new URL("../../dist/sw.js", import.meta.url));
+
+test("Manifeste complet et icônes présentes (installable sur Android)", async ({ page, request }) => {
+  await page.goto("/");
+  const href = await page.getAttribute('link[rel="manifest"]', "href");
+  const m = await (await request.get(new URL(href!, "http://localhost:4173/").href)).json();
+  expect(m.name).toBe("Carnet de Paris Foot");
+  expect(m.display).toBe("standalone");
+  expect(m.start_url).toBe("./");
+  for (const taille of ["192x192", "512x512"]) expect(m.icons.some((i: { sizes: string }) => i.sizes === taille)).toBe(true);
+  expect(m.icons.some((i: { purpose: string }) => i.purpose === "maskable")).toBe(true);
+  for (const i of m.icons) expect((await request.get(new URL(i.src, "http://localhost:4173/").href)).ok()).toBe(true);
+});
+
+test("Hors ligne : l'application redémarre sans réseau, données comprises", async ({ context, page }) => {
+  const d = donneesCarnet(12, 7, 0);
+  await page.goto("/#/donnees");
+  await page.fill("#texte-carnet", JSON.stringify({ paris: d.paris, reglages: d.reglages }));
+  await page.getByRole("button", { name: "Importer ces données" }).click();
+  await expect(page.locator('[data-test="resultat-import"]')).toContainText("Import réussi");
+  const bankroll = await page.locator('[data-test="bankroll-entete"]').textContent();
+  await page.goto("/#/reglages");
+  await expect(page.locator('[data-test="etat-hors-ligne"]')).toHaveText("Prête", { timeout: 15_000 });
+  await page.evaluate(() => navigator.serviceWorker.ready);
+  await context.setOffline(true);
+  await page.reload();
+  await expect(page.getByRole("heading", { level: 1, name: "Réglages" })).toBeVisible();
+  await expect(page.locator('[data-test="bankroll-entete"]')).toHaveText(bankroll!);
+  await page.goto("/#/paris");
+  await expect(page.locator(".pari")).toHaveCount(7);
+  await context.setOffline(false);
+});
+
+test("Aucune requête vers un autre site", async ({ page }) => {
+  const externes: string[] = [];
+  page.on("request", (r) => {
+    if (!r.url().startsWith("http://localhost:4173/") && !r.url().startsWith("data:") && !r.url().startsWith("blob:")) externes.push(r.url());
+  });
+  for (const ecran of ["accueil", "matchs", "paris", "donnees", "reglages"]) {
+    await page.goto(`/#/${ecran}`);
+    await page.waitForLoadState("networkidle");
+  }
+  expect(externes).toEqual([]);
+});
+
+test("Thème sombre : appliqué, gardé après rechargement, retour à l'automatique", async ({ page }) => {
+  await page.goto("/#/reglages");
+  await page.getByRole("button", { name: "Sombre" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe("rgb(15, 21, 18)");
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await page.getByRole("button", { name: "Clair" }).click();
+  expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe("rgb(238, 242, 239)");
+  await page.getByRole("button", { name: "Automatique" }).click();
+  await expect(page.locator("html")).not.toHaveAttribute("data-theme", /.+/);
+});
+
+test("Thème automatique : suit le mode sombre du téléphone", async ({ browser }) => {
+  const ctx = await browser.newContext({ colorScheme: "dark", viewport: { width: 412, height: 915 } });
+  const p = await ctx.newPage();
+  await p.goto("http://localhost:4173/");
+  await expect(p.getByRole("heading", { level: 1 })).toBeVisible();
+  expect(await p.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe("rgb(15, 21, 18)");
+  await ctx.close();
+});
+
+test("Notifications : activation puis notification de test via le service worker", async ({ context, page }) => {
+  await context.grantPermissions(["notifications"], { origin: "http://localhost:4173" });
+  await page.goto("/#/reglages");
+  await expect(page.locator('[data-test="etat-hors-ligne"]')).toHaveText("Prête", { timeout: 15_000 });
+  await expect(page.locator('[data-test="etat-notifs"]')).toHaveText("Activées.");
+  await page.getByRole("button", { name: "Envoyer une notification de test" }).click();
+  await expect(page.locator('[data-test="toast"]')).toHaveText("Notification envoyée");
+  const affichees = await page.evaluate(async () => (await (await navigator.serviceWorker.ready).getNotifications()).map((n) => n.body));
+  expect(affichees).toContain("Les notifications fonctionnent.");
+});
+
+test("Mise à jour : une nouvelle version est proposée puis appliquée", async ({ page }) => {
+  await page.goto("/#/reglages");
+  await expect(page.locator('[data-test="etat-hors-ligne"]')).toHaveText("Prête", { timeout: 15_000 });
+  // Simule la mise en ligne d'une nouvelle version : le service worker servi change.
+  const original = readFileSync(SW, "utf8");
+  try {
+    writeFileSync(SW, original + "\n// nouvelle version " + Date.now());
+    await page.evaluate(async () => (await navigator.serviceWorker.getRegistration())!.update());
+    await expect(page.getByText("Une nouvelle version de l'application est prête.")).toBeVisible({ timeout: 15_000 });
+    await Promise.all([page.waitForEvent("load"), page.getByRole("button", { name: "Mettre à jour" }).click()]);
+    await expect(page.getByRole("heading", { level: 1, name: "Réglages" })).toBeVisible();
+    await expect(page.getByText("Une nouvelle version de l'application est prête.")).toHaveCount(0);
+  } finally {
+    writeFileSync(SW, original);
+  }
+});

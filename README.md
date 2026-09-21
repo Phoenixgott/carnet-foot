@@ -1,0 +1,133 @@
+# Carnet de Paris Foot
+
+Application privée et hors ligne pour les méthodes **+1.5**, **+2.5** et **Freebet**.
+Tout reste sur ton téléphone : aucune donnée n'est envoyée à un serveur, et l'application
+interdit elle-même toute connexion vers un autre site (règle de sécurité `connect-src 'self'`).
+
+> Seule la méthode Freebet est garantie mathématiquement, à condition que les deux paris
+> soient acceptés aux cotes saisies. Pour +1.5 et +2.5, les chances affichées sont des
+> estimations qui peuvent se tromper.
+
+---
+
+## Utilisation
+
+### 1. Récupérer tes données du carnet
+
+1. Ouvre ton carnet (l'artefact « Carnet de Paris Foot »), onglet **Mes paris**.
+2. Tout en bas, touche **Tout exporter** : le texte est copié (sinon, il s'affiche sélectionné, copie-le à la main).
+3. Dans l'application, onglet **Données**, colle le texte dans « Importer depuis le carnet ».
+4. Vérifie les contrôles (nombre de paris, champ par champ, bankroll, gains par méthode :
+   tout doit être ✓), puis touche **Importer ces données**.
+
+L'import relit ensuite la base et refait tous les contrôles. Au moindre écart, rien n'est gardé.
+Tu peux réimporter autant de fois que tu veux : une copie de sécurité est faite avant,
+et l'historique permet de revenir en arrière.
+
+L'ancienne sauvegarde du carnet (bouton « Copier ma sauvegarde ») est aussi acceptée,
+mais elle ne contient que les paris et les réglages.
+
+### 2. Sauvegarder
+
+- **Données → Sauvegarde en un fichier** : « Enregistrer le fichier », « Partager (Drive, mail…) »
+  ou « Copier le texte ». Garde ce fichier hors du téléphone : si le navigateur efface ses
+  données, c'est ta seule copie. L'accueil te le rappelle après 7 jours sans sauvegarde.
+- **Copies automatiques** : une par jour (30 gardées) et une avant chaque import ou restauration
+  (15 gardées), dans **Données → Historique des versions**.
+- **Restaurer** : choisis le fichier ou colle son texte. Une empreinte vérifie que le fichier
+  n'a pas été abîmé ou modifié ; sinon il est refusé.
+
+### 3. Installer sur Android (version hébergée)
+
+Ouvre l'adresse de l'application dans Chrome, puis **Réglages → Installer l'application**
+(ou menu ⋮ → « Installer l'application »). Elle fonctionne ensuite sans réseau.
+
+### Notifications
+
+Elles sont créées sur le téléphone, sans serveur : une alerte ne peut partir que si
+l'application est ouverte ou vient d'être utilisée. Active-les dans **Réglages**.
+
+---
+
+## Développement
+
+Prérequis : Node.js 22.
+
+```bash
+npm install          # si le registre npm est accessible (voir plus bas)
+npm run dev          # reconstruit à chaque modification, sert sur http://localhost:5173
+npm run build        # construit dist/ (à héberger tel quel, en HTTPS)
+npm run preview      # construit puis sert dist/ sur http://localhost:4173
+npm run typecheck    # TypeScript strict : app, service worker, tests
+npm test             # tests unitaires (lanceur intégré à Node)
+npm run e2e          # tests de bout en bout dans Chromium (Playwright)
+npm run check        # tout : types + unitaires + bout en bout
+```
+
+### Organisation du code
+
+```
+src/
+  core/            calculs purs, sans écran, entièrement testés
+    carnet-v1/     modèle du carnet d'origine, repris à l'identique (buts attendus,
+                   fiabilité sur 8, critères +1.5/+2.5, verdicts, décisions live/avant-match)
+    poisson.ts     loi de Poisson
+    couverture.ts  couverture +1.5 (pari contraire, lay, cash-out)
+    freebet.ts     freebet non remboursé (autre bookmaker ou exchange)
+    paris.ts       gains, bankroll, bilan, ROI
+    methodes.ts    noms exacts des méthodes et codes du carnet (m1 = +1.5, m3 = +2.5, m2 = Freebet)
+  data/            stockage IndexedDB, import du carnet, vérification, sauvegardes, versions
+  pwa/             service worker (hors ligne), installation, notifications
+  ui/              interface (React), écrans, styles
+tests/
+  unit/            tests unitaires, dont la non-régression contre le code original du carnet
+  e2e/             tests dans Chromium : migration réelle, sauvegarde, hors ligne, accessibilité
+  fixtures/        copie exacte de l'artefact du carnet d'origine
+```
+
+### Garde-fous
+
+- **Non-régression** : `tests/helpers/carnet-original.ts` extrait le JavaScript de l'artefact
+  d'origine (sans le modifier) et l'exécute à côté du code porté, sur plus de 1 000 matchs
+  générés, dont des cas construits sur les seuils. Chiffres, verdicts et textes doivent être identiques.
+- **Migration réelle** : `tests/e2e/migration.spec.ts` ouvre le vrai carnet dans Chromium,
+  clique « Tout exporter », importe dans l'application et compare bankroll, gains par méthode
+  et chances de chaque match affichés des deux côtés.
+- **Accessibilité** : audit automatique à 360 et 412 px, en clair et en sombre (noms accessibles,
+  étiquettes, cibles tactiles ≥ 44 px, pas de défilement horizontal), contrastes AA calculés
+  sur les jetons de couleur, navigation au clavier.
+
+### Choix techniques et écarts
+
+- **esbuild au lieu de Vite** : l'environnement de construction n'avait pas accès au registre npm.
+  esbuild (le moteur de Vite) était disponible. `scripts/build.mjs` fait le travail de
+  `vite build` et du plugin PWA (noms hachés, liste de mise en cache du service worker).
+  Pour passer à Vite : `npm i -D vite @vitejs/plugin-react vite-plugin-pwa`, créer
+  `vite.config.ts` (plugins react et VitePWA en mode `injectManifest` avec `src/pwa/sw.ts`),
+  et remplacer `__PRECACHE__` par `self.__WB_MANIFEST`.
+- **Types React** : `src/types/react-shim.d.ts` remplace `@types/react`, non installable ici.
+  À remplacer par `npm i -D @types/react @types/react-dom` dès que possible.
+- **Tests unitaires** : lanceur intégré à Node (`node --test`) au lieu de Vitest, même raison.
+- **Police** : celle du téléphone (Roboto sur Android). Aucune police téléchargée.
+
+### Variante « aperçu »
+
+`npm run build:apercu` produit `dist-apercu/`, publiable comme artefact Claude pour essayer
+l'application sans hébergement. Le bac à sable des artefacts bloque le service worker et les
+téléchargements : pas de hors ligne, pas d'installation, sauvegarde par copie du texte seulement.
+
+---
+
+## Formats de données
+
+- **Match** : exactement le format du carnet d'origine (voir `src/core/types.ts`).
+  Un champ absent ou `null` est une donnée inconnue, affichée ⏳, jamais inventée.
+- **Sauvegarde** : `{ app: "carnet-foot", type: "sauvegarde", schema: 1, creeLe, versionApp,
+  contenu: { matchs, paris, reglages }, controle: { nbMatchs, nbParis, bankroll, gainsTotal, empreinte } }`.
+  L'empreinte est un SHA-256 du contenu trié.
+- **Export du carnet** : `{ app: "carnet-paris-foot", type: "export-complet", version: 1, cles: {...}, controle: {...} }`.
+
+## Jeu responsable
+
+Jouer comporte des risques : endettement, dépendance… Appelle le 09 74 75 13 13
+(appel non surtaxé) ou va sur joueurs-info-service.fr.

@@ -1,0 +1,1147 @@
+<title>Carnet de Paris Foot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+:root{
+  --bg:#EEF2EF; --surface:#FFFFFF; --surface2:#F4F7F5; --line:#D3DCD6; --ink:#122019; --muted:#4F5F56;
+  --accent:#17663F; --accent-ink:#FFFFFF; --accent-soft:#DDEEE4;
+  --good:#17663F; --good-soft:#DDF1E4; --warn:#8A5A0B; --warn-soft:#FBEED6; --bad:#A3321F; --bad-soft:#F8E1DC;
+  --font:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F1512; --surface:#18211C; --surface2:#1E2923; --line:#2D3A33; --ink:#E6EDE8; --muted:#A3B2A8;
+  --accent:#55BA88; --accent-ink:#0B130F; --accent-soft:#1D3529;
+  --good:#62C891; --good-soft:#1A3326; --warn:#E6AE52; --warn-soft:#382B15; --bad:#EC8472; --bad-soft:#3D201B;
+}}
+:root[data-theme="dark"]{
+  --bg:#0F1512; --surface:#18211C; --surface2:#1E2923; --line:#2D3A33; --ink:#E6EDE8; --muted:#A3B2A8;
+  --accent:#55BA88; --accent-ink:#0B130F; --accent-soft:#1D3529;
+  --good:#62C891; --good-soft:#1A3326; --warn:#E6AE52; --warn-soft:#382B15; --bad:#EC8472; --bad-soft:#3D201B;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font:17px/1.55 var(--font);padding-inline:16px;padding-block:0 64px}
+.wrap{max-width:760px;margin:0 auto}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);margin-inline:-16px;padding:12px 16px 0;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;max-width:760px;margin:0 auto}
+.brand h1{font-size:21px;margin:0;font-weight:700}
+.brand h1 span{color:var(--accent)}
+.bk{font-size:14px;color:var(--muted)}
+.bk b{color:var(--ink)}
+nav.tabs{display:flex;gap:2px;overflow-x:auto;margin:8px auto 0;max-width:760px;scrollbar-width:none}
+nav.tabs button{font:700 16px var(--font);background:none;border:0;color:var(--muted);padding:9px 12px 11px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+section.tab{padding-top:24px;display:grid;gap:18px}
+h2{font-size:28px;line-height:1.15;margin:0;text-wrap:balance}
+h3{font-size:20px;line-height:1.25;margin:0 0 4px}
+.sub{color:var(--muted);margin:4px 0 0;max-width:62ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
+.stepcard{display:grid;grid-template-columns:36px 1fr;gap:12px}
+.num{width:34px;height:34px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:700;font-size:17px}
+.stepcard > div{min-width:0}
+.hint{font-size:15px;color:var(--muted);margin:2px 0 12px}
+.idea{background:var(--accent-soft);border-radius:12px;padding:14px 16px;font-size:16px}
+.idea b{color:var(--accent)}
+label.f{display:grid;gap:5px;font-size:15px;color:var(--muted);font-weight:700}
+label.f em{font-weight:400;font-style:normal;font-size:14px}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px}
+input,select,textarea{font:17px var(--font);color:var(--ink);background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:11px 12px;width:100%}
+input[type=number]{font-family:var(--mono);font-size:17px}
+input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent);flex:none}
+textarea{font:14px/1.45 var(--mono);min-height:130px;resize:vertical}
+.btn{font:700 17px var(--font);background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:12px 18px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--line)}
+.btn.small{font-size:15px;padding:8px 12px}
+.btn.danger{background:transparent;color:var(--bad);border:1.5px solid var(--line)}
+.btn.wide{width:100%}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.check-line{display:flex;gap:10px;align-items:center;font-size:16px;cursor:pointer}
+.chipset{display:flex;flex-wrap:wrap;gap:8px}
+.chipset label{cursor:pointer;position:relative}
+.chipset input{position:absolute;opacity:0;width:1px;height:1px}
+.chipset span{display:inline-block;padding:8px 13px;border-radius:999px;border:1.5px solid var(--line);font-size:15px;background:var(--surface)}
+.chipset input:checked + span{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.chipset input:focus-visible + span{outline:3px solid var(--accent);outline-offset:2px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font:700 15px var(--font);background:var(--surface);border:1.5px solid var(--line);color:var(--muted);padding:8px 14px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+details.plain > summary{cursor:pointer;color:var(--accent);font-weight:700;font-size:15px;list-style:none}
+details.plain > summary::before{content:"+ "}
+details.plain[open] > summary::before{content:"− "}
+details.plain > summary::-webkit-details-marker{display:none}
+.status{border-radius:12px;padding:12px 14px;font-size:16px;margin-top:12px}
+.status.ok{background:var(--good-soft);color:var(--good)}
+.status.warn{background:var(--warn-soft);color:var(--warn)}
+.status.ko{background:var(--bad-soft);color:var(--bad)}
+.status ul{margin:6px 0 0;padding-left:20px;font-size:15px}
+.board{display:grid;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
+.brow{display:grid;grid-template-columns:1fr 92px 92px;gap:8px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line)}
+.brow:last-child{border-bottom:0}
+.brow.head{background:var(--surface2);font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding-block:9px}
+.brow.head span{text-align:center}
+.brow b{display:block;font-size:17px}
+.brow small{color:var(--muted);font-size:14px}
+.brow button{justify-self:center}
+.badge{font:700 15px/1 var(--font);padding:8px 0;border-radius:8px;width:84px;text-align:center;border:0;cursor:pointer;display:inline-block}
+.badge.ok{background:var(--good);color:var(--surface)}
+.badge.mid{background:var(--warn-soft);color:var(--warn)}
+.badge.ko{background:var(--surface2);color:var(--muted)}
+@media (max-width:480px){.brow{grid-template-columns:1fr 74px 74px;padding-inline:10px}.badge{width:68px;font-size:14px}}
+.mlist{display:grid;gap:10px}
+details.m{background:var(--surface);border:1px solid var(--line);border-radius:14px}
+details.m > summary{list-style:none;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:14px 16px;cursor:pointer}
+details.m > summary::-webkit-details-marker{display:none}
+details.m .badge{pointer-events:none}
+.mt b{display:block;font-size:18px;line-height:1.25}
+.mt small{color:var(--muted);font-size:14px}
+.chev{color:var(--muted);font-size:22px;transition:transform .15s}
+details.m[open] .chev{transform:rotate(90deg)}
+.mbody{padding:14px 16px 16px;display:grid;gap:14px;border-top:1px solid var(--line)}
+.why{margin:0;font-weight:700}
+.why.ok{color:var(--good)} .why.mid{color:var(--warn)} .why.ko{color:var(--bad)}
+ul.check{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+ul.check li{display:grid;grid-template-columns:26px 1fr;gap:10px;align-items:start}
+.ico{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:14px}
+.ico.ok{background:var(--good-soft);color:var(--good)} .ico.ko{background:var(--bad-soft);color:var(--bad)} .ico.mid{background:var(--warn-soft);color:var(--warn)} .ico.plus{background:var(--accent-soft);color:var(--accent)}
+ul.check small{display:block;color:var(--muted);font-size:14.5px}
+.miss{font-size:15px;color:var(--warn);background:var(--warn-soft);border-radius:10px;padding:10px 12px}
+.fix{display:grid;gap:10px;margin-top:10px;font-size:16px}
+.fix select{max-width:340px}
+.src{font-size:14px;color:var(--muted);word-break:break-word}
+.src a{color:var(--accent)}
+.answer{margin-top:16px;border-radius:12px;padding:16px;display:grid;gap:6px}
+.answer.ok{background:var(--good-soft)} .answer.mid{background:var(--warn-soft)} .answer.ko{background:var(--bad-soft)}
+.answer strong{font-size:23px;line-height:1.2}
+.answer.ok strong{color:var(--good)} .answer.mid strong{color:var(--warn)} .answer.ko strong{color:var(--bad)}
+.answer p{margin:0;font-size:16.5px}
+.facts{margin:14px 0 0;display:grid}
+.fact{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:16px}
+.fact:last-child{border-bottom:0}
+.fact span{color:var(--muted)}
+.fact b{font-family:var(--mono);font-weight:500;white-space:nowrap}
+.minutes{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:8px}
+.minutes div{background:var(--surface2);border-radius:10px;padding:7px 4px;text-align:center;font-size:13px;color:var(--muted)}
+.minutes div.on{outline:2px solid var(--accent)}
+.minutes b{display:block;font:500 16px var(--mono);color:var(--ink)}
+@media (max-width:480px){.minutes{grid-template-columns:repeat(3,1fr)}}
+.warnbox{font-size:15px;color:var(--muted);background:var(--surface2);border-left:4px solid var(--warn);padding:12px 14px;border-radius:0 10px 10px 0;margin:0}
+.banner{font-size:15px;background:var(--warn-soft);color:var(--warn);padding:10px 14px;border-radius:12px;margin-bottom:10px}
+.empty{color:var(--muted);font-size:16px;padding:22px;text-align:center;border:1.5px dashed var(--line);border-radius:14px;background:var(--surface)}
+.pos{color:var(--good)} .neg{color:var(--bad)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.stat small{display:block;font-size:14px;color:var(--muted)}
+.stat b{font-size:26px;line-height:1.2}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:15px;min-width:680px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:14px;color:var(--muted);background:var(--surface2)}
+td.n{font-family:var(--mono)}
+td select{padding:5px 8px;font-size:15px;width:auto}
+tr:last-child td{border-bottom:0}
+pre.code{font:13px/1.5 var(--mono);background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:12px;overflow:auto;max-height:340px;margin:12px 0 0;white-space:pre-wrap}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:10px;font-size:16px;z-index:20;max-width:calc(100% - 32px)}
+
+/* ---- tableau de bord ---- */
+:root{--turf1:#17663F;--turf2:#1C7249;--onturf:#FFFFFF}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--turf1:#123D2A;--turf2:#16452F;--onturf:#EAF4EE}}
+:root[data-theme="dark"]{--turf1:#123D2A;--turf2:#16452F;--onturf:#EAF4EE}
+.scoreboard{background:repeating-linear-gradient(90deg,var(--turf1) 0 56px,var(--turf2) 56px 112px);color:var(--onturf);border-radius:18px;padding:20px;display:grid;gap:14px;position:relative;overflow:hidden}
+.scoreboard::after{content:"";position:absolute;right:-60px;top:50%;width:160px;height:160px;border:2px solid rgba(255,255,255,.18);border-radius:50%;transform:translateY(-50%);pointer-events:none}
+.sb-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;position:relative;z-index:1}
+.sb-top h2{color:var(--onturf);font-size:26px}
+.sb-top span{font-size:15px;opacity:.85}
+.sb-nums{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;position:relative;z-index:1}
+.sb-n{background:rgba(255,255,255,.13);border-radius:12px;padding:12px 8px;text-align:center}
+.sb-n b{display:block;font-size:36px;line-height:1}
+.sb-n small{font-size:14px;opacity:.9}
+.sb-n.play b{color:#B9F5CF} .sb-n.watch b{color:#FFE2A3} .sb-n.skip b{color:rgba(255,255,255,.7)}
+.sb-rel{display:flex;align-items:center;gap:10px;font-size:15px;position:relative;z-index:1}
+.sb-rel .relbar{flex:1;background:rgba(255,255,255,.2)} .sb-rel .relbar span{background:#B9F5CF}
+.sb-act{position:relative;z-index:1}
+.sb-act .btn{background:var(--onturf);color:var(--turf1)}
+details.fetch{padding:0}
+details.fetch > summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:16px 18px;flex-wrap:wrap}
+details.fetch > summary::-webkit-details-marker{display:none}
+.fetch-t{font-weight:700;font-size:19px}
+.fetch-t::before{content:"＋ ";color:var(--accent)}
+details.fetch[open] .fetch-t::before{content:"－ "}
+.fetch-s{font-size:14px;color:var(--muted)}
+.fetch-body{display:grid;gap:22px;padding:4px 18px 20px;border-top:1px solid var(--line);padding-top:18px}
+.dash-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px}
+.datebar{display:flex;gap:8px;flex-wrap:wrap}
+.datebar:empty{display:none}
+.datebar button{font:700 15px var(--font);background:var(--surface);border:1.5px solid var(--line);color:var(--muted);border-radius:999px;padding:6px 13px;cursor:pointer}
+.datebar button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.dgrid{display:grid;gap:14px}
+.dcard{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;display:grid;gap:14px;box-shadow:0 1px 2px rgba(20,40,30,.05),0 6px 18px rgba(20,40,30,.05)}
+.dcard.top{border-color:var(--good);box-shadow:0 0 0 1px var(--good) inset,0 6px 18px rgba(20,100,60,.08)}
+.dmeta{display:flex;justify-content:space-between;gap:8px;font-size:14px;color:var(--muted);flex-wrap:wrap}
+.dteams{font-size:22px;font-weight:700;line-height:1.2;margin:0;text-wrap:balance}
+.dteams span{color:var(--muted);font-weight:400;padding:0 4px}
+.methods{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:560px){.methods{grid-template-columns:1fr}}
+.meth{background:var(--surface2);border-radius:14px;padding:12px;display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;cursor:pointer;border:1.5px solid transparent;text-align:left;font:inherit;color:inherit;width:100%}
+.meth:hover{border-color:var(--accent)}
+.meth.ko{opacity:.78}
+.ring{--p:0;--c:var(--good);position:relative;width:70px;height:70px;border-radius:50%;background:conic-gradient(var(--c) calc(var(--p) * 1%),var(--line) 0);display:grid;place-items:center;flex:none}
+.ring::after{content:"";position:absolute;inset:7px;border-radius:50%;background:var(--surface2)}
+.ring b{position:relative;z-index:1;font-size:18px;line-height:1}
+.ring small{display:block;font-size:10px;font-weight:400;color:var(--muted);text-align:center;margin-top:2px}
+.ring.na{background:repeating-conic-gradient(var(--line) 0 6%,transparent 6% 12%)}
+.mi{display:grid;gap:4px;min-width:0}
+.mname{font-size:14px;color:var(--muted);font-weight:700}
+.pill{display:inline-block;font-weight:700;font-size:15px;padding:4px 10px;border-radius:999px;justify-self:start}
+.pill.ok{background:var(--good);color:var(--surface)} .pill.mid{background:var(--warn-soft);color:var(--warn)} .pill.ko{background:var(--bad-soft);color:var(--bad)}
+.odd{font-size:14.5px}
+.odd b{font-family:var(--mono);font-size:16px}
+.risk{display:grid;gap:4px;font-size:13.5px;color:var(--muted);margin-top:2px}
+.risk-l{display:flex;justify-content:space-between;gap:6px}
+.risk-l b{color:var(--ink)}
+.riskbar{--r:0;height:8px;border-radius:999px;background:linear-gradient(90deg,var(--good) 0 35%,var(--warn) 35% 50%,var(--bad) 50% 100%);position:relative;opacity:.9}
+.riskbar i{position:absolute;top:-4px;width:5px;height:16px;border-radius:3px;background:var(--ink);left:calc(var(--r) * 1% - 2px);box-shadow:0 0 0 2px var(--surface2)}
+.rel{display:grid;gap:8px;font-size:14.5px;border-top:1px dashed var(--line);padding-top:12px}
+.rel-l{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.relbar{height:7px;border-radius:999px;background:var(--line);overflow:hidden}
+.relbar span{display:block;height:100%;background:var(--accent);border-radius:999px}
+.mchips{display:flex;flex-wrap:wrap;gap:6px}
+.mchip{font-size:13px;padding:4px 9px;border-radius:999px;background:var(--warn-soft);color:var(--warn)}
+.mchip.later{background:var(--surface2);color:var(--muted);border:1px dashed var(--line)}
+.legend > summary{cursor:pointer;font-weight:700;color:var(--accent)}
+.legend-body{display:grid;gap:8px;margin-top:10px;font-size:15.5px}
+.legend-body p{margin:0}
+.mrisk{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;background:var(--surface2);border-radius:12px;padding:12px}
+details.m > summary .chance{font-family:var(--mono);font-size:15px;color:var(--muted)}
+
+/* ---- v6 visuel ---- */
+.hdr-r{display:flex;align-items:center;gap:10px}
+.reset-btn{font:700 14px var(--font);background:var(--surface);color:var(--muted);border:1.5px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer}
+.reset-btn:hover{color:var(--bad);border-color:var(--bad)}
+.sheet-bg{position:fixed;inset:0;background:rgba(10,20,15,.45);z-index:30;display:grid;place-items:end center;padding:16px}
+@media (min-width:600px){.sheet-bg{place-items:center}}
+.sheet{background:var(--surface);border-radius:20px;padding:20px;width:100%;max-width:440px;display:grid;gap:12px;margin-bottom:env(safe-area-inset-bottom,0px)}
+.sheet-opts{display:grid;gap:8px}
+.opt{display:grid;grid-template-columns:40px 1fr;gap:2px 10px;text-align:left;background:var(--surface2);border:1.5px solid var(--line);border-radius:14px;padding:12px;cursor:pointer;font:inherit;color:inherit}
+.opt span{grid-row:span 2;font-size:26px;align-self:center;text-align:center}
+.opt b{font-size:17px}
+.opt small{color:var(--muted);font-size:14px}
+.opt:hover{border-color:var(--accent)}
+.opt.danger b{color:var(--bad)}
+.opt.confirm{background:var(--bad-soft);border-color:var(--bad)}
+.opt.confirm b{color:var(--bad)}
+
+.scoreboard{padding:22px 20px;gap:16px}
+.sb-kick{font-size:13px;letter-spacing:.12em;text-transform:uppercase;opacity:.8;font-weight:700}
+.sb-top{display:grid;gap:2px}
+.sb-top h2{font-size:27px}
+.sb-n{padding:14px 8px;border-radius:16px;display:grid;justify-items:center;gap:2px}
+.sb-n span{font-size:20px;line-height:1}
+.sb-n b{font-size:40px}
+.sb-n small{font-weight:700;font-size:15px}
+.sb-n.play{background:#F2FFF6;color:#125C37} .sb-n.play b{color:#125C37}
+.sb-n.watch{background:#FFF4DC;color:#7A4E07} .sb-n.watch b{color:#7A4E07}
+.sb-n.skip{background:rgba(255,255,255,.16);color:var(--onturf)} .sb-n.skip b{color:var(--onturf)}
+.sb-best{position:relative;z-index:1;display:flex;gap:12px;align-items:center;text-align:left;background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.35);border-radius:16px;padding:12px 14px;color:var(--onturf);font:inherit;cursor:pointer}
+.sb-best:hover{background:rgba(255,255,255,.22)}
+.sb-star{width:40px;height:40px;border-radius:50%;background:#FFD45C;color:#5A3A00;display:grid;place-items:center;font-size:22px;flex:none}
+.sb-best small{display:block;font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;opacity:.85;font-weight:700}
+.sb-best b{display:block;font-size:19px}
+.sb-best em{font-style:normal;font-size:14.5px;opacity:.92}
+.sb-upd{position:relative;z-index:1;font:700 15px var(--font);background:var(--onturf);color:var(--turf1);border:0;border-radius:12px;padding:11px 14px;cursor:pointer;text-align:left}
+
+.dgrid{gap:16px}
+.tk{background:var(--surface);border-radius:20px;overflow:hidden;border:1px solid var(--line);box-shadow:0 2px 4px rgba(20,40,30,.04),0 10px 24px rgba(20,40,30,.06)}
+.tk.ok{border-color:var(--good)}
+.tk-top{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:10px 16px;background:var(--surface2);font-size:14px;color:var(--muted);font-weight:700}
+.tk.ok .tk-top{background:var(--good);color:var(--surface)}
+.tk-teams{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding:18px 14px 8px}
+.team{display:grid;justify-items:center;gap:8px;text-align:center;min-width:0}
+.team b{font-size:19px;line-height:1.2;overflow-wrap:anywhere}
+.crest{--h:140;width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:19px;letter-spacing:.02em;background:hsl(var(--h) 55% 90%);color:hsl(var(--h) 55% 26%);box-shadow:inset 0 0 0 3px hsl(var(--h) 45% 78%)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .crest{background:hsl(var(--h) 30% 22%);color:hsl(var(--h) 60% 82%);box-shadow:inset 0 0 0 3px hsl(var(--h) 30% 34%)}}
+:root[data-theme="dark"] .crest{background:hsl(var(--h) 30% 22%);color:hsl(var(--h) 60% 82%);box-shadow:inset 0 0 0 3px hsl(var(--h) 30% 34%)}
+.vs{font-weight:700;font-size:14px;color:var(--muted);background:var(--surface2);border-radius:999px;padding:5px 9px}
+.tk-bets{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px 14px 14px}
+.bet{display:grid;gap:8px;align-content:start;text-align:left;font:inherit;color:inherit;border-radius:16px;padding:14px;cursor:pointer;border:2px solid transparent;background:var(--surface2)}
+.bet:hover{border-color:var(--accent)}
+.bet.ok{background:var(--good-soft);border-color:var(--good)}
+.bet.mid{background:var(--warn-soft)}
+.bet.ko{background:var(--surface2);color:var(--muted)}
+.bet-h{display:grid;gap:2px}
+.bet-v{font-weight:700;font-size:17px}
+.bet.ok .bet-v{color:var(--good)} .bet.mid .bet-v{color:var(--warn)} .bet.ko .bet-v{color:var(--bad)}
+.bet-n{font-size:13.5px;color:var(--muted)}
+.bet-big{font-weight:700;font-size:44px;line-height:1;display:flex;align-items:baseline;gap:2px;flex-wrap:wrap}
+.bet-big small{font-size:22px}
+.bet-big em{font-style:normal;font-weight:400;font-size:14px;color:var(--muted);width:100%;margin-top:2px}
+.bet.ok .bet-big{color:var(--good)} .bet.ko .bet-big{color:var(--muted)}
+.bet-row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:15px;border-top:1px solid rgba(0,0,0,.07);padding-top:7px}
+.bet-row span:first-child{color:var(--muted)}
+.bet-row b{font-size:17px}
+.bet-why{font-size:14.5px;line-height:1.35}
+.dots{display:inline-flex;gap:4px}
+.dots i{width:11px;height:11px;border-radius:50%;background:var(--line)}
+.tk-foot{display:grid;gap:4px;padding:10px 16px 14px;border-top:1px dashed var(--line);font-size:14px;color:var(--muted)}
+.tk-info{display:flex;align-items:center;gap:8px}
+.tk-info b{color:var(--ink)}
+.ibar{display:inline-flex;gap:3px}
+.ibar i{width:14px;height:8px;border-radius:3px;background:var(--line)}
+.ibar i.on{background:var(--good)} .ibar i.half{background:var(--warn)}
+.ibar i.later{background:transparent;box-shadow:inset 0 0 0 1.5px var(--muted)}
+@media (max-width:520px){.tk-bets{grid-template-columns:1fr}.bet{grid-template-columns:1fr auto;align-items:center}.bet-h{grid-column:1}.bet-big{grid-column:2;grid-row:1;justify-content:flex-end;text-align:right}.bet-big em{text-align:right}.bet-row,.bet-why{grid-column:1/-1}.crest{width:50px;height:50px;font-size:17px}.team b{font-size:17px}.hdr-r .bk{display:none}}
+.legend-body p{display:flex;gap:10px;align-items:baseline}
+.lg-i{width:26px;flex:none;text-align:center;font-weight:700;color:var(--accent)}
+.empty{font-size:17px;line-height:1.7}
+@media (prefers-reduced-motion:reduce){.chev{transition:none}}
+@media (max-width:560px){.stepcard{grid-template-columns:1fr;gap:8px}.card{padding:16px 14px}details.m > summary{padding:12px}.mbody{padding:12px}}
+</style>
+
+<header class="top">
+  <div class="brand">
+    <h1>Carnet de <span>Paris</span> Foot</h1>
+    <div class="hdr-r"><span class="bk">💰 <b id="hdrBank">—</b></span><button class="reset-btn" id="resetOpen" aria-haspopup="dialog">⟲ Remise à zéro</button></div>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="home" aria-selected="true">🏠 Accueil</button>
+    <button role="tab" data-tab="m1" aria-selected="false">⚡ Méthode +1,5</button>
+    <button role="tab" data-tab="m3" aria-selected="false">🎯 Méthode +2,5</button>
+    <button role="tab" data-tab="m2" aria-selected="false">🎁 Méthode Freebet</button>
+    <button role="tab" data-tab="suivi" aria-selected="false">📒 Mes paris</button>
+  </nav>
+</header>
+<div class="wrap">
+
+<section class="tab" id="tab-home">
+  <div class="scoreboard" id="scoreboard"></div>
+
+  <details class="fetch card" id="fetchBox">
+    <summary><span class="fetch-t">Récupérer les matchs</span><span class="fetch-s" id="fetchSum">3 étapes, 2 minutes</span></summary>
+    <div class="fetch-body">
+      <div class="stepcard">
+        <span class="num">1</span>
+        <div>
+          <h3>Copie la demande</h3>
+          <p class="hint">Choisis le jour et les compétitions, puis copie le texte.</p>
+          <div class="form">
+            <label class="f">Jour des matchs<input type="date" id="reqDate"></label>
+            <label class="f">Un seul match ? <em>facultatif</em><input type="text" id="reqOne" placeholder="ex. Lens – Brest"></label>
+          </div>
+          <p class="hint" style="margin:14px 0 8px">Clubs</p>
+          <div id="leagueBox"></div>
+          <button class="btn wide" id="copyReq" style="margin-top:16px">Copier la demande</button>
+          <details class="plain" style="margin-top:10px"><summary>Voir le texte de la demande</summary><pre class="code" id="reqTxt"></pre></details>
+        </div>
+      </div>
+      <div class="stepcard">
+        <span class="num">2</span>
+        <div>
+          <h3>Envoie-la à Claude</h3>
+          <p class="hint" style="margin-bottom:0">Ouvre une <b>nouvelle conversation</b>, active la <b>recherche web</b>, colle et envoie. Si Claude écrit « SUITE DISPONIBLE », réponds <b>continue</b> et colle chaque partie ici.</p>
+        </div>
+      </div>
+      <div class="stepcard">
+        <span class="num">3</span>
+        <div>
+          <h3>Colle sa réponse</h3>
+          <p class="hint">Colle toute la réponse, même avec du texte autour. Les matchs s'ajoutent à ceux déjà chargés.</p>
+          <textarea id="jsonIn" placeholder="Colle ici la réponse de Claude"></textarea>
+          <button class="btn wide" id="pasteBtn" style="margin-top:10px">Charger les matchs</button>
+          <details class="plain" style="margin-top:12px"><summary>Autres options</summary>
+            <div class="row" style="margin-top:10px">
+              <input type="file" id="fileIn" accept=".json,application/json,.txt" style="max-width:280px">
+              <button class="btn ghost small" id="loadSample">Voir l'exemple</button>
+              <button class="btn danger small" id="clearData">Effacer tous les matchs</button>
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </details>
+  <div id="dataStatus"></div>
+
+  <div class="dash-head">
+    <h2>Les matchs</h2>
+    <div class="seg" id="dashFilter">
+      <button aria-pressed="true" data-v="all">Tous</button>
+      <button aria-pressed="false" data-v="play">✅ Seulement « On joue »</button>
+    </div>
+  </div>
+  <div class="datebar" id="dayBar"></div>
+  <div id="homeBanner"></div>
+  <div class="dgrid" id="board"></div>
+
+  <details class="card legend">
+    <summary>❓ Comment lire une carte</summary>
+    <div class="legend-body">
+      <p><span class="lg-i ok">✅</span> <b>On joue</b> : le match coche toutes les cases de la méthode.</p>
+      <p><span class="lg-i mid">⏳</span> <b>À revoir</b> : presque bon, ou il manque des infos. Revérifie le jour du match.</p>
+      <p><span class="lg-i ko">❌</span> <b>On passe</b> : au moins un critère important n'est pas bon.</p>
+      <p><span class="lg-i">%</span> <b>Chances</b> : la probabilité estimée que le pari gagne. Pour la méthode +1,5, c'est si le score est encore 0-0 à la 20ᵉ minute.</p>
+      <p><span class="lg-i">€</span> <b>Cote mini</b> : ne parie pas si la cote Unibet est plus basse.</p>
+      <p><span class="lg-i">●</span> <b>Risque</b> : de 1 à 5 points. Il monte quand il manque des infos.</p>
+      <p><span class="lg-i">▮</span> <b>Infos</b> : combien d'infos on a sur 8. ⏳ = publiée plus tard, c'est normal avant le jour J.</p>
+    </div>
+  </details>
+</section>
+
+<section class="tab" id="tab-m1" hidden>
+  <div>
+    <h2>Méthode +1,5 but (en live)</h2>
+    <p class="sub">Le pari « plus de 1,5 but » gagne s'il y a au moins 2 buts dans le match. On ne parie pas avant le match : la cote est trop basse. On attend 0-0 vers la 15ᵉ-20ᵉ minute, puis on sécurise au premier but.</p>
+  </div>
+  <div class="idea"><b>Pourquoi ça marche :</b> quand deux équipes marquent et encaissent beaucoup, un 0-0 à la 20ᵉ minute fait monter la cote vers 1,70, alors que les buts restent très probables.</div>
+  <div class="card stepcard">
+    <span class="num">1</span>
+    <div>
+      <h3>Choisis un match « Oui »</h3>
+      <p class="hint">Touche un match pour voir pourquoi il est retenu ou non.</p>
+      <div class="mlist" id="m1List"></div>
+    </div>
+  </div>
+  <div class="card stepcard" id="live1">
+    <span class="num">2</span>
+    <div>
+      <h3>Pendant le match : j'entre ?</h3>
+      <p class="hint">Entre la minute et la cote affichée sur Unibet.</p>
+      <div class="form">
+        <label class="f" style="grid-column:1/-1">Match<select id="l1Match"></select></label>
+        <label class="f">Minute<input type="number" id="l1Min" min="0" max="90" value="18" inputmode="numeric"></label>
+        <label class="f">Cote « +1,5 but »<input type="number" id="l1Odd" step="0.01" min="1.01" value="1.72" inputmode="decimal"></label>
+      </div>
+      <div class="row" style="margin-top:12px;gap:18px">
+        <label class="check-line"><input type="checkbox" id="l1Score" checked> Le score est 0-0</label>
+        <label class="check-line"><input type="checkbox" id="l1Dyn" checked> Le match est animé</label>
+      </div>
+      <div id="l1Out"></div>
+      <details class="plain" style="margin-top:12px"><summary>Réglage avancé</summary>
+        <label class="f" style="margin-top:10px;max-width:280px">Buts attendus sur 90 min <em>calculé depuis les stats</em><input type="number" id="l1Lambda" step="0.05" min="0" value="2.8"></label>
+      </details>
+    </div>
+  </div>
+  <div class="card stepcard">
+    <span class="num">3</span>
+    <div>
+      <h3>Un but est marqué : je sécurise</h3>
+      <p class="hint">Choisis comment tu sécurises.</p>
+      <div class="seg" id="hedgeMode">
+        <button aria-pressed="true" data-v="contre">Pari contraire</button>
+        <button aria-pressed="false" data-v="cash">Cash-out</button>
+        <button aria-pressed="false" data-v="lay">Exchange</button>
+      </div>
+      <div class="form" style="margin-top:14px">
+        <label class="f">Ma mise (€)<input type="number" id="h1Stake" step="1" min="0" value="20" inputmode="decimal"></label>
+        <label class="f">Cote que j'ai prise<input type="number" id="h1Odd" step="0.01" min="1.01" value="1.72" inputmode="decimal"></label>
+        <label class="f" id="h1OppWrap"><span id="h1OppLbl">Cote « moins de 1,5 but »</span><input type="number" id="h1Opp" step="0.01" min="1.01" value="2.60" inputmode="decimal"></label>
+        <label class="f" id="h1CommWrap" hidden>Commission (%)<input type="number" id="h1Comm" step="0.5" min="0" value="5"></label>
+        <label class="f" id="h1CashWrap" hidden>Cash-out proposé (€)<input type="number" id="h1Cash" step="0.5" min="0" value="26" inputmode="decimal"></label>
+      </div>
+      <div id="h1Out"></div>
+    </div>
+  </div>
+</section>
+
+<section class="tab" id="tab-m3" hidden>
+  <div>
+    <h2>Méthode +2,5 buts (avant le match)</h2>
+    <p class="sub">Le pari « plus de 2,5 buts » gagne s'il y a au moins 3 buts dans le match. On parie avant le coup d'envoi, seulement sur des matchs taillés pour les buts, après avoir vu les compositions.</p>
+  </div>
+  <div class="idea"><b>Ce qu'on cherche :</b> un championnat où ça marque, deux équipes en forme, des matchs entre elles souvent riches en buts, et pas de buteur absent.</div>
+  <div class="card stepcard">
+    <span class="num">1</span>
+    <div>
+      <h3>Choisis un match « Oui »</h3>
+      <p class="hint">Touche un match pour voir le détail.</p>
+      <div class="mlist" id="m3List"></div>
+    </div>
+  </div>
+  <div class="card stepcard" id="value3">
+    <span class="num">2</span>
+    <div>
+      <h3>1 h avant : je parie ?</h3>
+      <p class="hint">Vérifie les compositions, puis entre la cote Unibet.</p>
+      <div class="form">
+        <label class="f" style="grid-column:1/-1">Match<select id="v3Match"></select></label>
+        <label class="f">Cote « +2,5 buts »<input type="number" id="v3Odd" step="0.01" min="1.01" value="1.85" inputmode="decimal"></label>
+      </div>
+      <label class="check-line" style="margin-top:12px"><input type="checkbox" id="v3Lineup"> J'ai vu les compositions : les attaquants jouent</label>
+      <div id="v3Out"></div>
+      <details class="plain" style="margin-top:12px"><summary>Réglage avancé</summary>
+        <label class="f" style="margin-top:10px;max-width:280px">Buts attendus <em>calculé depuis les stats</em><input type="number" id="v3Lambda" step="0.05" min="0" value="3.0"></label>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="tab" id="tab-m2" hidden>
+  <div>
+    <h2>Méthode Freebet (gain garanti)</h2>
+    <p class="sub">Tu paries chez Unibet sur un résultat, et chez un autre bookmaker sur le résultat inverse. Quoi qu'il arrive, tu gagnes. C'est la seule méthode vraiment garantie.</p>
+  </div>
+  <div class="idea"><b>Exemple :</b> « +2,5 buts » chez Unibet et « −2,5 buts » chez Winamax. L'un des deux gagne forcément, et le freebet fait le bénéfice.</div>
+  <div>
+    <p class="hint" style="margin-bottom:8px">Où places-tu le pari inverse ?</p>
+    <div class="seg" id="fbMode">
+      <button aria-pressed="true" data-v="book">Autre bookmaker</button>
+      <button aria-pressed="false" data-v="lay">Exchange</button>
+    </div>
+  </div>
+  <div class="card stepcard">
+    <span class="num">1</span>
+    <div>
+      <h3>Le pari qui débloque le freebet</h3>
+      <p class="hint">En argent réel. Il coûte au plus quelques euros.</p>
+      <div class="form">
+        <label class="f">Mise chez Unibet (€)<input type="number" id="qStake" step="1" min="0" value="100" inputmode="decimal"></label>
+        <label class="f">Cote Unibet<input type="number" id="qOdd" step="0.01" min="1.01" value="2.05" inputmode="decimal"></label>
+        <label class="f"><span class="lblOpp">Cote inverse (autre site)</span><input type="number" id="qOpp" step="0.01" min="1.01" value="1.95" inputmode="decimal"></label>
+        <label class="f fbComm" hidden>Commission (%)<input type="number" id="qComm" step="0.5" min="0" value="5"></label>
+      </div>
+      <div id="qOut"></div>
+    </div>
+  </div>
+  <div class="card stepcard">
+    <span class="num">2</span>
+    <div>
+      <h3>Le freebet</h3>
+      <p class="hint">Place-le sur une grosse cote, entre 3 et 6 : tu en récupères plus.</p>
+      <div class="form">
+        <label class="f">Montant du freebet (€)<input type="number" id="fStake" step="1" min="0" value="100" inputmode="decimal"></label>
+        <label class="f">Cote Unibet<input type="number" id="fOdd" step="0.01" min="1.01" value="4.50" inputmode="decimal"></label>
+        <label class="f"><span class="lblOpp">Cote inverse (autre site)</span><input type="number" id="fOpp" step="0.01" min="1.01" value="1.30" inputmode="decimal"></label>
+        <label class="f fbComm" hidden>Commission (%)<input type="number" id="fComm" step="0.5" min="0" value="5"></label>
+      </div>
+      <div id="fOut"></div>
+    </div>
+  </div>
+  <div class="card"><h3>Bilan</h3><div id="fbTotal"></div></div>
+  <p class="warnbox">Choisis un pari à <b>2 résultats possibles seulement</b> (+/− 2,5 buts, un match de tennis). Relis les conditions de l'offre : cote minimum, délai. Aucun exchange n'est autorisé en France : couvre chez un autre bookmaker.</p>
+</section>
+
+<section class="tab" id="tab-suivi" hidden>
+  <div>
+    <h2>Mes paris</h2>
+    <p class="sub">Note chaque pari. Après une centaine de paris, tu sauras quelle méthode te fait gagner.</p>
+  </div>
+  <div class="stats" id="stats"></div>
+  <div class="card">
+    <h3>Ajouter un pari</h3>
+    <div class="form" style="margin-top:12px">
+      <label class="f" style="grid-column:1/-1">Match<input type="text" id="bMatch" placeholder="Lens – Brest"></label>
+      <label class="f">Date<input type="date" id="bDate"></label>
+      <label class="f">Méthode<select id="bMethod"><option value="m1">Méthode +1,5</option><option value="m3">Méthode +2,5</option><option value="m2">Méthode Freebet</option><option value="autre">Autre</option></select></label>
+      <label class="f">Cote<input type="number" id="bOdd" step="0.01" min="1.01" value="1.70" inputmode="decimal"></label>
+      <label class="f">Mise (€)<input type="number" id="bStake" step="0.5" min="0" value="4" inputmode="decimal"></label>
+    </div>
+    <p class="hint" id="bHint" style="margin:12px 0"></p>
+    <button class="btn wide" id="bAdd">Ajouter le pari</button>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Date</th><th>Match</th><th>Méthode</th><th>Cote</th><th>Mise</th><th>Résultat</th><th>Gain (€)</th><th></th></tr></thead>
+    <tbody id="betRows"></tbody>
+  </table></div>
+  <div class="card">
+    <h3>Réglages et sauvegarde</h3>
+    <div class="form" style="margin-top:12px">
+      <label class="f">Bankroll de départ (€)<input type="number" id="bankStart" step="10" min="0" value="200"></label>
+      <label class="f">Mise par pari (% de la bankroll)<input type="number" id="bankPct" step="0.5" min="0" value="2"></label>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <button class="btn ghost small" id="exportBets">Copier ma sauvegarde</button>
+      <button class="btn ghost small" id="importBetsBtn">Restaurer une sauvegarde</button>
+    </div>
+    <textarea id="backupBox" hidden style="margin-top:10px" placeholder="Colle ta sauvegarde ici, puis clique à nouveau sur Restaurer"></textarea>
+    <p class="hint" style="margin:12px 0 0">Tes paris sont enregistrés dans ce navigateur. Copie ta sauvegarde de temps en temps (dans une note ou un mail) pour ne rien perdre.</p>
+  </div>
+  <div class="card" id="fullExportCard">
+    <h3>Tout exporter</h3>
+    <p class="hint">Matchs, paris, réglages et compétitions choisies, en un seul texte : c'est ce que la nouvelle application importe. Rien n'est effacé ici.</p>
+    <button class="btn wide" id="fullExport">Tout exporter</button>
+    <div id="fullExportStatus"></div>
+    <textarea id="fullExportBox" hidden readonly style="margin-top:10px" aria-label="Texte de l'export complet"></textarea>
+  </div>
+</section>
+</div>
+<div class="sheet-bg" id="resetSheet" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="resetTitle">
+    <h3 id="resetTitle">Remise à zéro</h3>
+    <p class="hint">Choisis ce que tu veux effacer. Clique deux fois pour confirmer.</p>
+    <div class="sheet-opts">
+      <button class="opt" data-reset="matchs"><span>⚽</span><b>Effacer les matchs</b><small>Le tableau de bord repart à vide. Tes paris sont gardés.</small></button>
+      <button class="opt" data-reset="paris"><span>📒</span><b>Effacer mes paris</b><small>L'historique et le bilan repartent à zéro.</small></button>
+      <button class="opt danger" data-reset="tout"><span>🧹</span><b>Tout effacer</b><small>Matchs, paris et réglages. Comme au premier jour.</small></button>
+    </div>
+    <button class="btn ghost wide" id="resetClose">Annuler</button>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const num=id=>{const v=parseFloat(String($(id).value).replace(",","."));return isFinite(v)?v:0};
+const fr=(v,d=2)=>isFinite(v)?v.toFixed(d).replace(".",","):"?";
+const eur=v=>isFinite(v)?(v<0?"−":"")+Math.abs(v).toFixed(2).replace(".",",")+" €":"—";
+const pc=v=>isFinite(v)?Math.round(v*100)+" %":"?";
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const isN=v=>typeof v==="number"&&isFinite(v);
+const cssq=s=>String(s).replace(/["\\]/g,"\\$&");
+function toast(m){const t=$("#toast");t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,2600)}
+const LS={get(k,d){try{const v=localStorage.getItem("cpf_"+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem("cpf_"+k,JSON.stringify(v))}catch(e){}}};
+const todayISO=()=>{const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};
+const dateFR=iso=>{const d=new Date(iso+"T12:00:00");return isNaN(d)?iso:d.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"})};
+const dateShort=iso=>{if(!iso)return"";if(iso===todayISO())return"aujourd'hui";const d=new Date(iso+"T12:00:00");return isNaN(d)?iso:d.toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"})};
+const norm=s=>String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"");
+const keyOf=m=>(m.date||"")+"|"+norm(m.domicile?.nom)+"|"+norm(m.exterieur?.nom);
+
+function pAtMost(l,n){let s=0,t=Math.exp(-l);for(let k=0;k<=n;k++){if(k>0)t*=l/k;s+=t}return s}
+const pOver=(l,line)=>1-pAtMost(l,Math.floor(line));
+const avgs=t=>t&&isN(t.joues)&&t.joues>0?{s:isN(t.marques)?t.marques/t.joues:NaN,c:isN(t.encaisses)?t.encaisses/t.joues:NaN}:{s:NaN,c:NaN};
+function lambdaOf(m){const h=avgs(m.domicile),a=avgs(m.exterieur);return (h.s+a.c)/2+(a.s+h.c)/2}
+
+const T=(nom,joues,marques,encaisses,pctOver15,pctOver25,derniersButsMarques)=>({nom,joues,marques,encaisses,pctOver15,pctOver25,derniersButsMarques});
+const mk=(id,heure,ligue,lg,h,a,h2h,ctx,abs,mba,def,o15,o25)=>({id,date:todayISO(),heure,ligue,moyenneButsLigue:lg,domicile:h,exterieur:a,h2h,contexte:ctx,absenceOffensive:abs,meilleurButeurAbsent:mba,defenseAffaiblie:def,absents:[],cotes:{over15:o15,over25:o25}});
+const SAMPLE={exemple:true,matchs:[
+ mk("ex1","21:00","Ligue 1",2.85,T("Lens",6,11,7,83,67,[2,1,3,2]),T("Brest",6,8,9,83,50,[1,2,1,2]),{joues:6,over25:4},"normal",false,false,false,1.27,1.80),
+ mk("ex2","18:30","Bundesliga",3.15,T("Augsbourg",5,9,10,100,80,[2,2,1,3]),T("Francfort",5,11,8,80,80,[3,2,2,1]),{joues:6,over25:6},"normal",false,false,true,1.18,1.52),
+ Object.assign(mk("ex5","21:00","Premier League",2.9,T("Brighton",5,9,8,80,60,[2,1,2,1]),T("Fulham",5,7,8,80,40,[1,1,2,0]),null,"normal",false,false,false,null,null),{date:null,absents:undefined}),
+ mk("ex3","20:45","Serie A",2.6,T("Sassuolo",5,8,6,80,60,[0,0,1,2]),T("Inter",5,12,4,80,60,[2,3,1,2]),{joues:6,over25:4},"normal",true,false,false,1.25,1.75),
+ mk("ex4","17:00","Ligue 1",2.85,T("Metz",6,5,9,67,33,[1,0,1,1]),T("Lille",6,9,5,67,50,[2,1,2,1]),{joues:2,over25:0},"maintien",false,true,false,1.40,2.15)
+]};
+
+(()=>{const d=new Date();d.setDate(d.getDate()+3);const e=SAMPLE.matchs.find(x=>x.id==="ex5");e.date=new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);delete e.absents})();
+let data=LS.get("matchs3",SAMPLE); if(!Array.isArray(data.matchs))data={matchs:[]};
+let bets=LS.get("paris",[]);
+let settings=LS.get("reglages",{bank:200,pct:2});
+const CTX={normal:"Match classique",finale:"Finale",derby:"Derby",maintien:"Lutte pour le maintien",montee:"Course à la montée",sans_enjeu:"Match sans enjeu",retour_coupe_retard:"Match retour, une équipe doit remonter"};
+const LEAGUES=[
+ ["Ligue 1","Ligue 1 (France)"],["Ligue 2","Ligue 2 (France)"],["Premier League","Premier League (Angleterre)"],["Championship","Championship (Angleterre, 2e division)"],
+ ["LaLiga","LaLiga (Espagne)"],["Serie A","Serie A (Italie)"],["Bundesliga","Bundesliga (Allemagne)"],["Eredivisie","Eredivisie (Pays-Bas)"],
+ ["Liga Portugal","Liga Portugal (Portugal)"],["Jupiler Pro League","Jupiler Pro League (Belgique)"],["Super League","Super League (Suisse)"],
+ ["Ligue des champions","Ligue des champions (UEFA)"],["Ligue Europa","Ligue Europa (UEFA)"],["Ligue Conférence","Ligue Conférence (UEFA)"],
+ ["Coupes nationales","Coupes nationales : Coupe de France, Carabao Cup, FA Cup, Coppa Italia, Copa del Rey, DFB-Pokal"],
+ ["Ligue des nations","Ligue des nations UEFA (sélections nationales)"],
+ ["Qualifs Coupe du monde","Qualifications Coupe du monde, zone Europe (sélections)"],
+ ["Qualifs Euro","Qualifications Euro (sélections)"],
+ ["Coupe du monde / Euro","Phase finale Coupe du monde ou Euro (sélections)"],
+ ["Amicaux internationaux","Matchs amicaux internationaux (sélections)"],
+ ["Arkema Première Ligue","Arkema Première Ligue (France, féminin)"],
+ ["WSL","Women's Super League (Angleterre, féminin)"],
+ ["Liga F","Liga F (Espagne, féminin)"],
+ ["Serie A Femminile","Serie A Femminile (Italie, féminin)"],
+ ["Frauen-Bundesliga","Frauen-Bundesliga (Allemagne, féminin)"],
+ ["Ligue des champions F","Ligue des champions féminine (UEFA)"],
+ ["Sélections féminines","Sélections féminines : Ligue des nations, qualifications Euro et Coupe du monde, amicaux"]];
+const FEM=["Arkema Première Ligue","WSL","Liga F","Serie A Femminile","Frauen-Bundesliga","Ligue des champions F","Sélections féminines"];
+const INTL=["Ligue des nations","Qualifs Coupe du monde","Qualifs Euro","Coupe du monde / Euro","Amicaux internationaux"];
+let chosen=LS.get("ligues3",["Ligue 1","Premier League","LaLiga","Serie A","Bundesliga","Ligue des champions","Coupes nationales","Ligue des nations","Qualifs Coupe du monde","Qualifs Euro"]);
+const byId=id=>data.matchs.find(x=>String(x.id)===String(id));
+const name=m=>`${m.domicile?.nom||"?"} – ${m.exterieur?.nom||"?"}`;
+
+const daysTo=m=>{if(!m.date)return 0;const a=new Date(m.date+"T12:00:00"),b=new Date(todayISO()+"T12:00:00");return Math.round((a-b)/864e5)};
+function reliability(m){
+  const h=m.domicile||{},a=m.exterieur||{},teams=[h,a],items=[];
+  const team=(w,label,test)=>{const miss=teams.filter(t=>!test(t));items.push({w,ok:!miss.length,part:miss.length===1?0.5:miss.length?0:1,label:label+(miss.length?" ("+miss.map(t=>t.nom||"?").join(", ")+")":""),later:false})};
+  team(25,"buts marqués/encaissés",t=>isN(t.joues)&&isN(t.marques)&&isN(t.encaisses));
+  team(12,"% de matchs à 2+ buts",t=>isN(t.pctOver15));
+  team(12,"% de matchs à 3+ buts",t=>isN(t.pctOver25));
+  team(15,"derniers matchs",t=>Array.isArray(t.derniersButsMarques)&&t.derniersButsMarques.filter(isN).length>=3);
+  const one=(w,label,ok,later)=>items.push({w,ok,part:ok?1:0,label,later});
+  one(8,"moyenne de buts de la compétition",isN(m.moyenneButsLigue),false);
+  one(10,"confrontations directes",!!(m.h2h&&isN(m.h2h.joues)&&isN(m.h2h.over25)),false);
+  one(10,"absents / blessés",Array.isArray(m.absents),true);
+  one(8,"cotes",!!(m.cotes&&(isN(m.cotes.over15)||isN(m.cotes.over25))),true);
+  const f=items.reduce((s,x)=>s+x.w*x.part,0)/items.reduce((s,x)=>s+x.w,0);
+  return {f,items,missing:items.filter(x=>!x.ok)};
+}
+function missingOf(m){return reliability(m).missing.map(x=>x.label)}
+function analysis(m,method){
+  const ev=method==="m1"?evalM1(m):evalM3(m),rel=reliability(m),l=lambdaOf(m);
+  const p=isFinite(l)?(method==="m1"?pOver(remL(l,20),1.5):pOver(l,2.5)):NaN;
+  const risk=isFinite(p)?Math.min(0.99,1-p*(0.5+0.5*rel.f)):NaN;
+  let v=ev.v;if(rel.f<0.5&&v==="ok")v="mid";if(!isFinite(p))v=v==="ko"?"ko":"mid";
+  return {ev,v,p,fair:1/p,risk,rel};
+}
+const PLBL={ok:"On joue",mid:"À revoir",ko:"On passe"};
+const PICO={ok:"✅",mid:"⏳",ko:"❌"};
+const riskLvl=r=>!isFinite(r)?0:r<0.2?1:r<0.35?2:r<0.5?3:r<0.65?4:5;
+const dots=r=>{const n=riskLvl(r),c=riskCol(r);return `<span class="dots" aria-label="Risque ${n} sur 5">${[1,2,3,4,5].map(i=>`<i style="${i<=n?`background:${c}`:""}"></i>`).join("")}</span>`};
+const hueOf=s=>{let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))%360;return h};
+const initials=n=>{const w=String(n||"?").replace(/[^\p{L}\p{N} ]/gu,"").split(/\s+/).filter(Boolean);return (w.length>1?w[0][0]+w[1][0]:(w[0]||"?").slice(0,2)).toUpperCase()};
+const crest=n=>`<span class="crest" style="--h:${hueOf(n)}">${esc(initials(n))}</span>`;
+const infoBar=rel=>`<span class="ibar">${rel.items.map(x=>`<i class="${x.ok?"on":x.part>0?"half":x.later?"later":""}"></i>`).join("")}</span>`;
+const infoCount=rel=>rel.items.filter(x=>x.ok).length;
+const riskCol=r=>!isFinite(r)?"var(--muted)":r<0.35?"var(--good)":r<=0.5?"var(--warn)":"var(--bad)";
+const riskWord=r=>!isFinite(r)?"inconnu":r<0.35?"faible":r<=0.5?"moyen":"élevé";
+function evalM1(m){
+  const h=m.domicile||{},a=m.exterieur||{},H=avgs(h),A=avgs(a),c=[];
+  if([H.s,H.c,A.s,A.c].some(v=>!isFinite(v)))c.push({ok:null,t:"Buts marqués et encaissés inconnus"});
+  else{const f=[];
+    if(H.s<=1)f.push(`${h.nom} marque peu`);if(H.c<=1)f.push(`${h.nom} encaisse peu`);
+    if(A.s<=1)f.push(`${a.nom} marque peu`);if(A.c<=1)f.push(`${a.nom} encaisse peu`);
+    c.push({ok:!f.length,t:f.length?f.join(", "):"Les deux équipes marquent et encaissent plus d'1 but par match",
+      d:`${h.nom} : ${fr(H.s,1)} marqué(s) et ${fr(H.c,1)} encaissé(s) par match. ${a.nom} : ${fr(A.s,1)} et ${fr(A.c,1)}.${m.selection?" Sur leurs 10 derniers matchs.":""}`})}
+  if(!isN(h.pctOver15)||!isN(a.pctOver15))c.push({ok:null,t:"% de matchs à 2 buts ou plus inconnu"});
+  else{const ok=h.pctOver15>=70&&a.pctOver15>=70;
+    c.push({ok,t:ok?"Leurs matchs ont presque toujours 2 buts ou plus":"Trop de matchs à 0 ou 1 but",d:`${h.nom} : ${h.pctOver15} % de matchs à 2 buts ou plus. ${a.nom} : ${a.pctOver15} %. Minimum : 70 %.${m.selection?" Sur leurs 10 derniers matchs.":""}`})}
+  c.push({ok:m.absenceOffensive?"soft":true,t:m.absenceOffensive?"Un attaquant important est absent":"Les buteurs jouent"});
+  const cx=m.contexte||"normal",ok4=cx==="normal"||cx==="retour_coupe_retard";
+  c.push({ok:ok4,t:ok4?"Pas de pression particulière":CTX[cx]+" : match imprévisible"});
+  const fails=c.filter(x=>x.ok===false).length,soft=c.some(x=>x.ok==="soft"),unk=c.some(x=>x.ok===null);
+  const v=fails?"ko":(soft||unk)?"mid":"ok";
+  const why=v==="ok"?"Oui : attends 0-0 vers la 15ᵉ minute, puis entre en live.":v==="ko"?"Non : "+c.find(x=>x.ok===false).t.charAt(0).toLowerCase()+c.find(x=>x.ok===false).t.slice(1)+".":soft?"À vérifier : un attaquant important manque.":"À vérifier : il manque des infos.";
+  return {c,v,why};
+}
+function evalM3(m){
+  const h=m.domicile||{},a=m.exterieur||{},c=[];let hard=false,score=0,unk=0;
+  const lg=m.moyenneButsLigue;
+  if(!isN(lg)){unk++;c.push({ok:null,t:"Moyenne de buts de la compétition inconnue"})}
+  else{const ok=lg>2.7;if(ok)score++;c.push({ok,t:ok?"Compétition où ça marque beaucoup":"Compétition où ça marque peu",d:`${m.ligue||"Compétition"} : ${fr(lg)} buts par match en moyenne. Minimum : 2,7.`})}
+  [h,a].forEach(t=>{const l=(t.derniersButsMarques||[]).filter(isN).slice(0,4),S=avgs(t).s;
+    if(!l.length||!isFinite(S)){unk++;c.push({ok:null,t:`Forme de ${t.nom||"?"} inconnue`});return}
+    const fa=l.reduce((s,x)=>s+x,0)/l.length,ok=fa>=0.7*S;if(ok)score++;else hard=true;
+    c.push({ok,t:ok?`${t.nom} marque bien en ce moment`:`${t.nom} ne marque plus`,d:`Buts sur ses derniers matchs : ${l.join(", ")}. D'habitude : ${fr(S,1)} par match.`})});
+  const hh=m.h2h;
+  if(hh&&isN(hh.joues)&&hh.joues>=3&&isN(hh.over25)){const r=hh.over25/hh.joues;
+    if(r>=0.6){score++;c.push({ok:true,t:"Leurs matchs entre eux donnent souvent 3 buts ou plus",d:`${hh.over25} fois sur ${hh.joues}.`})}
+    else if(r<0.4){hard=true;c.push({ok:false,t:"Leurs matchs entre eux sont souvent fermés",d:`Seulement ${hh.over25} fois sur ${hh.joues} à 3 buts ou plus.`})}
+    else c.push({ok:"soft",t:"Leurs matchs entre eux : résultats moyens",d:`${hh.over25} fois sur ${hh.joues} à 3 buts ou plus.`})}
+  else{unk++;c.push({ok:null,t:"Pas assez de matchs entre eux pour juger"})}
+  if(m.meilleurButeurAbsent){hard=true;c.push({ok:false,t:"Le meilleur buteur est absent"})}
+  else c.push({ok:true,t:"Le meilleur buteur joue"});
+  if(m.defenseAffaiblie){score++;c.push({ok:"plus",t:"Bonus : gardien ou défenseurs absents"})}
+  if(m.contexte==="retour_coupe_retard"){score++;c.push({ok:"plus",t:"Bonus : une équipe doit attaquer pour remonter"})}
+  const v=hard?"ko":score>=4?"ok":(score+unk>=4||score>=3)?"mid":"ko";
+  const f=c.find(x=>x.ok===false);
+  const why=v==="ok"?"Oui : vérifie les compositions 1 h avant, puis la cote.":v==="ko"?"Non : "+(f?f.t.charAt(0).toLowerCase()+f.t.slice(1):"pas assez de signaux favorables")+".":unk?"À vérifier : il manque des infos.":"À vérifier : bons signaux, mais pas tous.";
+  return {c,v,why};
+}
+const LBL={ok:"On joue",mid:"À revoir",ko:"On passe"};
+const icoOf=ok=>ok===true?["ok","✓"]:ok===false?["ko","✕"]:ok==="plus"?["plus","+"]:["mid","!"];
+
+function matchRow(m,method){
+  const ev=method==="m1"?evalM1(m):evalM3(m),miss=missingOf(m);
+  const srcs=Array.isArray(m.sources)?m.sources.filter(Boolean):[];
+  const abs=Array.isArray(m.absents)?m.absents.filter(Boolean):[];
+  return `<details class="m" data-mid="${esc(m.id)}" style="--dummy:0">
+   <summary><span class="badge ${ev.v}">${LBL[ev.v]}</span>
+     <span class="mt"><b>${esc(name(m))}</b><small>${esc(m.ligue||"")} · ${esc(dateShort(m.date))} ${esc(m.heure||"")}</small></span>
+     <span class="chev" aria-hidden="true">›</span></summary>
+   <div class="mbody">
+     ${(()=>{const A=analysis(m,method),pp=isFinite(A.p)?Math.round(A.p*100):null,rr=isFinite(A.risk)?Math.round(A.risk*100):null;
+       return `<div class="mrisk"><span class="ring ${pp==null?"na":""}" style="--p:${pp??0};--c:${riskCol(A.risk)}"><b>${pp==null?"?":pp+"%"}<small>chances</small></b></span>
+       <span class="risk"><span class="risk-l"><span>Risque ${dots(A.risk)}</span><span>Infos ${infoCount(A.rel)}/8</span></span>
+       ${isFinite(A.fair)?`<span style="font-size:15px;color:var(--ink)">Cote mini : <b style="font-family:var(--mono)">${fr(A.fair)}</b>${method==="m1"?" à la 20ᵉ minute":""}</span>`:""}</span></div>`})()}
+     <p class="why ${ev.v}">${esc(ev.why)}</p>
+     <ul class="check">${ev.c.map(x=>{const [k,s]=icoOf(x.ok);return `<li><span class="ico ${k}">${s}</span><div>${esc(x.t)}${x.d?`<small>${esc(x.d)}</small>`:""}</div></li>`}).join("")}</ul>
+     ${abs.length?`<div class="src"><b>Absents :</b> ${esc(abs.join(" · "))}</div>`:""}
+     ${miss.length?`<div class="miss">Infos manquantes : ${esc(miss.join(", "))}.</div>`:""}
+     <details class="plain"><summary>Corriger une info (absences, contexte)</summary>
+       <div class="fix">
+        <label class="check-line"><input type="checkbox" data-id="${esc(m.id)}" data-k="absenceOffensive" ${m.absenceOffensive?"checked":""}> Un attaquant important est absent</label>
+        <label class="check-line"><input type="checkbox" data-id="${esc(m.id)}" data-k="meilleurButeurAbsent" ${m.meilleurButeurAbsent?"checked":""}> Le meilleur buteur est absent</label>
+        <label class="check-line"><input type="checkbox" data-id="${esc(m.id)}" data-k="defenseAffaiblie" ${m.defenseAffaiblie?"checked":""}> Le gardien ou des défenseurs sont absents</label>
+        <select data-id="${esc(m.id)}" data-k="contexte" aria-label="Contexte du match">${Object.entries(CTX).map(([k,v])=>`<option value="${k}" ${(m.contexte||"normal")===k?"selected":""}>${v}</option>`).join("")}</select>
+       </div></details>
+     ${srcs.length?`<div class="src">Sources : ${srcs.map(s=>/^https?:\/\//.test(s)?`<a href="${esc(s)}" target="_blank" rel="noopener">${esc(s.replace(/^https?:\/\/(www\.)?/,"").split("/")[0])}</a>`:esc(s)).join(" · ")}</div>`:""}
+     <div><button class="btn ghost small" data-use="${esc(m.id)}" data-method="${method}">${method==="m1"?"Utiliser pour le live (+1,5)":"Utiliser pour vérifier la cote (+2,5)"}</button></div>
+   </div></details>`}
+
+function sortedMatches(){return [...data.matchs].sort((x,y)=>String(x.date).localeCompare(String(y.date))||String(x.heure).localeCompare(String(y.heure)))}
+function renderAll(){
+  const ms=sortedMatches(),order={ok:0,mid:1,ko:2};
+  const banner=data.exemple?`<div class="banner">Ce sont des matchs d'exemple, aux chiffres inventés.</div>`:"";
+  const empty=`<div class="empty">Aucun match chargé. Va dans « Aujourd'hui » pour récupérer les matchs.</div>`;
+  const openIds=$$("details.m[open]").map(d=>d.dataset.mid);
+  const list=(f,method)=>ms.length?banner+[...ms].sort((x,y)=>order[f(x).v]-order[f(y).v]).map(m=>matchRow(m,method)).join(""):empty;
+  $("#m1List").innerHTML=list(evalM1,"m1");$("#m3List").innerHTML=list(evalM3,"m3");
+  $$("details.m").forEach(d=>{if(openIds.includes(d.dataset.mid))d.open=true});
+  $("#homeBanner").innerHTML=banner;
+  renderDash(ms);
+  const opts=`<option value="">Choisis un match</option>`+ms.map(m=>`<option value="${esc(m.id)}">${esc(name(m))}${m.heure?" · "+esc(m.heure):""}</option>`).join("");
+  const s1=$("#l1Match").value,s3=$("#v3Match").value;
+  $("#l1Match").innerHTML=opts;$("#v3Match").innerHTML=opts;
+  $("#l1Match").value=byId(s1)?s1:"";$("#v3Match").value=byId(s3)?s3:"";
+  calcL1();calcV3();
+}
+function save(){LS.set("matchs3",data)}
+let dashFilter="all",dayFilter=null;
+function methBlock(m,method){
+  const A=analysis(m,method),pp=isFinite(A.p)?Math.round(A.p*100):null;
+  const stake=(settings.bank+total())*settings.pct/100;
+  return `<button class="bet ${A.v}" data-go="${method}" data-gid="${esc(m.id)}">
+    <span class="bet-h"><span class="bet-v">${PICO[A.v]} ${PLBL[A.v]}</span><span class="bet-n">${method==="m1"?"⚡ Méthode +1,5 · en live":"🎯 Méthode +2,5"}</span></span>
+    <span class="bet-big">${pp==null?"?":pp}<small>${pp==null?"":"%"}</small><em>de chances</em></span>
+    ${A.v==="ko"?`<span class="bet-why">${esc(A.ev.why.replace(/^(Non|Oui|À vérifier) : /,"").replace(/^./,c=>c.toUpperCase()))}</span>`:
+      `<span class="bet-row"><span>Cote mini</span><b>${fr(A.fair)}</b></span>
+       ${A.v==="ok"?`<span class="bet-row"><span>Mise</span><b>${eur(stake)}</b></span>`:""}`}
+    <span class="bet-row"><span>Risque</span>${dots(A.risk)}</span>
+  </button>`}
+function renderDash(allMs){
+  const ds=[...new Set(allMs.map(m=>m.date).filter(Boolean))].sort();
+  if(dayFilter&&!ds.includes(dayFilter))dayFilter=null;
+  $("#dayBar").innerHTML=ds.length>1?[`<button data-day="" aria-pressed="${!dayFilter}">Tous les jours</button>`,...ds.map(d=>`<button data-day="${d}" aria-pressed="${dayFilter===d}">${esc(dateShort(d).replace(/^./,c=>c.toUpperCase()))}</button>`)].join(""):"";
+  const ms=dayFilter?allMs.filter(m=>m.date===dayFilter):allMs;
+  const rows=ms.map(m=>{const a=analysis(m,"m1"),b=analysis(m,"m3");const best=[a,b].some(x=>x.v==="ok")?"ok":[a,b].some(x=>x.v==="mid")?"mid":"ko";return {m,a,b,best}});
+  const cnt={ok:0,mid:0,ko:0};rows.forEach(r=>cnt[r.best]++);
+  let top=null;rows.forEach(r=>[["m1",r.a],["m3",r.b]].forEach(([k,A])=>{if(A.v==="ok"&&isFinite(A.risk)&&(!top||A.risk<top.A.risk))top={m:r.m,k,A}}));
+  const later=rows.filter(r=>r.a.rel.missing.some(x=>x.later));
+  const title=dayFilter?dateFR(dayFilter):ds.length===1?dateFR(ds[0]):"Tous mes matchs";
+  $("#scoreboard").innerHTML=`<div class="sb-top"><span class="sb-kick">Programme</span><h2>${esc(title.replace(/^./,c=>c.toUpperCase()))}</h2></div>
+    <div class="sb-nums">
+      <div class="sb-n play"><span>✅</span><b>${cnt.ok}</b><small>On joue</small></div>
+      <div class="sb-n watch"><span>⏳</span><b>${cnt.mid}</b><small>À revoir</small></div>
+      <div class="sb-n skip"><span>❌</span><b>${cnt.ko}</b><small>On passe</small></div>
+    </div>
+    ${top?`<button class="sb-best" data-go="${top.k}" data-gid="${esc(top.m.id)}"><span class="sb-star">★</span><span><small>Meilleur pari</small><b>${esc(name(top.m))}</b><em>${top.k==="m1"?"Méthode +1,5 en live":"Méthode +2,5"} · ${Math.round(top.A.p*100)} % de chances · cote mini ${fr(top.A.fair)}</em></span></button>`:""}
+    ${later.length?`<button class="sb-upd" id="copyUpdate">⏳ Le jour du match : copier la mise à jour des cotes et absents</button>`:""}`;
+  const order={ok:0,mid:1,ko:2};
+  let list=rows.sort((x,y)=>order[x.best]-order[y.best]||String(x.m.date).localeCompare(String(y.m.date))||String(x.m.heure).localeCompare(String(y.m.heure)));
+  if(dashFilter==="play")list=list.filter(r=>r.best==="ok");
+  $("#board").innerHTML=list.length?list.map(({m,a,best})=>{const rel=a.rel,d=daysTo(m);
+    const miss=rel.missing.map(x=>(x.later?"⏳ ":"")+x.label.replace(/ \(.*\)$/,"")+(x.later&&d>=1?" (plus tard)":""));
+    return `<article class="tk ${best}">
+      <div class="tk-top"><span class="tk-lg">${m.selection?"🌍 ":"🏆 "}${esc(m.ligue||"")}${m.feminin?" · ♀ Féminin":""}</span><span class="tk-time">🕘 ${esc(m.heure||"")} · ${esc(dateShort(m.date))}</span></div>
+      <div class="tk-teams">
+        <div class="team">${crest(m.domicile?.nom)}<b>${esc(m.domicile?.nom||"?")}</b></div>
+        <span class="vs">VS</span>
+        <div class="team">${crest(m.exterieur?.nom)}<b>${esc(m.exterieur?.nom||"?")}</b></div>
+      </div>
+      <div class="tk-bets">${methBlock(m,"m1")}${methBlock(m,"m3")}</div>
+      <div class="tk-foot"><span class="tk-info">Infos ${infoBar(rel)} <b>${infoCount(rel)}/8</b></span>
+        <span class="tk-miss">${miss.length?"Manque : "+esc(miss.join(", ")):"✓ Rien ne manque"}</span></div>
+    </article>`}).join("")
+    :`<div class="empty">${allMs.length?(dashFilter==="play"?"Aucun match « On joue » pour l'instant.":"Aucun match ce jour-là."):"⚽ Pas encore de matchs.<br>Ouvre « Récupérer les matchs » juste au-dessus."}</div>`;
+  const fb=$("#fetchBox");if(!allMs.length||data.exemple)fb.open=true;
+  $("#fetchSum").textContent=allMs.length&&!data.exemple?`${allMs.length} match(s) chargé(s) · ajouter ou mettre à jour`:"3 étapes, 2 minutes";
+}
+document.addEventListener("click",e=>{const b=e.target.closest("#dayBar [data-day]");if(!b)return;dayFilter=b.dataset.day||null;renderDash(sortedMatches())});
+document.addEventListener("click",e=>{if(e.target.id!=="copyUpdate")return;
+  const list=sortedMatches().filter(m=>daysTo(m)<=1).map(m=>({m,miss:missingOf(m)})).filter(x=>x.miss.length);
+  const all=list.length?list:sortedMatches().map(m=>({m,miss:missingOf(m)})).filter(x=>x.miss.length);
+  copy(buildFollow(all),"Demande de mise à jour copiée. Colle-la dans une conversation Claude.",$("#reqTxt"))});
+
+document.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(!g)return;goTab(g.dataset.go);
+  const d=$(`#${g.dataset.go==="m1"?"m1List":"m3List"} details.m[data-mid="${cssq(g.dataset.gid)}"]`);if(d){d.open=true;setTimeout(()=>d.scrollIntoView({block:"center"}),50)}});
+document.addEventListener("change",e=>{const el=e.target;if(!el.dataset.k||!el.dataset.id)return;const m=byId(el.dataset.id);if(!m)return;
+  m[el.dataset.k]=el.type==="checkbox"?el.checked:el.value;save();renderAll();
+  $$(`details.m[data-mid="${cssq(m.id)}"] details.plain`).forEach(x=>x.open=true)});
+document.addEventListener("click",e=>{const b=e.target.closest("[data-use]");if(!b)return;const m=byId(b.dataset.use);if(!m)return;
+  if(b.dataset.method==="m1"){$("#l1Match").value=m.id;setL1(m);$("#live1").scrollIntoView({behavior:"smooth",block:"start"})}
+  else{$("#v3Match").value=m.id;setV3(m);$("#value3").scrollIntoView({behavior:"smooth",block:"start"})}});
+
+const remL=(l,min)=>l*Math.max(90-min+3,0)/90;
+function setL1(m){const l=lambdaOf(m);if(isFinite(l))$("#l1Lambda").value=l.toFixed(2);calcL1()}
+function calcL1(){
+  const m=byId($("#l1Match").value),ev=m?evalM1(m):null;
+  const l=num("#l1Lambda"),min=Math.min(Math.max(num("#l1Min"),0),90),odd=num("#l1Odd");
+  const p=pOver(remL(l,min),1.5),fair=1/p,edge=odd*p-1,stake=(settings.bank+total())*settings.pct/100;
+  const zero=$("#l1Score").checked,dyn=$("#l1Dyn").checked;
+  let v="ok",head="Oui, tu peux parier",why=`La cote ${fr(odd)} est au-dessus de ${fr(fair)}, le minimum pour que ça vaille le coup.`;
+  if(!zero){v="ko";head="Non";why="Un but est déjà marqué : la méthode ne marche qu'à 0-0."}
+  else if(ev&&ev.v==="ko"){v="ko";head="Non";why="Ce match ne remplit pas les critères (voir étape 1)."}
+  else if(edge<=0){v="ko";head="Pas encore";why=`Attends que la cote monte à ${fr(fair)} ou plus.`}
+  else if(!dyn){v="mid";head="Patience";why="La cote est bonne, mais le match est fermé. Attends qu'il s'anime."}
+  else if(min<12){v="mid";head="Un peu tôt";why="Attends la 15ᵉ-20ᵉ minute : la cote sera meilleure."}
+  else if(odd<1.6){v="mid";head="Possible";why="Ça vaut le coup, mais vise plutôt une cote autour de 1,70."}
+  $("#l1Out").innerHTML=`
+   <div class="answer ${v}"><strong>${head}</strong><p>${why}</p>${v==="ok"?`<p>Mise conseillée : <b>${eur(stake)}</b></p>`:""}</div>
+   <p class="hint" style="margin:16px 0 0">Cote minimale à accepter selon la minute (si toujours 0-0) :</p>
+   <div class="minutes">${[15,20,25,30,35,40].map(x=>`<div class="${Math.abs(x-min)<3?"on":""}">${x}ᵉ min<b>${fr(1/pOver(remL(l,x),1.5))}</b></div>`).join("")}</div>`;
+}
+["#l1Lambda","#l1Min","#l1Odd","#l1Score","#l1Dyn"].forEach(s=>$(s).addEventListener("input",calcL1));
+$("#l1Match").addEventListener("change",()=>{const m=byId($("#l1Match").value);if(m)setL1(m);else calcL1()});
+
+seg("dashFilter",v=>{dashFilter=v;renderDash(sortedMatches())});
+let hMode="contre";
+function seg(id,cb){$$(`#${id} button`).forEach(b=>b.addEventListener("click",()=>{$$(`#${id} button`).forEach(x=>x.setAttribute("aria-pressed",x===b));cb(b.dataset.v)}))}
+seg("hedgeMode",v=>{hMode=v;$("#h1OppWrap").hidden=v==="cash";$("#h1CommWrap").hidden=v!=="lay";$("#h1CashWrap").hidden=v!=="cash";
+  $("#h1OppLbl").textContent=v==="lay"?"Cote lay « +1,5 but »":"Cote « moins de 1,5 but »";calcH1()});
+function calcH1(){
+  const S=num("#h1Stake"),O=num("#h1Odd"),X=num("#h1Opp"),c=num("#h1Comm")/100,C=num("#h1Cash");let html="";
+  if(hMode==="contre"){const H=S*O/X,pr=S*O-S-H;
+    html=pr>0?`<div class="answer ok"><strong>Mise ${eur(H)} sur « moins de 1,5 but »</strong><p>Tu gagnes <b>${eur(pr)}</b> quel que soit le score final.</p></div>`
+      :`<div class="answer ko"><strong>Pas rentable maintenant</strong><p>Couvrir te ferait perdre ${eur(-pr)}. Attends que la cote « moins de 1,5 but » baisse, ou garde ton pari.</p></div>`;
+    html+=`<div class="facts"><div class="fact"><span>Sans sécuriser, s'il y a un 2ᵉ but</span><b>+${eur(S*O-S)}</b></div><div class="fact"><span>Sans sécuriser, s'il n'y en a pas</span><b>${eur(-S)}</b></div></div>`}
+  else if(hMode==="lay"){const L=S*O/(X-c),liab=L*(X-1),a=S*(O-1)-liab,b=L*(1-c)-S,g=Math.min(a,b);
+    html=`<div class="answer ${g>0?"ok":"ko"}"><strong>${g>0?"Lay de "+eur(L):"Pas rentable"}</strong><p>${g>0?`Tu gagnes au moins <b>${eur(g)}</b>. Il faut ${eur(liab)} sur ton compte exchange.`:"La cote lay est trop haute pour gagner à coup sûr."}</p></div>`}
+  else{const pr=C-S;
+    html=`<div class="answer ${pr>0?"ok":"ko"}"><strong>${pr>0?"Tu gagnes "+eur(pr):"Tu perds "+eur(-pr)}</strong><p>${pr>0?"C'est ton bénéfice net si tu acceptes ce cash-out.":"Ce cash-out est inférieur à ta mise."}</p></div>
+    <p class="hint" style="margin:12px 0 0">Compare avec « Pari contraire » : sécuriser toi-même rapporte souvent plus.</p>`}
+  $("#h1Out").innerHTML=html;
+}
+["#h1Stake","#h1Odd","#h1Opp","#h1Comm","#h1Cash"].forEach(s=>$(s).addEventListener("input",calcH1));
+
+let fbMode="book";
+seg("fbMode",v=>{fbMode=v;$$(".fbComm").forEach(x=>x.hidden=v!=="lay");$$(".lblOpp").forEach(x=>x.textContent=v==="lay"?"Cote lay (même résultat)":"Cote inverse (autre site)");calcFB()});
+function calcFB(){
+  const Q=num("#qStake"),qa=num("#qOdd"),qb=num("#qOpp"),qc=num("#qComm")/100,F=num("#fStake"),fa=num("#fOdd"),fb=num("#fOpp"),fc=num("#fComm")/100;
+  let qR,fR,qH,fH;
+  if(fbMode==="book"){qH=Q*qa/qb;qR=Q*qa-Q-qH;fH=F*(fa-1)/fb;fR=F*(fa-1)-fH}
+  else{qH=Q*qa/(qb-qc);qR=qH*(1-qc)-Q;fH=F*(fa-1)/(fb-fc);fR=fH*(1-fc)}
+  const w=fbMode==="book"?"sur le résultat inverse, chez l'autre bookmaker":"en lay sur l'exchange";
+  $("#qOut").innerHTML=`<div class="answer ${qR>-Q*0.05?"ok":"mid"}"><strong>Mise ${eur(qH)}</strong><p>${w}. Quoi qu'il arrive : <b>${eur(qR)}</b>${qR<0?", c'est le prix pour débloquer le freebet":""}.</p></div>`;
+  $("#fOut").innerHTML=`<div class="answer ${fR>0?"ok":"ko"}"><strong>Mise ${eur(fH)}</strong><p>${w}. Quoi qu'il arrive, tu gagnes <b>${eur(fR)}</b>.</p></div>`;
+  const tot=qR+fR,ext=fR/F;
+  $("#fbTotal").innerHTML=`<div class="facts">
+    <div class="fact"><span>Pari qui débloque</span><b class="${qR>=0?"pos":"neg"}">${eur(qR)}</b></div>
+    <div class="fact"><span>Freebet</span><b class="pos">${eur(fR)}</b></div>
+    <div class="fact"><span style="color:var(--ink);font-weight:700">Bénéfice garanti</span><b class="${tot>=0?"pos":"neg"}" style="font-size:20px">${eur(tot)}</b></div></div>
+    <div class="answer ${ext>=0.7?"ok":ext>=0.6?"mid":"ko"}"><strong>${ext>=0.7?"Bonne opération":ext>=0.6?"Correct":"À améliorer"}</strong><p>Tu transformes ${pc(ext)} du freebet en argent réel. ${ext>=0.7?"C'est un bon taux.":"Cherche un match où les deux cotes sont plus proches."}</p></div>`;
+}
+["#qStake","#qOdd","#qOpp","#qComm","#fStake","#fOdd","#fOpp","#fComm"].forEach(s=>$(s).addEventListener("input",calcFB));
+
+function setV3(m){const l=lambdaOf(m);if(isFinite(l))$("#v3Lambda").value=l.toFixed(2);if(isN(m.cotes?.over25))$("#v3Odd").value=m.cotes.over25;calcV3()}
+function calcV3(){
+  const m=byId($("#v3Match").value),ev=m?evalM3(m):null;
+  const l=num("#v3Lambda"),odd=num("#v3Odd"),p=pOver(l,2.5),edge=odd*p-1,lu=$("#v3Lineup").checked,base=(settings.bank+total())*settings.pct/100;
+  let v="ok",head="Oui, tu peux parier",why=`La cote ${fr(odd)} est au-dessus de ${fr(1/p)}, le minimum pour que ça vaille le coup.`,st=base;
+  if(ev&&ev.v==="ko"){v="ko";head="Non";why=ev.why.replace(/^Non : /,"");why=why.charAt(0).toUpperCase()+why.slice(1)}
+  else if(edge<=0){v="ko";head="Cote trop basse";why=`Il faudrait au moins ${fr(1/p)}.`}
+  else if(!lu){v="mid";head="Attends les compositions";why="La cote est bonne. Vérifie d'abord que les attaquants sont titulaires."}
+  else if(ev&&ev.v==="mid"){v="mid";head="Oui, mais mise la moitié";why="La cote est bonne, mais tous les critères ne sont pas au vert.";st=base/2}
+  $("#v3Out").innerHTML=`<div class="answer ${v}"><strong>${head}</strong><p>${esc(why)}</p>${v!=="ko"&&lu?`<p>Mise conseillée : <b>${eur(st)}</b></p>`:""}</div>
+   <div class="facts">
+    <div class="fact"><span>Cote minimale à accepter</span><b>${fr(1/p)}</b></div>
+    <div class="fact"><span>Chance estimée de 3 buts ou plus</span><b>${pc(p)}</b></div>
+   </div>`;
+}
+["#v3Lambda","#v3Odd","#v3Lineup"].forEach(s=>$(s).addEventListener("input",calcV3));
+$("#v3Match").addEventListener("change",()=>{const m=byId($("#v3Match").value);if(m)setV3(m);else calcV3()});
+
+const MNAME={m1:"Méthode +1,5",m2:"Méthode Freebet",m3:"Méthode +2,5",autre:"Autre"};
+function pnl(b){if(b.statut==="gagne")return b.mise*(b.cote-1);if(b.statut==="perdu")return -b.mise;if(b.statut==="manuel")return +b.pnl||0;return 0}
+const settled=()=>bets.filter(b=>b.statut!=="attente"&&b.statut!=="rembourse");
+const total=()=>settled().reduce((s,b)=>s+pnl(b),0);
+function renderBets(){
+  $("#betRows").innerHTML=bets.length?bets.map((b,i)=>`<tr>
+    <td class="n">${esc(b.date)}</td><td>${esc(b.match)}</td><td>${MNAME[b.methode]||""}</td>
+    <td class="n">${fr(b.cote)}</td><td class="n">${fr(b.mise)}</td>
+    <td><select data-bet="${i}" data-f="statut" aria-label="Résultat">${[["attente","En cours"],["gagne","Gagné"],["perdu","Perdu"],["manuel","Sécurisé"],["rembourse","Remboursé"]].map(([k,v])=>`<option value="${k}" ${b.statut===k?"selected":""}>${v}</option>`).join("")}</select></td>
+    <td class="n">${b.statut==="manuel"?`<input type="number" step="0.01" data-bet="${i}" data-f="pnl" value="${b.pnl??0}" style="width:100px;padding:5px 8px" aria-label="Gain">`:`<span class="${pnl(b)>0?"pos":pnl(b)<0?"neg":""}">${fr(pnl(b))}</span>`}</td>
+    <td><button class="btn danger small" data-del="${i}" aria-label="Supprimer">✕</button></td></tr>`).reverse().join("")
+    :`<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:22px">Aucun pari noté pour l'instant.</td></tr>`;
+  const done=settled(),tot=total(),staked=done.reduce((s,b)=>s+(b.methode==="m2"?0:b.mise),0),won=done.filter(b=>pnl(b)>0).length;
+  const byM=Object.keys(MNAME).map(k=>{const d=done.filter(b=>b.methode===k);return [k,d.reduce((s,b)=>s+pnl(b),0),d.length]}).filter(x=>x[2]);
+  $("#stats").innerHTML=`
+   <div class="stat"><small>Bankroll</small><b>${eur(settings.bank+tot)}</b></div>
+   <div class="stat"><small>Gagné / perdu</small><b class="${tot>=0?"pos":"neg"}">${eur(tot)}</b></div>
+   <div class="stat"><small>Rentabilité</small><b>${staked?pc(tot/staked):"—"}</b></div>
+   <div class="stat"><small>Paris gagnés</small><b>${done.length?pc(won/done.length):"—"}</b></div>
+   ${byM.map(([k,v,n])=>`<div class="stat"><small>${MNAME[k]} (${n})</small><b class="${v>=0?"pos":"neg"}">${eur(v)}</b></div>`).join("")}`;
+  $("#hdrBank").textContent=eur(settings.bank+tot);
+  $("#bHint").textContent="Mise conseillée : "+eur((settings.bank+tot)*settings.pct/100)+" ("+fr(settings.pct,1)+" % de ta bankroll).";
+}
+document.addEventListener("change",e=>{const el=e.target;if(el.dataset.bet==null)return;const b=bets[+el.dataset.bet];if(!b)return;
+  b[el.dataset.f]=el.dataset.f==="pnl"?parseFloat(el.value)||0:el.value;LS.set("paris",bets);renderBets()});
+document.addEventListener("click",e=>{const d=e.target.closest("[data-del]");if(!d)return;bets.splice(+d.dataset.del,1);LS.set("paris",bets);renderBets();toast("Pari supprimé")});
+$("#bAdd").addEventListener("click",()=>{const m=$("#bMatch").value.trim();if(!m){toast("Indique le match");$("#bMatch").focus();return}
+  bets.push({date:$("#bDate").value,match:m,methode:$("#bMethod").value,cote:num("#bOdd"),mise:num("#bStake"),statut:"attente"});
+  LS.set("paris",bets);$("#bMatch").value="";renderBets();toast("Pari ajouté")});
+$("#bankStart").addEventListener("input",()=>{settings.bank=num("#bankStart");LS.set("reglages",settings);renderBets();calcL1();calcV3()});
+$("#bankPct").addEventListener("input",()=>{settings.pct=num("#bankPct");LS.set("reglages",settings);renderBets();calcL1();calcV3()});
+async function copy(t,ok,el){try{await navigator.clipboard.writeText(t);toast(ok)}catch(e){
+  if(el.tagName==="TEXTAREA"){el.hidden=false;el.value=t;el.select()}else{el.textContent=t;const d=el.closest("details");if(d)d.open=true;const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r)}
+  toast("Copie bloquée : le texte est sélectionné, copie-le à la main")}}
+$("#exportBets").addEventListener("click",()=>copy(JSON.stringify({paris:bets,reglages:settings}),"Sauvegarde copiée",$("#backupBox")));
+$("#importBetsBtn").addEventListener("click",()=>{const box=$("#backupBox");
+  if(box.hidden||!box.value.trim()){box.hidden=false;box.value="";box.focus();return}
+  try{const o=JSON.parse(box.value);if(!Array.isArray(o.paris))throw 0;bets=o.paris;if(o.reglages)settings=o.reglages;
+    LS.set("paris",bets);LS.set("reglages",settings);$("#bankStart").value=settings.bank;$("#bankPct").value=settings.pct;box.hidden=true;renderBets();toast("Sauvegarde restaurée")}
+  catch(e){toast("Sauvegarde illisible : colle le texte complet")}});
+
+/* ---------- export complet, pour la nouvelle application ---------- */
+function fullExportText(){
+  const done=settled(),parMethode={};
+  done.forEach(b=>{parMethode[b.methode]=(parMethode[b.methode]||0)+pnl(b)});
+  return JSON.stringify({app:"carnet-paris-foot",type:"export-complet",version:1,exporteLe:new Date().toISOString(),
+    cles:{matchs3:data,paris:bets,reglages:settings,ligues3:chosen,onglet:LS.get("onglet","home")},
+    controle:{nbMatchs:data.matchs.length,matchsExemple:!!data.exemple,nbParis:bets.length,nbParisTermines:done.length,gainsTotal:total(),bankroll:settings.bank+total(),parMethode}});
+}
+$("#fullExport").addEventListener("click",async()=>{
+  const t=fullExportText(),box=$("#fullExportBox"),n=data.exemple?0:data.matchs.length;
+  box.value=t;box.hidden=false;
+  let ok=false;try{await navigator.clipboard.writeText(t);ok=true}catch(e){}
+  if(!ok){box.focus();box.select()}
+  $("#fullExportStatus").innerHTML=`<div class="status ${ok?"ok":"warn"}">${ok?"Export copié":"Copie automatique bloquée : le texte est sélectionné ci-dessous, copie-le à la main"}. ${n} match(s), ${bets.length} pari(s), bankroll ${eur(settings.bank+total())}.</div>`;
+  toast(ok?"Export copié":"Copie le texte à la main");
+});
+
+const FORMAT=`{"matchs":[{
+  "id":"2026-09-22-lens-brest",
+  "date":"2026-09-22","heure":"21:00","ligue":"Ligue 1","journee":"6e journée","selection":false,"feminin":false,
+  "moyenneButsLigue":2.85,
+  "domicile":{"nom":"Lens","joues":6,"marques":11,"encaisses":7,
+    "pctOver15":83,"pctOver25":67,"derniersButsMarques":[2,1,3,2]},
+  "exterieur":{"nom":"Brest","joues":6,"marques":8,"encaisses":9,
+    "pctOver15":83,"pctOver25":50,"derniersButsMarques":[1,2,1,2]},
+  "h2h":{"joues":6,"over25":4},
+  "contexte":"normal",
+  "absents":["Brest : Nom du joueur (blessé)"],
+  "absenceOffensive":false,"meilleurButeurAbsent":false,"defenseAffaiblie":false,
+  "cotes":{"over15":1.27,"over25":1.80,"bookmaker":"Unibet"},
+  "manquants":[],
+  "sources":["https://fbref.com/...","https://footystats.org/..."]
+}]}`;
+function buildReq(){
+  const d=$("#reqDate").value||todayISO(),one=$("#reqOne").value.trim();
+  const comps=LEAGUES.filter(([k])=>chosen.includes(k)).map(([,l])=>"- "+l).join("\n")||"- Ligue 1 (France)";
+  const scope=one?`LE MATCH : ${one}, joué le ${dateFR(d)} (date ${d}).`:`LE JOUR : ${dateFR(d)} (date ${d}), heure de Paris.\n\nLES COMPÉTITIONS :\n${comps}`;
+  return `Tu vas collecter des données de football pour mon outil d'analyse de paris sur le nombre de buts. Fais de vraies recherches sur le web pour chaque chiffre. La précision compte plus que la rapidité.
+
+${scope}
+
+=== ÉTAPE 1 : LA LISTE DES MATCHS ===
+${one?"Vérifie la date, l'heure (heure de Paris) et la compétition de ce match.":`Pour CHAQUE compétition ci-dessus, ouvre le calendrier de ce jour précis (flashscore.fr, lequipe.fr, sofascore.com ou le site officiel de la ligue).
+- Prends TOUS les matchs joués ce jour-là, y compris les journées en semaine (mardi, mercredi, jeudi), les coupes, les matchs européens les matchs féminins s'ils sont demandés, et les matchs de sélections nationales (pendant les trêves internationales, il y en a beaucoup : prends ceux des sélections européennes et des grandes nations).
+- Vérifie la date et l'heure en heure de Paris.
+- Si une compétition n'a aucun match ce jour-là, ne la mets pas. N'invente aucun match.`}
+
+=== ÉTAPE 2 : LES STATS DE CHAQUE ÉQUIPE ===
+CLUBS : utilise toujours le CHAMPIONNAT NATIONAL de l'équipe, saison 2026-2027, même si le match est une coupe ou un match européen.
+Sources conseillées : fbref.com, footystats.org (pourcentages over), sofascore.com, flashscore.fr, soccerway.com.
+- "joues" : matchs de championnat joués cette saison
+- "marques" et "encaisses" : total de buts marqués et encaissés en championnat
+- "pctOver15" : % de ses matchs de championnat avec 2 buts ou plus AU TOTAL (les deux équipes additionnées). Nombre entier de 0 à 100.
+- "pctOver25" : pareil avec 3 buts ou plus.
+  -> Si tu ne trouves pas ces % tout faits, CALCULE-LES à partir de la liste des scores de l'équipe cette saison. Exemple : 4 matchs sur 6 avec 2 buts ou plus = 67.
+- "derniersButsMarques" : buts marqués PAR L'ÉQUIPE lors de ses 4 derniers matchs, toutes compétitions, du plus récent au plus ancien. Exemple : [2,0,1,3].
+- Si l'équipe a joué moins de 4 matchs de championnat cette saison, complète avec la fin de la saison 2025-2026 et écris-le dans "manquants".
+
+CAS DU FOOTBALL FÉMININ :
+- Mets "feminin": true (false sinon). Utilise UNIQUEMENT les stats de l'équipe féminine et de son championnat féminin, jamais celles de l'équipe masculine du même club.
+- Sources conseillées : footystats.org (sections women), fbref.com, flashscore.fr, soccerway.com, sofascore.com, sites officiels des ligues.
+- Les cotes des matchs féminins sont souvent absentes chez Unibet : cherche chez d'autres bookmakers, sinon null.
+- Pour une sélection féminine, applique la règle des 10 derniers matchs officiels ci-dessous.
+
+CAS DES SÉLECTIONS NATIONALES (Ligue des nations, qualifications Coupe du monde ou Euro, phase finale, amicaux) :
+- Mets "selection": true (false pour un match de clubs).
+- Une sélection n'a pas de championnat : calcule "joues", "marques", "encaisses", "pctOver15" et "pctOver25" sur ses 10 DERNIERS MATCHS OFFICIELS, toutes compétitions (hors amicaux si possible). "joues" = 10, ou moins si elle en a joué moins.
+- "derniersButsMarques" : ses 4 derniers matchs, amicaux compris.
+- Sources conseillées : fr.uefa.com, fifa.com, flashscore.fr (onglet résultats de la sélection), footystats.org, eu-football.info, transfermarkt.fr.
+- Absents : liste des joueurs forfaits ou non convoqués parmi les titulaires habituels (annonce officielle de la liste du sélectionneur).
+
+=== ÉTAPE 3 : LE MATCH ===
+- "moyenneButsLigue" : moyenne de buts par match du championnat cette saison (footystats.org ou fbref.com). Pour une coupe, un match européen ou un match de sélections, mets la moyenne de buts de la compétition (édition en cours, sinon l'édition précédente). Pour la Ligue des nations, prends la moyenne de la ligue concernée (A, B, C ou D).
+- "h2h" : les 6 dernières confrontations directes, toutes compétitions. "joues" = nombre trouvé, "over25" = combien ont eu 3 buts ou plus.
+- "contexte", une seule valeur parmi : normal, finale, derby (ou grand rival historique entre sélections), maintien (une équipe joue sa place : relégation ou barrage de Ligue des nations), montee (une équipe peut se qualifier ou monter à l'issue du match), sans_enjeu (plus rien à jouer, ou match amical), retour_coupe_retard (match retour où une équipe a perdu l'aller).
+- "absents" : blessés et suspendus connus (lequipe.fr, sofascore.com, transfermarkt.fr, conférences de presse). Format : "Équipe : Nom (raison)".
+- "absenceOffensive" : true si un attaquant titulaire ou un buteur régulier est absent.
+- "meilleurButeurAbsent" : true si le meilleur buteur de l'équipe cette saison est absent.
+- "defenseAffaiblie" : true si le gardien titulaire ou au moins 2 défenseurs titulaires sont absents.
+- "cotes" : cotes « plus de 1,5 but » et « plus de 2,5 buts ». D'abord Unibet, sinon un autre bookmaker français (Winamax, Betclic, PMU) ; indique lequel dans "bookmaker". Introuvable : null.
+
+=== ÉTAPE 4 : CONTRÔLE AVANT DE RÉPONDRE ===
+Vérifie pour chaque match :
+- la date est bien ${d} et l'heure est à l'heure de Paris
+- "marques" divisé par "joues" donne une moyenne réaliste (entre 0 et 4)
+- les % sont des nombres entiers de 0 à 100
+- "derniersButsMarques" contient 4 nombres
+- chaque info introuvable vaut null ET son nom est écrit dans "manquants"
+
+=== FORMAT DE LA RÉPONSE ===
+- Réponds UNIQUEMENT avec un bloc de code json, sans texte avant.
+- Garde exactement les noms de champs de l'exemple. "id" = date-equipedomicile-equipeexterieur, en minuscules, sans accents.
+- S'il y a plus de 8 matchs, donne les 8 premiers par heure, puis écris sous le bloc : SUITE DISPONIBLE — écris « continue ». Quand j'écris « continue », donne les 8 suivants au même format.
+- Aucun match trouvé : {"matchs":[]}
+- N'invente JAMAIS un chiffre. Une donnée introuvable = null, et elle est notée dans "manquants".
+
+Exemple de format :
+${FORMAT}`}
+function buildFollow(list){
+  return `Complète les infos manquantes de ces matchs. Fais de vraies recherches web (fbref.com, footystats.org, sofascore.com, flashscore.fr, lequipe.fr). Si un % n'existe pas tout fait, calcule-le à partir des scores de la saison.
+
+${list.map(({m,miss})=>`- ${name(m)} (${m.ligue||""}, ${m.date||""}), id "${m.id}" : ${miss.join(", ")}`).join("\n")}
+
+Réponds UNIQUEMENT avec un bloc de code json au format {"matchs":[...]}. Pour chaque match, garde son "id" exact, "date", "domicile.nom", "exterieur.nom", et ajoute les champs complétés. Toujours introuvable = null + noté dans "manquants". N'invente aucun chiffre.
+
+Rappel des champs :
+${FORMAT}`}
+function renderLeagues(){const chip=([k,l])=>`<label title="${esc(l)}"><input type="checkbox" value="${esc(k)}" ${chosen.includes(k)?"checked":""}><span>${esc(k)}</span></label>`;
+  $("#leagueBox").innerHTML=`<div class="chipset">${LEAGUES.filter(([k])=>!INTL.includes(k)&&!FEM.includes(k)).map(chip).join("")}</div>
+   <p class="hint" style="margin:14px 0 8px">Sélections nationales</p><div class="chipset">${LEAGUES.filter(([k])=>INTL.includes(k)).map(chip).join("")}</div>
+   <p class="hint" style="margin:14px 0 8px">Féminin</p><div class="chipset">${LEAGUES.filter(([k])=>FEM.includes(k)).map(chip).join("")}</div>`}
+const refreshReq=()=>{$("#reqTxt").textContent=buildReq()};
+$("#leagueBox").addEventListener("change",()=>{chosen=$$("#leagueBox input:checked").map(i=>i.value);LS.set("ligues3",chosen);refreshReq()});
+$("#reqDate").addEventListener("input",refreshReq);$("#reqOne").addEventListener("input",refreshReq);
+$("#copyReq").addEventListener("click",()=>{refreshReq();copy(buildReq(),"Demande copiée. Colle-la dans une nouvelle conversation.",$("#reqTxt"))});
+
+function extractAll(t){
+  t=String(t||"").trim();if(!t)throw new Error("la zone est vide");
+  const blocks=[...t.matchAll(/```(?:json)?\s*([\s\S]*?)```/gi)].map(x=>x[1].trim());
+  const cands=blocks.length?blocks:[t];const out=[];
+  for(const s of cands){let o=null;
+    try{o=JSON.parse(s)}catch(e){const a=s.indexOf("{"),b=s.lastIndexOf("}");
+      if(a>=0&&b>a){const c=s.slice(a,b+1);try{o=JSON.parse(c)}catch(e2){try{o=JSON.parse(c.replace(/,\s*([}\]])/g,"$1").replace(/[“”]/g,'"'))}catch(e3){}}}}
+    if(o)out.push(o)}
+  if(!out.length)throw new Error("je ne trouve pas de données lisibles");
+  return out.flatMap(o=>Array.isArray(o)?o:Array.isArray(o.matchs)?o.matchs:[]);
+}
+function deepMerge(a,b){const r={...a};for(const k in b){const v=b[k];if(v===null||v===undefined)continue;
+  r[k]=(v&&typeof v==="object"&&!Array.isArray(v)&&a&&a[k]&&typeof a[k]==="object"&&!Array.isArray(a[k]))?deepMerge(a[k],v):v}return r}
+let lastMissing=[];
+function loadText(t){
+  const st=$("#dataStatus");
+  try{const arr=extractAll(t);
+    const incoming=arr.filter(m=>m&&m.domicile?.nom&&m.exterieur?.nom);
+    const more=/SUITE DISPONIBLE/i.test(t);
+    if(!incoming.length){st.innerHTML=`<div class="status warn">Aucun match dans cette réponse. Vérifie le jour et les compétitions choisies.</div>`;return}
+    if(data.exemple)data={matchs:[]};
+    let added=0,updated=0;
+    incoming.forEach(m=>{if(!m.id)m.id=keyOf(m);
+      const i=data.matchs.findIndex(x=>String(x.id)===String(m.id)||keyOf(x)===keyOf(m));
+      if(i>=0){data.matchs[i]=deepMerge(data.matchs[i],m);updated++}else{data.matchs.push(m);added++}});
+    save();renderAll();$("#fetchBox").open=false;
+    const touched=incoming.map(m=>data.matchs.find(x=>String(x.id)===String(m.id)||keyOf(x)===keyOf(m))).filter(Boolean);
+    lastMissing=touched.map(m=>({m,miss:missingOf(m)})).filter(x=>x.miss.length);
+    let html=`<b>${added?added+" match(s) ajouté(s)":""}${added&&updated?", ":""}${updated?updated+" mis à jour":""}.</b>`;
+    if(more)html+=`<br>Il reste des matchs : écris <b>continue</b> dans l'autre conversation, puis colle la suite ici.`;
+    const essential=lastMissing.filter(x=>reliability(x.m).missing.some(i=>!i.later));
+    if(lastMissing.length&&!essential.length){html+=`<br>Seuls les cotes et les absents manquent : c'est normal avant le jour J. Refais une mise à jour le jour du match avec le bouton du tableau de bord.`;lastMissing=[]}
+    if(lastMissing.length){html+=`<br>Il manque des infos sur ${lastMissing.length} match(s) :<ul>${lastMissing.slice(0,6).map(x=>`<li>${esc(name(x.m))} : ${esc(x.miss.join(", "))}</li>`).join("")}${lastMissing.length>6?"<li>…</li>":""}</ul>
+      <button class="btn small" id="copyFollow" style="margin-top:8px">Copier la demande de compléments</button>
+      <div style="font-size:14px;margin-top:6px">À coller dans la même conversation, puis colle la réponse ici : les infos s'ajoutent aux matchs.</div>`}
+    st.innerHTML=`<div class="status ${lastMissing.length||more?"warn":"ok"}">${html}</div>`;
+    $("#jsonIn").value="";toast("Matchs chargés");
+  }catch(e){st.innerHTML=`<div class="status ko">Chargement impossible : ${esc(e.message)}. Copie bien toute la réponse de Claude.</div>`}
+}
+document.addEventListener("click",e=>{if(e.target.id==="copyFollow")copy(buildFollow(lastMissing),"Demande copiée. Colle-la dans la même conversation que les matchs.",$("#reqTxt"))});
+$("#jsonIn").addEventListener("paste",()=>setTimeout(()=>loadText($("#jsonIn").value),30));
+$("#pasteBtn").addEventListener("click",async()=>{let t=$("#jsonIn").value;
+  if(!t.trim()){try{t=await navigator.clipboard.readText()}catch(e){$("#jsonIn").focus();toast("Colle la réponse dans la zone de texte");return}}
+  loadText(t)});
+$("#fileIn").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>loadText(r.result);r.readAsText(f)});
+$("#loadSample").addEventListener("click",()=>{data=JSON.parse(JSON.stringify(SAMPLE));save();renderAll();$("#dataStatus").innerHTML=`<div class="status ok">Exemple chargé.</div>`});
+$("#clearData").addEventListener("click",()=>{data={matchs:[]};save();renderAll();$("#dataStatus").innerHTML=`<div class="status ok">Tous les matchs sont effacés.</div>`});
+
+/* ---------- remise à zéro ---------- */
+function openReset(o){$("#resetSheet").hidden=!o;$$(".opt").forEach(b=>{b.classList.remove("confirm");b.querySelector("b").textContent=b.dataset.label||b.querySelector("b").textContent})}
+$$(".opt").forEach(b=>b.dataset.label=b.querySelector("b").textContent);
+$("#resetOpen").addEventListener("click",()=>openReset(true));
+$("#resetClose").addEventListener("click",()=>openReset(false));
+$("#resetSheet").addEventListener("click",e=>{if(e.target.id==="resetSheet")openReset(false)});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#resetSheet").hidden)openReset(false)});
+$$(".opt").forEach(b=>b.addEventListener("click",()=>{
+  if(!b.classList.contains("confirm")){$$(".opt").forEach(x=>{x.classList.remove("confirm");x.querySelector("b").textContent=x.dataset.label});b.classList.add("confirm");b.querySelector("b").textContent="Clique encore pour confirmer";return}
+  const k=b.dataset.reset;
+  if(k==="matchs"||k==="tout"){data={matchs:[]};save();dayFilter=null;$("#dataStatus").innerHTML=""}
+  if(k==="paris"||k==="tout"){bets=[];LS.set("paris",bets)}
+  if(k==="tout"){settings={bank:200,pct:2};LS.set("reglages",settings);$("#bankStart").value=200;$("#bankPct").value=2}
+  renderAll();renderBets();openReset(false);toast(k==="matchs"?"Matchs effacés":k==="paris"?"Paris effacés":"Tout est remis à zéro")}));
+function goTab(t){const b=$(`nav.tabs button[data-tab="${t}"]`);if(!b)return;
+  $$("nav.tabs button").forEach(x=>x.setAttribute("aria-selected",x===b));
+  $$("section.tab").forEach(s=>s.hidden=s.id!=="tab-"+t);LS.set("onglet",t);window.scrollTo(0,0)}
+$$("nav.tabs button").forEach(b=>b.addEventListener("click",()=>goTab(b.dataset.tab)));
+
+$("#reqDate").value=todayISO();$("#bDate").value=todayISO();
+$("#bankStart").value=settings.bank;$("#bankPct").value=settings.pct;
+renderLeagues();refreshReq();renderAll();
+const f1=data.matchs.find(m=>evalM1(m).v==="ok");if(f1){$("#l1Match").value=f1.id;setL1(f1)}
+const f3=data.matchs.find(m=>evalM3(m).v==="ok");if(f3){$("#v3Match").value=f3.id;setV3(f3)}
+calcL1();calcH1();calcFB();calcV3();renderBets();
+goTab(LS.get("onglet","home"));
+})();
+</script>
+

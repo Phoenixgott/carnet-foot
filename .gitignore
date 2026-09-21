@@ -1,0 +1,7 @@
+node_modules/
+dist/
+dist-apercu/
+test-results/
+playwright-report/
+*.log
+.DS_Store
