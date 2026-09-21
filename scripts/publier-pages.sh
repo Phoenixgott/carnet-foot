@@ -8,6 +8,8 @@ set -euo pipefail
 RACINE="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$RACINE"
 DEPOT="$(git remote get-url origin)"
+# Lu ici, en chemin relatif : sous Git Bash (Windows), Node ne comprend pas les chemins « /c/... ».
+VERSION="$(node -p "require('./package.json').version")"
 
 node scripts/build.mjs
 
@@ -20,7 +22,7 @@ cd "$TMP"
 git init -q -b gh-pages
 git add -A
 git -c user.name="$(git -C "$RACINE" config user.name)" -c user.email="$(git -C "$RACINE" config user.email)" \
-  commit -q -m "Publication de la version $(node -p "require('$RACINE/package.json').version") ($(date -u +%Y-%m-%dT%H:%MZ))"
+  commit -q -m "Publication de la version $VERSION ($(date -u +%Y-%m-%dT%H:%MZ))"
 git push -f "$DEPOT" gh-pages
 
 echo "Publié sur la branche gh-pages de $DEPOT"
