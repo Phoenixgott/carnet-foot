@@ -5,8 +5,9 @@ import { useEffect, useRef, useState } from "react";
 import type { Verdict } from "../core/carnet-v1/criteres";
 import { ICONE_VERDICT, LIBELLE_VERDICT } from "../core/carnet-v1/analyse";
 import type { LigneVerification } from "../data/verification";
-import type { Route } from "./contexte";
-import type { OptionsConfirmation } from "./contexte";
+import type { AlerteCote } from "../core/cotes";
+import { notifier } from "../pwa/pwa";
+import { useAppli, type OptionsConfirmation, type Route } from "./contexte";
 
 /** Icônes de la barre d'onglets (traits simples, couleur du texte). */
 export function Icone({ nom }: { nom: Route }) {
@@ -101,6 +102,61 @@ export function Confirmation({ demande, repondre }: { demande: OptionsConfirmati
       )}
     </dialog>
   );
+}
+
+/**
+ * Bouton « copier » : copie le texte dans le presse-papiers ; si le navigateur bloque
+ * la copie, le texte s'affiche sélectionnable pour une copie à la main.
+ */
+export function BoutonCopier({
+  texte,
+  libelle,
+  succes,
+  secondaire = false,
+  large = false,
+}: {
+  texte: string;
+  libelle: string;
+  succes: string;
+  secondaire?: boolean;
+  large?: boolean;
+}) {
+  const { message } = useAppli();
+  const [aCopier, setACopier] = useState<string | null>(null);
+  return (
+    <>
+      <button
+        type="button"
+        className={`btn${secondaire ? " secondaire" : ""}${large ? " large" : ""}`}
+        onClick={async () => {
+          try {
+            await navigator.clipboard.writeText(texte);
+            setACopier(null);
+            message(succes);
+          } catch {
+            setACopier(texte);
+          }
+        }}
+      >
+        {libelle}
+      </button>
+      {aCopier && (
+        <div className="section" data-test="copie-manuelle">
+          <p className="aide">Copie automatique bloquée : appuie longuement dans le texte ci-dessous, « Tout sélectionner », puis « Copier ».</p>
+          <textarea readOnly value={aCopier} aria-label={libelle} onFocus={(e: Event) => (e.target as HTMLTextAreaElement).select()} />
+        </div>
+      )}
+    </>
+  );
+}
+
+/** Prévient d'une ou plusieurs cotes atteintes : message à l'écran et notification du téléphone. */
+export async function signalerAlertes(alertes: readonly AlerteCote[], message: (t: string) => void): Promise<void> {
+  if (!alertes.length) return;
+  message(alertes.length === 1 ? "Cote atteinte : " + alertes[0].texte : `${alertes.length} cotes minimales atteintes`);
+  for (const a of alertes) {
+    await notifier("Cote atteinte", a.texte, "#/matchs", `cote-${a.matchId}-${a.marche}`).catch(() => "indisponible");
+  }
 }
 
 /** Lit un fichier texte choisi par l'utilisateur. */

@@ -11,6 +11,8 @@ const ECRANS = ["accueil", "matchs", "paris", "donnees", "reglages"];
 async function auditer(page: Page, ecran: string) {
   await page.locator("main h1").waitFor();
   const r = await page.evaluate(() => {
+    // Les blocs repliables sont tous ouverts : leur contenu est audité lui aussi.
+    document.querySelectorAll("details").forEach((d) => (d.open = true));
     const visible = (e: Element) => {
       const s = getComputedStyle(e);
       const b = e.getBoundingClientRect();

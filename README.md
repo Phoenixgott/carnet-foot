@@ -27,7 +27,26 @@ et l'historique permet de revenir en arrière.
 L'ancienne sauvegarde du carnet (bouton « Copier ma sauvegarde ») est aussi acceptée,
 mais elle ne contient que les paris et les réglages.
 
-### 2. Sauvegarder
+### 2. Récupérer les matchs du jour
+
+Onglet **Matchs → Récupérer les matchs** :
+
+1. Choisis le jour, les compétitions et le nombre de matchs, puis **Copier la demande**.
+2. Ouvre une nouvelle conversation Claude avec la **recherche web**, colle et envoie.
+   Si Claude écrit « SUITE DISPONIBLE », réponds **continue**.
+3. Colle chaque réponse dans « Réponse de Claude » : l'aperçu montre les nouveaux matchs,
+   ceux complétés, les doublons et les valeurs écartées. Touche **Enregistrer**.
+
+S'il manque des infos, copie la **demande de compléments** proposée. Le jour du match,
+**Copier la demande de cotes** redemande les cotes et les absents : chaque changement de cote est
+gardé dans « Cotes et suivi » (sur chaque match), où tu peux aussi taper les cotes à la main et
+choisir ta cote minimale. Quand une cote l'atteint : alerte sur la carte, sur l'accueil, et
+notification si elles sont activées.
+
+**Historiques** : onglet Données, « Historiques de résultats (CSV) », choisis les fichiers
+téléchargés sur football-data.co.uk (rubrique Data Files).
+
+### 3. Sauvegarder
 
 - **Données → Sauvegarde en un fichier** : « Enregistrer le fichier », « Partager (Drive, mail…) »
   ou « Copier le texte ». Garde ce fichier hors du téléphone : si le navigateur efface ses
@@ -37,7 +56,7 @@ mais elle ne contient que les paris et les réglages.
 - **Restaurer** : choisis le fichier ou colle son texte. Une empreinte vérifie que le fichier
   n'a pas été abîmé ou modifié ; sinon il est refusé.
 
-### 3. Installer sur Android (version hébergée)
+### 4. Installer sur Android (version hébergée)
 
 L'application est hébergée sur GitHub Pages : https://phoenixgott.github.io/carnet-foot/
 Ouvre cette adresse dans Chrome, puis **Réglages → Installer l'application**
@@ -63,6 +82,7 @@ npm run preview      # construit puis sert dist/ sur http://localhost:4173
 npm run typecheck    # TypeScript strict : app, service worker, tests
 npm test             # tests unitaires (lanceur intégré à Node)
 npm run e2e          # tests de bout en bout dans Chromium (Playwright)
+                     # PW_CANAL=chrome : avec le Google Chrome installé
 npm run check        # tout : types + unitaires + bout en bout
 bash scripts/publier-pages.sh   # construit et publie sur la branche gh-pages (GitHub Pages)
 ```
@@ -81,7 +101,11 @@ src/
     freebet.ts     freebet non remboursé (autre bookmaker ou exchange)
     paris.ts       gains, bankroll, bilan, ROI
     methodes.ts    noms exacts des méthodes et codes du carnet (m1 = +1.5, m3 = +2.5, m2 = Freebet)
-  data/            stockage IndexedDB, import du carnet, vérification, sauvegardes, versions
+    demande.ts     demande à l'autre conversation Claude (jour, compléments, cotes du jour J)
+    cotes.ts       suivi des cotes, cote minimale, alertes ; marge.ts : marge du bookmaker
+    saison.ts      saison d'après la date
+  data/            stockage IndexedDB, import du carnet, import des matchs (import-matchs.ts),
+                   historiques CSV (import-csv.ts), vérification, sauvegardes, versions
   pwa/             service worker (hors ligne), installation, notifications
   ui/              interface (React), écrans, styles
 tests/
@@ -125,8 +149,10 @@ téléchargements : pas de hors ligne, pas d'installation, sauvegarde par copie 
 
 ## Formats de données
 
-- **Match** : exactement le format du carnet d'origine (voir `src/core/types.ts`).
-  Un champ absent ou `null` est une donnée inconnue, affichée ⏳, jamais inventée.
+- **Match** : le format du carnet d'origine (voir `src/core/types.ts`), plus `cotes.under15` et
+  `cotes.under25`, et deux champs propres à l'application : `historiqueCotes` (relevés datés) et
+  `coteCible` (cote minimale choisie). Un champ absent ou `null` est une donnée inconnue, affichée ⏳.
+- **Résultat** (historiques CSV) : magasin `resultats` à part, hors sauvegarde (données publiques).
 - **Sauvegarde** : `{ app: "carnet-foot", type: "sauvegarde", schema: 1, creeLe, versionApp,
   contenu: { matchs, paris, reglages }, controle: { nbMatchs, nbParis, bankroll, gainsTotal, empreinte } }`.
   L'empreinte est un SHA-256 du contenu trié.

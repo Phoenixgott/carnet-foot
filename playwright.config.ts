@@ -13,7 +13,8 @@ export default defineConfig({
   use: {
     // Chromium complet (et non le « headless shell ») : plus proche de Chrome Android,
     // et seul à gérer les permissions de notification.
-    channel: "chromium",
+    // PW_CANAL=chrome utilise le Google Chrome installé (utile si le Chromium de Playwright ne démarre pas).
+    channel: process.env.PW_CANAL || "chromium",
     baseURL: "http://localhost:4173",
     viewport: { width: 412, height: 915 },
     deviceScaleFactor: 2,

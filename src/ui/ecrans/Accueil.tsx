@@ -2,9 +2,11 @@
  * Accueil : bankroll et bilan en un coup d'œil, état des données, rappels.
  */
 import { analyser } from "../../core/carnet-v1/analyse";
+import { alertesCote } from "../../core/cotes";
 import { dateCourte, eur, pc } from "../../core/format";
 import { bilan } from "../../core/paris";
 import { bankrollDe, estVide } from "../../data/contenu";
+import { jourLocal } from "../../data/versions";
 import { joursDepuis, RAPPEL_SAUVEGARDE_JOURS, useAppli } from "../contexte";
 
 export function Accueil() {
@@ -14,6 +16,9 @@ export function Accueil() {
   const jours = [...new Set(contenu.matchs.map((m) => m.date).filter(Boolean))].sort() as string[];
   const aJouer = contenu.matchs.filter((m) => analyser(m, "+1.5").v === "ok" || analyser(m, "+2.5").v === "ok").length;
   const rappel = !vide && (!dernierExport || joursDepuis(dernierExport) >= RAPPEL_SAUVEGARDE_JOURS);
+  // Alertes de cote des matchs à venir (ou sans date)
+  const aujourdhui = jourLocal(new Date());
+  const alertes = contenu.matchs.filter((m) => !m.date || m.date >= aujourdhui).flatMap(alertesCote);
 
   return (
     <>
@@ -31,6 +36,8 @@ export function Accueil() {
             <li>Reviens ici, onglet « Données », et colle-le.</li>
           </ol>
           <a className="btn large" href="#/donnees">Importer depuis le carnet</a>
+          <p className="aide">Ou commence directement : récupère les matchs du jour avec l'autre conversation Claude.</p>
+          <a className="btn secondaire large" href="#/matchs">Récupérer les matchs</a>
         </section>
       ) : (
         <section className="gazon" aria-labelledby="titre-bankroll">
@@ -50,6 +57,21 @@ export function Accueil() {
               <small>Paris gagnés</small>
             </div>
           </div>
+        </section>
+      )}
+
+      {alertes.length > 0 && (
+        <section className="alerte-cote" aria-labelledby="titre-alertes" data-test="alertes-accueil">
+          <h2 id="titre-alertes">
+            <span aria-hidden="true">🔔 </span>
+            {alertes.length === 1 ? "Une cote a atteint ta cote minimale" : `${alertes.length} cotes ont atteint ta cote minimale`}
+          </h2>
+          <ul>
+            {alertes.map((a) => (
+              <li key={a.matchId + a.marche}>{a.texte}</li>
+            ))}
+          </ul>
+          <a className="btn" href="#/matchs">Voir les matchs</a>
         </section>
       )}
 
@@ -75,9 +97,9 @@ export function Accueil() {
               <div className="fait"><span>Au moins une méthode « On joue »</span><b>{aJouer}</b></div>
             </div>
           ) : (
-            <p className="aide">Aucun match chargé. Ceux du carnet arriveront avec ton prochain import.</p>
+            <p className="aide">Aucun match chargé : récupère ceux du jour dans l'onglet « Matchs ».</p>
           )}
-          <a className="btn secondaire" href="#/matchs">Voir les matchs</a>
+          <a className="btn secondaire" href="#/matchs">{contenu.matchs.length ? "Voir les matchs" : "Récupérer les matchs"}</a>
         </section>
       )}
 

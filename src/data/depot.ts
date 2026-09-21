@@ -7,8 +7,11 @@
  *  - paris     (clé : id, index : ordre)
  *  - reglages  (clé : cle)
  *  - versions  (clé : id, index : creeLe) — copies complètes pour l'historique
+ * Version 2 :
+ *  - resultats (clé : id, index : groupe = division|saison) — historiques CSV de football-data.
+ *    Données publiques, réimportables : hors du « contenu » (ni sauvegarde fichier, ni versions).
  */
-import type { Match, Pari, Reglage } from "../core/types";
+import type { Match, Pari, Reglage, Resultat } from "../core/types";
 import { REGLAGES_LOCAUX, type Contenu } from "./contenu";
 import { ouvrir, requete, transaction, type Migration } from "./idb";
 import type { Version } from "./versions";
@@ -22,6 +25,10 @@ export const MIGRATIONS: readonly Migration[] = [
     db.createObjectStore("paris", { keyPath: "id" }).createIndex("ordre", "ordre");
     db.createObjectStore("reglages", { keyPath: "cle" });
     db.createObjectStore("versions", { keyPath: "id" }).createIndex("creeLe", "creeLe");
+  },
+  // v1 → v2 : historiques de résultats (phase 2)
+  (db) => {
+    db.createObjectStore("resultats", { keyPath: "id" }).createIndex("groupe", ["division", "saison"]);
   },
 ];
 
@@ -67,6 +74,52 @@ export async function remplacerContenu(c: Contenu): Promise<void> {
     for (const r of c.reglages) if (!REGLAGES_LOCAUX.includes(r.cle)) ecritures.push(requete(sr.put(r)));
     for (const r of locaux) ecritures.push(requete(sr.put(r)));
     await Promise.all(ecritures);
+  });
+}
+
+/**
+ * Écrit (ajoute ou remplace) des matchs et en supprime d'autres, en une seule transaction.
+ * Les paris et réglages ne sont pas touchés.
+ */
+export async function ecrireMatchs(aEcrire: readonly Match[], aSupprimer: readonly string[] = []): Promise<void> {
+  const db = await ouvrirBase();
+  await transaction(db, ["matchs"], "readwrite", async (tx) => {
+    const s = tx.objectStore("matchs");
+    await Promise.all([...aEcrire.map((m) => requete(s.put(m))), ...aSupprimer.map((id) => requete(s.delete(id)))]);
+  });
+}
+
+/** Matchs lus par identifiant (undefined pour un identifiant absent). */
+export async function lireMatchs(ids: readonly string[]): Promise<Array<Match | undefined>> {
+  const db = await ouvrirBase();
+  return transaction(db, ["matchs"], "readonly", (tx) =>
+    Promise.all(ids.map((id) => requete(tx.objectStore("matchs").get(id) as IDBRequest<Match | undefined>))),
+  );
+}
+
+/* ---------- Historiques de résultats (CSV) ---------- */
+
+export async function lireResultats(): Promise<Resultat[]> {
+  const db = await ouvrirBase();
+  return transaction(db, ["resultats"], "readonly", (tx) => requete(tx.objectStore("resultats").getAll() as IDBRequest<Resultat[]>));
+}
+
+export async function ecrireResultats(rs: readonly Resultat[]): Promise<void> {
+  const db = await ouvrirBase();
+  await transaction(db, ["resultats"], "readwrite", async (tx) => {
+    const s = tx.objectStore("resultats");
+    await Promise.all(rs.map((r) => requete(s.put(r))));
+  });
+}
+
+/** Supprime tous les résultats d'un championnat pour une saison ; renvoie le nombre supprimé. */
+export async function supprimerGroupeResultats(division: string, saison: string): Promise<number> {
+  const db = await ouvrirBase();
+  return transaction(db, ["resultats"], "readwrite", async (tx) => {
+    const s = tx.objectStore("resultats");
+    const cles = await requete(s.index("groupe").getAllKeys([division, saison]));
+    await Promise.all(cles.map((k) => requete(s.delete(k))));
+    return cles.length;
   });
 }
 

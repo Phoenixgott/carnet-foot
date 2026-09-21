@@ -26,6 +26,17 @@ export function estNombre(v: unknown): v is number {
   return typeof v === "number" && Number.isFinite(v);
 }
 
+/**
+ * Nombre tapé par l'utilisateur (« 1,85 » ou « 1.85 »).
+ * null si la case est vide ; undefined si ce n'est pas un nombre.
+ */
+export function lireSaisie(s: string): number | null | undefined {
+  const t = s.trim();
+  if (!t) return null;
+  if (!/^\d+([.,]\d+)?$/.test(t)) return undefined;
+  return Number(t.replace(",", "."));
+}
+
 /** Date courte en français (« mar. 22 sept. ») ; la valeur brute si elle est illisible. */
 export function dateCourte(iso: string | null | undefined): string {
   if (!iso) return "";

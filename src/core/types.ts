@@ -31,7 +31,26 @@ export interface ConfrontationsDirectes {
 export interface CotesMatch {
   over15?: number | null;
   over25?: number | null;
+  /** Cotes « moins de 1,5 / 2,5 buts » : servent à calculer la marge du bookmaker. */
+  under15?: number | null;
+  under25?: number | null;
   bookmaker?: string | null;
+}
+
+/** Marchés suivis : plus de 1,5 but et plus de 2,5 buts. */
+export type Marche = "over15" | "over25";
+
+/** Un relevé de cotes, gardé pour suivre leur évolution dans le temps. */
+export interface ReleveCotes {
+  /** Date et heure du relevé (ISO) ; null pour des cotes reçues avant le suivi (date inconnue). */
+  le: string | null;
+  over15: number | null;
+  over25: number | null;
+  under15: number | null;
+  under25: number | null;
+  bookmaker: string | null;
+  /** « import » : réponse de l'autre conversation Claude ; « saisie » : tapée à la main. */
+  origine: "import" | "saisie";
 }
 
 /** Contextes reconnus (identiques au carnet d'origine). */
@@ -64,8 +83,36 @@ export interface Match {
   cotes?: CotesMatch | null;
   manquants?: string[] | null;
   sources?: string[] | null;
+  /** Relevés de cotes successifs, du plus ancien au plus récent (propre à l'application). */
+  historiqueCotes?: ReleveCotes[] | null;
+  /** Cote minimale choisie à la main, par marché ; sinon la cote mini calculée est utilisée. */
+  coteCible?: Partial<Record<Marche, number | null>> | null;
   /** Champs supplémentaires éventuels : conservés tels quels. */
   [champ: string]: unknown;
+}
+
+/**
+ * Un match terminé, venu d'un fichier CSV de football-data.co.uk (historiques).
+ * Données publiques de référence : gardées à part des matchs à analyser.
+ */
+export interface Resultat {
+  /** Code division + date + équipes : identifie le match d'un fichier à l'autre. */
+  id: string;
+  /** Code de division de football-data (E0, F1, SP1…) ou nom du championnat. */
+  division: string;
+  championnat: string;
+  /** Saison « 2025-2026 », déduite de la date. */
+  saison: string;
+  date: string;
+  heure: string | null;
+  domicile: string;
+  exterieur: string;
+  butsDomicile: number;
+  butsExterieur: number;
+  butsMiTempsDomicile: number | null;
+  butsMiTempsExterieur: number | null;
+  /** Cotes plus/moins de 2,5 buts du fichier (moyenne du marché de préférence). */
+  cotes: { over25: number | null; under25: number | null; source: string } | null;
 }
 
 /** Les méthodes. Leurs noms ne doivent jamais changer. */

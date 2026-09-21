@@ -25,6 +25,8 @@ const NOMS = [
   "reliability", "missingOf", "analysis", "riskLvl", "evalM1", "evalM3",
   "remL", "calcL1", "calcH1", "calcFB", "calcV3",
   "pnl", "settled", "total", "fullExportText",
+  // Récupération des matchs (phase 2) : demande, lecture de la réponse, fusion
+  "norm", "keyOf", "todayISO", "dateFR", "name", "LEAGUES", "FORMAT", "buildReq", "buildFollow", "extractAll", "deepMerge",
 ];
 
 export interface CarnetOriginal {

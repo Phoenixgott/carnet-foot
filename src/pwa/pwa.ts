@@ -116,8 +116,14 @@ export async function demanderNotifications(): Promise<EtatNotifications> {
 /**
  * Affiche une notification locale via le service worker.
  * `url` : écran à ouvrir quand on touche la notification (ex. "#/donnees").
+ * `etiquette` : une nouvelle notification de même étiquette remplace l'ancienne.
  */
-export async function notifier(titre: string, corps: string, url = "./"): Promise<"envoyee" | "refusee" | "indisponible"> {
+export async function notifier(
+  titre: string,
+  corps: string,
+  url = "./",
+  etiquette = "carnet-" + titre,
+): Promise<"envoyee" | "refusee" | "indisponible"> {
   const e = etatNotifications();
   if (e === "non-supportees") return "indisponible";
   if (e !== "autorisees") return "refusee";
@@ -128,7 +134,7 @@ export async function notifier(titre: string, corps: string, url = "./"): Promis
     icon: "./icons/icon-192.png",
     badge: "./icons/badge-96.png",
     lang: "fr",
-    tag: "carnet-" + titre,
+    tag: etiquette,
     data: { url },
   });
   return "envoyee";

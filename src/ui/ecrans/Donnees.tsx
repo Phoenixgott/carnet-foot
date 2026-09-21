@@ -1,6 +1,6 @@
 /**
- * Mes données : import depuis le carnet d'origine, sauvegarde en un fichier,
- * restauration, historique des versions et protection du stockage.
+ * Mes données : import depuis le carnet d'origine, historiques CSV de résultats,
+ * sauvegarde en un fichier, restauration, historique des versions et protection du stockage.
  */
 import { useEffect, useState } from "react";
 import { eur } from "../../core/format";
@@ -25,6 +25,7 @@ import { LIBELLE_RAISON, type Version } from "../../data/versions";
 import { EST_APERCU } from "../../pwa/pwa";
 import { ListeControles, ZoneTexte } from "../composants";
 import { joursDepuis, useAppli } from "../contexte";
+import { Historiques } from "../donnees/Historiques";
 
 const messageErreur = (e: unknown) =>
   e instanceof ErreurImport ? e.message : "Opération impossible : " + (e instanceof Error ? e.message : String(e));
@@ -437,6 +438,7 @@ export function Donnees() {
         <p className="chapeau">Tout est enregistré sur ce téléphone, dans le navigateur. Rien n'est envoyé à un serveur.</p>
       </div>
       <ImportCarnet />
+      <Historiques />
       <Sauvegarde />
       <Historique />
       <Stockage />

@@ -2,6 +2,41 @@
 
 Format : chaque version liste ce qui a été ajouté, modifié ou corrigé.
 
+## 0.2.0 — 21 septembre 2026 — Phase 2 : données et import
+
+### Ajouté
+- **Récupérer les matchs** (onglet Matchs, en 3 étapes comme dans le carnet) :
+  - générateur de la demande pour l'autre conversation Claude : jour, un seul match au choix,
+    compétitions (clubs, sélections, féminin), nombre de matchs par réponse (4 à 12), nombre total
+    facultatif, pagination « SUITE DISPONIBLE » ; les choix sont gardés ;
+  - import de la réponse : blocs JSON trouvés même entourés de texte, validation champ par champ
+    (une valeur impossible est écartée, signalée et affichée ⏳, jamais corrigée), aperçu avant import
+    (nouveaux, complétés avec la liste des champs, inchangés, ignorés), détection des doublons
+    (même id, ou même date et mêmes équipes, y compris dans une même réponse), fusion du carnet
+    (une info reçue remplace l'ancienne, une info absente ou null n'efface rien) ;
+  - demande de compléments pour les matchs incomplets ; demande de cotes et d'absents du jour J.
+- **Fiabilité** : score sur 8 et fiabilité en %, liste de ce qui manque séparée entre « à compléter »
+  et « publié plus tard » (cotes, absents).
+- **Cotes** : cotes « moins de 1,5 / 2,5 » demandées en plus, marge du bookmaker affichée ;
+  suivi dans le temps (un relevé daté à chaque changement, par import ou saisie à la main, flèches de
+  hausse et de baisse) ; cote minimale par marché (celle choisie, sinon la cote mini +2.5 du carnet) ;
+  alerte quand une cote l'atteint : sur la carte, sur l'accueil, filtre « Cote atteinte » et notification.
+- **Historiques CSV** de football-data.co.uk (onglet Données) : les deux formats de fichiers du site,
+  plusieurs fichiers à la fois, matchs pas encore joués ignorés, doublons reconnus, résumé par
+  championnat et saison (moyenne de buts, parts à 2+ et 3+ buts), suppression par saison.
+- Saison calculée d'après la date (le carnet écrivait « 2026-2027 » en dur).
+- Base IndexedDB version 2 (magasin `resultats`), mise à niveau automatique sans perte.
+
+### Modifié
+- La demande est celle du carnet, au mot près, sauf : saison calculée, nombre de matchs réglable,
+  cotes « moins de » (vérifié par test contre le code d'origine).
+- Un match complété garde son identifiant (le carnet le remplaçait par celui de la réponse).
+- `PW_CANAL=chrome npm run e2e` lance les tests dans le Google Chrome installé.
+
+### Choix
+- Les historiques CSV sont des données publiques réimportables : ils ne sont ni dans la sauvegarde
+  fichier ni dans l'historique des versions (qui grossirait de plusieurs Mo par copie).
+
 ## 0.1.0 — 21 septembre 2026 — Phase 1 : fondations
 
 ### Ajouté
