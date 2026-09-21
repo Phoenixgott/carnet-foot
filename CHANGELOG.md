@@ -2,6 +2,41 @@
 
 Format : chaque version liste ce qui a été ajouté, modifié ou corrigé.
 
+## 0.5.0 — 22 septembre 2026 — Phase 5 : Freebet
+
+### Ajouté
+- **Onglet Freebet** (calculateur, comparateur, offres) ; « Réglages » passe en engrenage dans l'en-tête
+  pour garder 6 onglets lisibles dans la barre du bas.
+- **Calculateur** : le pari qui débloque le freebet et le freebet, chacun couvert chez un autre
+  bookmaker ou en lay sur un exchange (commission réglable). Chaque pari se calcule seul, sans attendre
+  l'autre. Donne : mises de couverture, somme à bloquer sur l'exchange, **coût du pari qui débloque**,
+  **bénéfice garanti**, **taux de conversion** (brut, et net une fois le coût compté) avec l'appréciation
+  du carnet (70 % bon, 60 % correct). **Freebet remboursé** en plus du non remboursé (cas courant).
+  Les champs démarrent vides : aucun chiffre d'exemple pris pour une vraie cote. Saisies impossibles :
+  message clair, jamais de chiffre inventé. Les formules du carnet sont inchangées (non-régression verte).
+- **Comparateur** : pour chaque match à venir qui a les cotes « plus de » et « moins de » d'une même
+  ligne (1,5 ou 2,5), classe les combinaisons par taux de conversion, avec la mise de couverture, le gain
+  garanti et la marge du bookmaker ; cote minimale exigée par l'offre ; « Calculer avec ce match » envoie
+  les cotes vers le calculateur. Limite dite à l'écran : le pari inverse est supposé à la cote du même
+  bookmaker.
+- **Suivi des offres** : bookmaker, intitulé, montant, mise du pari qui débloque, cote minimale, date
+  limite, conditions, remboursé ou non, statut (À faire → Pari placé → Freebet reçu → Terminée) et
+  bénéfice réel. Délais lisibles (« expire dans 2 jours »), états Urgent (≤ 2 j), Bientôt (≤ 7 j),
+  Expirée. Bilan : offres en cours, freebets à utiliser, bénéfice réalisé, conversion moyenne.
+  « Calculer » ouvre le calculateur avec le montant, la mise et la cote minimale de l'offre (avertit si
+  la cote du freebet est en dessous).
+- **Rappels avant expiration** : offres qui expirent dans les 3 jours signalées sur l'accueil et dans
+  l'onglet ; une notification par jour quand l'app est ouverte (si autorisées) ; et **« Ajouter à
+  l'agenda »** : fichier .ics avec deux alarmes (la veille et 3 jours avant, à 9 h) que le téléphone
+  rappelle même application fermée, ce qu'une application sans serveur ne peut pas faire seule.
+- Les offres sont enregistrées avec les réglages : elles sont dans la sauvegarde fichier et
+  l'historique des versions, sans changer le format de la sauvegarde.
+
+### Corrigé
+- **Réimporter le carnet effaçait les réglages de l'application** (thème, critères d'analyse, choix de
+  la demande…), et aurait effacé les offres de freebet saisies à la main. L'import ne remplace plus que
+  ce que le carnet fournit (matchs, paris, bankroll, compétitions).
+
 ## 0.4.0 — 22 septembre 2026 — Phase 4 : mode live
 
 ### Ajouté

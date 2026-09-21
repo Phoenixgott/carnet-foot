@@ -20,6 +20,8 @@ export function Icone({ nom }: { nom: Route }) {
       return <svg {...p}><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M12 5v14" /><circle cx="12" cy="12" r="3" /></svg>;
     case "live":
       return <svg {...p}><circle cx="12" cy="13.5" r="7.5" /><path d="M12 9.5v4l2.5 2M9.5 3h5" /></svg>;
+    case "freebet":
+      return <svg {...p}><rect x="3" y="8" width="18" height="4" rx="1" /><path d="M12 8v13M5 12v8h14v-8M12 8c-2.5 0-4.5-1-4.5-2.8S10.5 3 12 8c1.5-5 4.5-4.6 4.5-2.8S14.5 8 12 8z" /></svg>;
     case "paris":
       return <svg {...p}><path d="M5 4h14v16l-3-2-2 2-2-2-2 2-2-2-3 2z" /><path d="M9 9h6M9 13h6" /></svg>;
     case "donnees":

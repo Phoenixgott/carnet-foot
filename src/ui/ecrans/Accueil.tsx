@@ -2,6 +2,8 @@
  * Accueil : bankroll et bilan en un coup d'œil, état des données, rappels.
  */
 import { alertesCote } from "../../core/cotes";
+import { offresARappeler, texteDelai } from "../../core/offres";
+import { offresDe } from "../../data/offres";
 import { analyserV2 } from "../../core/modele-v2/analyse";
 import { dateCourte, eur, pc } from "../../core/format";
 import { bilan } from "../../core/paris";
@@ -18,6 +20,7 @@ export function Accueil() {
   const rappel = !vide && (!dernierExport || joursDepuis(dernierExport) >= RAPPEL_SAUVEGARDE_JOURS);
   // Alertes de cote des matchs à venir (ou sans date)
   const aujourdhui = jourLocal(new Date());
+  const offresBientot = offresARappeler(offresDe(contenu), aujourdhui);
   const alertes = contenu.matchs.filter((m) => !m.date || m.date >= aujourdhui).flatMap((m) => alertesCote(m, contexteDe));
 
   return (
@@ -57,6 +60,25 @@ export function Accueil() {
               <small>Paris gagnés</small>
             </div>
           </div>
+        </section>
+      )}
+
+      {offresBientot.length > 0 && (
+        <section className="alerte-cote" aria-labelledby="titre-offres-bientot" data-test="offres-bientot">
+          <h2 id="titre-offres-bientot">
+            <span aria-hidden="true">🎁 </span>
+            {offresBientot.length === 1 ? "Un freebet expire bientôt" : `${offresBientot.length} freebets expirent bientôt`}
+          </h2>
+          <ul>
+            {offresBientot.map((o) => (
+              <li key={o.id}>
+                {o.bookmaker}
+                {o.titre ? ` · ${o.titre}` : ""}
+                {o.montant !== null ? ` (${eur(o.montant)})` : ""} : {texteDelai(o.dateLimite!, aujourdhui)}
+              </li>
+            ))}
+          </ul>
+          <a className="btn" href="#/freebet?vue=offres">Voir mes offres</a>
         </section>
       )}
 

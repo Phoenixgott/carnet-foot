@@ -9,7 +9,7 @@
  *     de chaque scénario (2ᵉ but / plus de but), en couvrant et sans couvrir.
  * L'état (chronomètre, pari) est gardé sur l'appareil : fermer l'app ne perd rien.
  */
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { estNombre, eur, fr, lireSaisie, pc } from "../../core/format";
 import { miseConseillee } from "../../core/paris";
 import { analyserV2 } from "../../core/modele-v2/analyse";
@@ -27,15 +27,8 @@ import { bankrollDe } from "../../data/contenu";
 import { ecrireEtatLive, ETAT_LIVE_VIDE, lireEtatLive, tempsEcoule, type EtatLive } from "../../data/live";
 import { etatNotifications, notifier } from "../../pwa/pwa";
 import { PastilleVerdict } from "../composants";
+import { ChampNombre, Choix, nombreOuNull } from "../champs";
 import { parametresRoute, useAppli } from "../contexte";
-
-const virgule = (x: number) => x.toFixed(2).replace(".", ",");
-
-/** Nombre tapé, ou null si la case est vide ou illisible. */
-const nombreOuNull = (s: string): number | null => {
-  const x = lireSaisie(s);
-  return typeof x === "number" ? x : null;
-};
 
 /** Heure actuelle rafraîchie chaque seconde tant que `actif` ; recalculée dès que l'écran revient au premier plan. */
 function useMaintenant(actif: boolean): number {
@@ -55,75 +48,6 @@ function useMaintenant(actif: boolean): number {
     };
   }, [actif]);
   return t;
-}
-
-/** Champ numérique avec gros boutons − et + (saisie au pouce). */
-function ChampNombre({
-  id,
-  libelle,
-  valeur,
-  changer,
-  pas,
-  min,
-  defaut,
-  placeholder,
-}: {
-  id: string;
-  libelle: string;
-  valeur: string;
-  changer: (t: string) => void;
-  pas: number;
-  min: number;
-  defaut: number;
-  placeholder?: string;
-}) {
-  const bouger = (delta: number) => {
-    const x = lireSaisie(valeur);
-    const base = typeof x === "number" ? x : defaut;
-    changer(virgule(Math.max(min, Math.round((base + delta) * 100) / 100)));
-  };
-  return (
-    <div className="champ-nombre">
-      <label className="champ" htmlFor={id}>{libelle}</label>
-      <div className="stepper">
-        <button type="button" className="btn secondaire" aria-label={`Diminuer : ${libelle}`} onClick={() => bouger(-pas)}>−</button>
-        <input
-          id={id}
-          type="text"
-          inputMode="decimal"
-          autoComplete="off"
-          value={valeur}
-          placeholder={placeholder}
-          onChange={(e: Event) => changer((e.target as HTMLInputElement).value)}
-        />
-        <button type="button" className="btn secondaire" aria-label={`Augmenter : ${libelle}`} onClick={() => bouger(pas)}>+</button>
-      </div>
-    </div>
-  );
-}
-
-function Choix<T extends string>({
-  libelle,
-  valeur,
-  options,
-  changer,
-}: {
-  libelle: string;
-  valeur: T;
-  options: Array<[T, string]>;
-  changer: (v: T) => void;
-}) {
-  const id = useId();
-  return (
-    <div className="section">
-      <span className="champ" id={id}>{libelle}</span>
-      <div className="segments segments-gros" role="group" aria-labelledby={id}>
-        {options.map(([v, t]) => (
-          <button key={v} type="button" aria-pressed={valeur === v} onClick={() => changer(v)}>{t}</button>
-        ))}
-      </div>
-    </div>
-  );
 }
 
 const TEXTE_FENETRE: Record<EtatFenetre, string> = {
@@ -497,7 +421,7 @@ export function Live() {
               type="text"
               inputMode="decimal"
               autoComplete="off"
-              placeholder={virgule(decision.mise ?? miseBase)}
+              placeholder={fr(decision.mise ?? miseBase)}
               value={miseTexte}
               onChange={(e: Event) => setMiseTexte((e.target as HTMLInputElement).value)}
             />

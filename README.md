@@ -74,7 +74,23 @@ Onglet **Live** (ou « Suivre en live » sur un match) :
 Le live est gardé sur ton téléphone : tu peux fermer l'app et la rouvrir. Il n'est pas dans la
 sauvegarde. Note ton pari dans le journal du carnet (l'ajout de paris dans l'app arrive en phase 6).
 
-### 5. Sauvegarder
+### 5. Freebet (profit garanti)
+
+Onglet **Freebet**, trois sections :
+
+- **Calculateur** : tape le pari qui débloque le freebet (mise, cote chez le bookmaker de l'offre, cote
+  inverse chez l'autre site) puis le freebet (montant, cote, cote inverse). Tu obtiens les mises de
+  couverture, le coût du pari qui débloque, le bénéfice garanti et le taux de conversion. Choisis
+  « Exchange (lay) » si tu couvres ainsi, et « Remboursé » si le freebet rend la mise en cas de gain.
+- **Comparateur** : tape le montant du freebet (et la cote minimale de l'offre) ; il classe les matchs
+  chargés par taux de conversion. « Calculer avec ce match » remplit le calculateur.
+- **Offres** : note chaque offre (bookmaker, montant, date limite, conditions) et son statut. Les offres
+  qui expirent dans 3 jours apparaissent sur l'accueil. **Ajouter à l'agenda** crée un fichier que ton
+  agenda rappelle même application fermée (alarmes la veille et 3 jours avant, à 9 h).
+
+Le gain n'est garanti que si les deux paris sont acceptés aux cotes saisies.
+
+### 6. Sauvegarder
 
 - **Données → Sauvegarde en un fichier** : « Enregistrer le fichier », « Partager (Drive, mail…) »
   ou « Copier le texte ». Garde ce fichier hors du téléphone : si le navigateur efface ses
@@ -84,7 +100,7 @@ sauvegarde. Note ton pari dans le journal du carnet (l'ajout de paris dans l'app
 - **Restaurer** : choisis le fichier ou colle son texte. Une empreinte vérifie que le fichier
   n'a pas été abîmé ou modifié ; sinon il est refusé.
 
-### 6. Installer sur Android (version hébergée)
+### 7. Installer sur Android (version hébergée)
 
 L'application est hébergée sur GitHub Pages : https://phoenixgott.github.io/carnet-foot/
 Ouvre cette adresse dans Chrome, puis **Réglages → Installer l'application**
@@ -126,7 +142,9 @@ src/
                    fiabilité sur 8, critères +1.5/+2.5, verdicts, décisions live/avant-match)
     poisson.ts     loi de Poisson
     couverture.ts  couverture +1.5 (pari contraire, lay, cash-out)
-    freebet.ts     freebet non remboursé (autre bookmaker ou exchange)
+    freebet.ts     freebet remboursé ou non (autre bookmaker ou exchange), coût, conversion
+    freebet-comparateur.ts  classement des matchs pour utiliser un freebet
+    offres.ts      suivi des offres : statuts, délais, rappels, bilan ; ics.ts : fichier d'agenda
     paris.ts       gains, bankroll, bilan, ROI
     methodes.ts    noms exacts des méthodes et codes du carnet (m1 = +1.5, m3 = +2.5, m2 = Freebet)
     demande.ts     demande à l'autre conversation Claude (jour, compléments, cotes du jour J)
@@ -186,6 +204,8 @@ téléchargements : pas de hors ligne, pas d'installation, sauvegarde par copie 
   `coteCible` (cote minimale choisie). Un champ absent ou `null` est une donnée inconnue, affichée ⏳.
 - **Résultat** (historiques CSV) : magasin `resultats` à part, hors sauvegarde (données publiques).
 - **Live** : réglage local `live` (`src/data/live.ts`), hors sauvegarde et jamais remplacé par une restauration.
+- **Offres de freebet** : tableau dans le réglage `offres` (donc dans la sauvegarde), voir `src/core/offres.ts`.
+  Un réimport du carnet ne touche pas aux réglages que le carnet ne fournit pas.
 - **Sauvegarde** : `{ app: "carnet-foot", type: "sauvegarde", schema: 1, creeLe, versionApp,
   contenu: { matchs, paris, reglages }, controle: { nbMatchs, nbParis, bankroll, gainsTotal, empreinte } }`.
   L'empreinte est un SHA-256 du contenu trié.

@@ -57,6 +57,10 @@ a { color: var(--accent); }
 .marque { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; margin: 0; }
 .marque img { width: 30px; height: 30px; border-radius: 8px; }
 .marque span { color: var(--accent); }
+.entete-droite { display: flex; align-items: center; gap: 4px; }
+.entete-reglages { display: grid; place-items: center; width: 44px; height: 44px; color: var(--muted); border-radius: 12px; }
+.entete-reglages svg { width: 26px; height: 26px; }
+.entete-reglages[aria-current="page"] { color: var(--accent); background: var(--accent-soft); }
 .bankroll-entete { font-size: 15px; color: var(--muted); text-align: right; line-height: 1.2; }
 .bankroll-entete b { display: block; color: var(--ink); font-size: 17px; }
 
@@ -229,6 +233,22 @@ table.scenarios th, table.scenarios td, table.tableau-live th, table.tableau-liv
 table.scenarios tbody th, table.tableau-live tbody th { color: var(--muted); font-weight: 700; }
 table.scenarios td { font-variant-numeric: tabular-nums; font-weight: 700; }
 table.tableau-live tr.actuelle { background: var(--accent-soft); }
+
+/* ---------- Freebet (phase 5) ---------- */
+.pastille-alerte { color: var(--bad); }
+.segments button[aria-pressed="true"] .pastille-alerte { color: #F0A090; }
+ol.candidats { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.candidat { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; display: grid; gap: 8px; }
+.candidat p { margin: 0; }
+.candidat-haut { display: flex; justify-content: space-between; gap: 8px; align-items: center; flex-wrap: wrap; }
+ul.offres { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.offre { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; display: grid; gap: 10px; }
+.offre p { margin: 0; }
+.offre-haut { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; flex-wrap: wrap; }
+.offre-urgente, .offre-expiree { border-color: var(--bad); }
+.offre-bientot { border-color: var(--warn); }
+.offre-terminee { opacity: .85; }
+.offre-haut .verdict.ko { background: var(--bad-soft); color: var(--bad); }
 
 /* ---------- Alertes de cote ---------- */
 .alerte-cote { background: var(--warn-soft); color: var(--warn); border-radius: 12px; padding: 10px 14px; display: grid; gap: 8px; }

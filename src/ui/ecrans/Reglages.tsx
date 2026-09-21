@@ -94,7 +94,7 @@ export function Reglages() {
         <p className="aide" data-test="etat-notifs">{TEXTE_NOTIFS[notifs]}</p>
         <p className="aide">
           Elles sont créées sur le téléphone, sans serveur : une alerte ne peut donc partir que si l'application est ouverte ou vient d'être utilisée.
-          Pour les dates limites des freebets, un ajout à ton agenda viendra en phase 5.
+          Pour les dates limites des freebets, l'onglet Freebet propose un ajout à l'agenda du téléphone, qui te rappelle même application fermée.
         </p>
         {notifs === "a-demander" && (
           <button type="button" className="btn" onClick={async () => setNotifs(await demanderNotifications())}>

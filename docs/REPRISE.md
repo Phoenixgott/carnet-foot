@@ -43,15 +43,18 @@ Il fait foi.
 
 ## État actuel
 
-- **Phase 4 terminée** (étiquette `v0.4.0`, 22 septembre 2026) : voir `CHANGELOG.md`.
+- **Phase 5 terminée** (étiquette `v0.5.0`, 22 septembre 2026) : voir `CHANGELOG.md`.
   Phases précédentes : `v0.1.0`, `v0.2.0` (+ correctifs `v0.2.1`, `v0.2.2` : écran blanc après mise à jour),
-  `v0.3.0`. 87 tests unitaires + 42 tests de bout en bout, tous verts. En ligne sur
+  `v0.3.0`, `v0.4.0`. 100 tests unitaires + 48 tests de bout en bout, tous verts. En ligne sur
   https://phoenixgott.github.io/carnet-foot/ (dépôt `Phoenixgott/carnet-foot`, branche `gh-pages`).
-- **Prochaine étape : phase 5 (Freebet), seulement après l'accord de l'utilisateur.** Le calcul du
-  freebet non remboursé existe déjà (`src/core/freebet.ts`) ; à ajouter : freebet remboursé, suivi des
-  offres avec rappel avant expiration, comparateur de matchs.
-- **Points à traiter en phase 6** : le journal des paris (ajout, modification) ; le live ne l'écrit pas
-  (un réimport du carnet remplace tout le journal : décider avec l'utilisateur comment cohabiter).
+- **Prochaine étape : phase 6 (paris et bankroll), seulement après l'accord de l'utilisateur.**
+  Points à trancher avec lui : (1) le journal des paris est encore importé du carnet en lecture seule ;
+  le live et le freebet ne l'écrivent pas, et un réimport du carnet remplace tout le journal : comment
+  faire cohabiter l'app et le carnet ? (2) les bénéfices réels des offres de freebet (`beneficeReel`) sont
+  un bon candidat pour alimenter la méthode « Freebet » du bilan. (3) mise fixe 2 % par défaut, Kelly
+  fractionné en option (décision déjà prise).
+- Navigation : 6 onglets (Accueil, Matchs, Live, Freebet, Paris, Données) ; Réglages est l'engrenage de
+  l'en-tête. Prévoir où mettre un éventuel 7ᵉ écran sans surcharger la barre.
 - Ressenti de l'utilisateur après la phase 1 : l'app « ne ressemble en rien » à son carnet et ne lui
   sert à rien pour l'instant. Il a choisi de continuer le plan. Garder en tête : lui rendre vite un
   usage quotidien (récupérer les matchs, analyser, noter ses paris) et rester proche du carnet.

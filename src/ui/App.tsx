@@ -8,21 +8,34 @@ import { bankrollCourante } from "../core/paris";
 import type { Resultat } from "../core/types";
 import { contexteAnalyse } from "../data/analyse";
 import { bankrollDe, contenuVide, estVide, reglage, type Contenu } from "../data/contenu";
-import { lireContenu, lireResultats } from "../data/depot";
+import { ecrireReglage, lireContenu, lireReglage, lireResultats } from "../data/depot";
+import { offresDe } from "../data/offres";
+import { jourLocal } from "../data/versions";
+import { offresARappeler, texteDelai } from "../core/offres";
 import { assurerCopieDuJour, dateDernierExport } from "../data/services";
-import { appliquerMiseAJour, ecouterPwa, type EtatPwa } from "../pwa/pwa";
+import { appliquerMiseAJour, ecouterPwa, etatNotifications, notifier, type EtatPwa } from "../pwa/pwa";
 import { Confirmation, Icone } from "./composants";
 import { ContexteAppli, lireRoute, ROUTES, type Appli, type OptionsConfirmation, type Route } from "./contexte";
 import { Accueil } from "./ecrans/Accueil";
 import { Donnees } from "./ecrans/Donnees";
 import { Equipe } from "./ecrans/Equipe";
+import { Freebet } from "./ecrans/Freebet";
 import { Live } from "./ecrans/Live";
 import { Matchs } from "./ecrans/Matchs";
 import { Paris } from "./ecrans/Paris";
 import { Reglages } from "./ecrans/Reglages";
 import { appliquerTheme, type Theme } from "./theme";
 
-const ECRANS: Record<Route, () => any> = { accueil: Accueil, matchs: Matchs, live: Live, paris: Paris, donnees: Donnees, reglages: Reglages, equipe: Equipe };
+const ECRANS: Record<Route, () => any> = {
+  accueil: Accueil,
+  matchs: Matchs,
+  live: Live,
+  freebet: Freebet,
+  paris: Paris,
+  donnees: Donnees,
+  reglages: Reglages,
+  equipe: Equipe,
+};
 
 export function App() {
   const [route, setRoute] = useState<Route>(lireRoute());
@@ -74,6 +87,25 @@ export function App() {
       arreterPwa();
     };
   }, [recharger, rechargerResultats]);
+
+  // Rappel des freebets qui expirent bientôt : une notification par jour au plus, si elles sont
+  // autorisées et si l'application est ouverte (sans serveur, rien ne peut partir application fermée :
+  // pour cela, l'onglet Freebet propose l'ajout à l'agenda du téléphone).
+  useEffect(() => {
+    if (!contenu) return;
+    const aujourdhui = jourLocal(new Date());
+    const a = offresARappeler(offresDe(contenu), aujourdhui);
+    if (!a.length || etatNotifications() !== "autorisees") return;
+    (async () => {
+      if ((await lireReglage<string>("rappelOffresLe")) === aujourdhui) return;
+      const texte =
+        a.length === 1
+          ? `${a[0].bookmaker} : ${texteDelai(a[0].dateLimite!, aujourdhui)}`
+          : `${a.length} freebets à utiliser bientôt : ${a.map((o) => o.bookmaker).join(", ")}`;
+      const r = await notifier("Freebet à utiliser", texte, "#/freebet?vue=offres", "freebet-rappel");
+      if (r === "envoyee") await ecrireReglage("rappelOffresLe", aujourdhui);
+    })().catch(() => {});
+  }, [contenu]);
 
   // Changement d'écran : on remonte en haut et on place le focus sur le titre (lecteurs d'écran).
   useEffect(() => {
@@ -139,11 +171,16 @@ export function App() {
             <img src="./icons/icon-192.png" alt="" width={30} height={30} />
             Carnet de <span>Paris</span> Foot
           </p>
-          {!vide && (
-            <p className="bankroll-entete" style={{ margin: 0 }}>
-              Bankroll <b className="num" data-test="bankroll-entete">{eur(bankrollCourante(contenu.paris, bankrollDe(contenu)))}</b>
-            </p>
-          )}
+          <div className="entete-droite">
+            {!vide && (
+              <p className="bankroll-entete" style={{ margin: 0 }}>
+                Bankroll <b className="num" data-test="bankroll-entete">{eur(bankrollCourante(contenu.paris, bankrollDe(contenu)))}</b>
+              </p>
+            )}
+            <a className="entete-reglages" href="#/reglages" aria-label="Réglages" aria-current={route === "reglages" ? "page" : undefined}>
+              <Icone nom="reglages" />
+            </a>
+          </div>
         </div>
       </header>
 
@@ -162,7 +199,7 @@ export function App() {
 
       <nav className="onglets" aria-label="Navigation principale">
         <ul>
-          {ROUTES.map((r) => (
+          {ROUTES.filter((r) => r.route !== "reglages").map((r) => (
             <li key={r.route}>
               <a href={`#/${r.route}`} aria-current={route === r.route ? "page" : undefined}>
                 <Icone nom={r.route} />

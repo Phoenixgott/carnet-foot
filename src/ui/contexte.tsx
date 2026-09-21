@@ -37,12 +37,13 @@ export function useAppli(): Appli {
   return a;
 }
 
-export type Route = "accueil" | "matchs" | "live" | "paris" | "donnees" | "reglages" | "equipe";
+export type Route = "accueil" | "matchs" | "live" | "freebet" | "paris" | "donnees" | "reglages" | "equipe";
 
 export const ROUTES: ReadonlyArray<{ route: Route; libelle: string; titre: string }> = [
   { route: "accueil", libelle: "Accueil", titre: "Accueil" },
   { route: "matchs", libelle: "Matchs", titre: "Matchs" },
   { route: "live", libelle: "Live", titre: "Live +1.5" },
+  { route: "freebet", libelle: "Freebet", titre: "Freebet" },
   { route: "paris", libelle: "Paris", titre: "Mes paris" },
   { route: "donnees", libelle: "Données", titre: "Mes données" },
   { route: "reglages", libelle: "Réglages", titre: "Réglages" },

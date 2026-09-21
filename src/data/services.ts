@@ -90,7 +90,11 @@ export async function importerCarnet(analyse: AnalyseImportCarnet): Promise<Resu
 
   const precedent = await lireContenu();
   await creerVersion("avant-import", precedent);
-  await remplacerContenu(analyse.contenu);
+  // Le carnet fournit les matchs, les paris, la bankroll et les compétitions. Les réglages qu'il ne
+  // connaît pas (thème, critères d'analyse, offres de freebet…) sont gardés : ils n'existent nulle
+  // part ailleurs et ne doivent pas disparaître à chaque import.
+  const conserves = precedent.reglages.filter((r) => !analyse.contenu.reglages.some((x) => x.cle === r.cle));
+  await remplacerContenu({ ...analyse.contenu, reglages: [...analyse.contenu.reglages, ...conserves] });
   const relu = await lireContenu();
   const apres = verifierImportCarnet(analyse, relu);
   if (!apres.ok) {
