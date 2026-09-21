@@ -70,7 +70,7 @@ export function extraireJson(texte: string): unknown {
 }
 
 const normaliser = (s: unknown) =>
-  String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
 
 /** Identifiant d'un match sans id (même règle que le carnet : date|domicile|extérieur). */
 export function cleMatch(m: Record<string, any>): string {

@@ -49,14 +49,14 @@ test("Migration complète : mêmes chiffres dans le carnet et dans l'application
   await expect(page.locator('[data-test="bankroll-paris"]')).toHaveText(bankrollCarnet);
   await expect(page.locator(".pari")).toHaveCount(30);
 
-  // Chances par match identiques
+  // Chances par match identiques (ligne « Carnet : » de chaque méthode, à côté du nouveau modèle)
   await page.goto("/#/matchs");
   await expect(page.locator("article.match")).toHaveCount(6);
   const chancesApp = await page.$$eval("article.match", (cartes) =>
     cartes.map((c) => {
       const noms = c.querySelector(".match-equipes")!.textContent!.split("–").map((s) => s.trim());
       const [p1, p3] = [...c.querySelectorAll(".methode")].map(
-        (b) => (b.querySelector(".methode-chiffres b")!.textContent!.match(/^\d+/) ?? [null])[0],
+        (b) => (b.querySelector('[data-test="chances-carnet"]')!.textContent!.match(/^\d+/) ?? [null])[0],
       );
       return { cle: `${noms[0]}|${noms[1]}`, p1, p3 };
     }),

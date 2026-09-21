@@ -181,6 +181,26 @@ ul.controles small { display: block; color: var(--muted); font-size: 14px; overf
 ul.manques { margin: 0; padding-left: 18px; display: grid; gap: 2px; }
 ul.manques b { color: var(--ink); font-weight: 700; }
 
+/* ---------- Analyse (phase 3) ---------- */
+.match-equipes a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 4px; }
+.fourchette { font-weight: 400; color: var(--muted); font-size: 13px; }
+.pourquoi-phrase { margin: 2px 0 0; font-size: 14px; color: var(--ink); }
+.carnet-ligne { margin: 0; font-size: 13px; color: var(--muted); }
+details.pourquoi > summary { min-height: 36px; font-size: 14px; }
+ul.criteres { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 14px; }
+ul.criteres li { display: grid; grid-template-columns: 26px 1fr; gap: 8px; align-items: start; }
+ul.criteres small { display: block; color: var(--muted); font-size: 13px; }
+.pastille-ico.plus { background: var(--accent-soft); color: var(--accent); }
+ul.calcul { margin: 0; padding-left: 18px; font-size: 13px; color: var(--muted); display: grid; gap: 4px; }
+.rang { margin: 0; padding: 6px 14px 0; font-size: 14px; font-weight: 700; color: var(--accent); }
+.comparaison table { border-collapse: collapse; width: 100%; font-size: 14px; table-layout: fixed; }
+.comparaison th, .comparaison td { text-align: left; padding: 8px 4px; border-bottom: 1px solid var(--line); vertical-align: top; overflow-wrap: anywhere; }
+.comparaison tbody th { color: var(--muted); font-weight: 700; width: 34%; }
+.comparaison thead th { font-size: 15px; }
+.tableau-defilant { overflow-x: auto; max-width: 100%; }
+p.forme { display: flex; gap: 6px; flex-wrap: wrap; margin: 0; }
+p.forme .pastille-ico { width: 32px; height: 32px; font-size: 15px; }
+
 /* ---------- Alertes de cote ---------- */
 .alerte-cote { background: var(--warn-soft); color: var(--warn); border-radius: 12px; padding: 10px 14px; display: grid; gap: 8px; }
 .match .alerte-cote { margin: 6px 14px 0; }

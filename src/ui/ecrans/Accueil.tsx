@@ -1,8 +1,8 @@
 /**
  * Accueil : bankroll et bilan en un coup d'œil, état des données, rappels.
  */
-import { analyser } from "../../core/carnet-v1/analyse";
 import { alertesCote } from "../../core/cotes";
+import { analyserV2 } from "../../core/modele-v2/analyse";
 import { dateCourte, eur, pc } from "../../core/format";
 import { bilan } from "../../core/paris";
 import { bankrollDe, estVide } from "../../data/contenu";
@@ -10,15 +10,15 @@ import { jourLocal } from "../../data/versions";
 import { joursDepuis, RAPPEL_SAUVEGARDE_JOURS, useAppli } from "../contexte";
 
 export function Accueil() {
-  const { contenu, dernierExport } = useAppli();
+  const { contenu, dernierExport, contexteDe } = useAppli();
   const vide = estVide(contenu);
   const b = bilan(contenu.paris, bankrollDe(contenu));
   const jours = [...new Set(contenu.matchs.map((m) => m.date).filter(Boolean))].sort() as string[];
-  const aJouer = contenu.matchs.filter((m) => analyser(m, "+1.5").v === "ok" || analyser(m, "+2.5").v === "ok").length;
+  const aJouer = contenu.matchs.filter((m) => analyserV2(m, "+1.5", contexteDe(m)).v === "ok" || analyserV2(m, "+2.5", contexteDe(m)).v === "ok").length;
   const rappel = !vide && (!dernierExport || joursDepuis(dernierExport) >= RAPPEL_SAUVEGARDE_JOURS);
   // Alertes de cote des matchs à venir (ou sans date)
   const aujourdhui = jourLocal(new Date());
-  const alertes = contenu.matchs.filter((m) => !m.date || m.date >= aujourdhui).flatMap(alertesCote);
+  const alertes = contenu.matchs.filter((m) => !m.date || m.date >= aujourdhui).flatMap((m) => alertesCote(m, contexteDe));
 
   return (
     <>

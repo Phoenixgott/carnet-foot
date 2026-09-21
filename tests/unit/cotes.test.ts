@@ -3,7 +3,8 @@
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { analyser } from "../../src/core/carnet-v1/analyse";
+import { analyserV2 } from "../../src/core/modele-v2/analyse";
+import { REGLAGES_ANALYSE_DEFAUT } from "../../src/core/modele-v2/reglages";
 import { alertesCote, amorcerSuivi, coteMinimale, nouvellesAlertes, sens, suivreCotes } from "../../src/core/cotes";
 import { lireSaisie } from "../../src/core/format";
 import { margeBookmaker, probabiliteSansMarge } from "../../src/core/marge";
@@ -44,11 +45,16 @@ test("Saisie d'une cote : virgule acceptée, case vide = null, texte = refusé",
   assert.equal(lireSaisie("1,8,5"), undefined);
 });
 
-test("Cote minimale : choisie à la main d'abord, sinon cote mini +2.5 ; aucune par défaut pour +1,5", () => {
+test("Cote minimale : choisie à la main d'abord, sinon cote minimale +2.5 du nouveau modèle ; aucune par défaut pour +1,5", () => {
   const m = match();
-  const fair = analyser(m, "+2.5").fair;
-  assert.ok(Number.isFinite(fair));
-  assert.deepEqual(coteMinimale(m, "over25"), { valeur: fair, origine: "calculee" });
+  const mini = analyserV2(m, "+2.5", { stats: null, reglages: REGLAGES_ANALYSE_DEFAUT }).coteMinimale;
+  assert.ok(Number.isFinite(mini));
+  assert.deepEqual(coteMinimale(m, "over25"), { valeur: mini, origine: "calculee" });
+  // Avec d'autres réglages (absents ignorés vs forts), la cote minimale suit
+  const avecAbsent = { ...m, meilleurButeurAbsent: true };
+  const fort = coteMinimale(avecAbsent, "over25", () => ({ stats: null, reglages: { ...REGLAGES_ANALYSE_DEFAUT, poidsAbsents: 2 } }))!.valeur;
+  const ignore = coteMinimale(avecAbsent, "over25", () => ({ stats: null, reglages: { ...REGLAGES_ANALYSE_DEFAUT, poidsAbsents: 0 } }))!.valeur;
+  assert.ok(fort > ignore, "moins de buts attendus : cote minimale plus haute");
   assert.equal(coteMinimale(m, "over15"), null);
   const choisie = match({ coteCible: { over15: 1.35, over25: 1.9 } });
   assert.deepEqual(coteMinimale(choisie, "over15"), { valeur: 1.35, origine: "choisie" });

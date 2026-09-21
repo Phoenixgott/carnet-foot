@@ -2,23 +2,26 @@
  * Coquille de l'application : en-tête, navigation, chargement des données,
  * messages, confirmations et bandeau de mise à jour.
  */
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { eur } from "../core/format";
 import { bankrollCourante } from "../core/paris";
-import { bankrollDe, estVide, reglage, type Contenu } from "../data/contenu";
-import { lireContenu } from "../data/depot";
+import type { Resultat } from "../core/types";
+import { contexteAnalyse } from "../data/analyse";
+import { bankrollDe, contenuVide, estVide, reglage, type Contenu } from "../data/contenu";
+import { lireContenu, lireResultats } from "../data/depot";
 import { assurerCopieDuJour, dateDernierExport } from "../data/services";
 import { appliquerMiseAJour, ecouterPwa, type EtatPwa } from "../pwa/pwa";
 import { Confirmation, Icone } from "./composants";
 import { ContexteAppli, lireRoute, ROUTES, type Appli, type OptionsConfirmation, type Route } from "./contexte";
 import { Accueil } from "./ecrans/Accueil";
 import { Donnees } from "./ecrans/Donnees";
+import { Equipe } from "./ecrans/Equipe";
 import { Matchs } from "./ecrans/Matchs";
 import { Paris } from "./ecrans/Paris";
 import { Reglages } from "./ecrans/Reglages";
 import { appliquerTheme, type Theme } from "./theme";
 
-const ECRANS: Record<Route, () => any> = { accueil: Accueil, matchs: Matchs, paris: Paris, donnees: Donnees, reglages: Reglages };
+const ECRANS: Record<Route, () => any> = { accueil: Accueil, matchs: Matchs, paris: Paris, donnees: Donnees, reglages: Reglages, equipe: Equipe };
 
 export function App() {
   const [route, setRoute] = useState<Route>(lireRoute());
@@ -28,6 +31,8 @@ export function App() {
   const [demande, setDemande] = useState<OptionsConfirmation | null>(null);
   const [pwa, setPwa] = useState<EtatPwa>({ horsLigne: "indisponible", miseAJourPrete: false, installable: false, installee: false });
   const [dernierExport, setDernierExport] = useState<Date | null>(null);
+  const [resultats, setResultats] = useState<Resultat[]>([]);
+  const [, setAdresse] = useState(window.location.hash);
   const reponse = useRef<((ok: boolean) => void) | null>(null);
   const minuterie = useRef<number | null>(null);
   const premierAffichage = useRef(true);
@@ -38,11 +43,14 @@ export function App() {
     setDernierExport(await dateDernierExport());
     setContenu(c);
   }, []);
+  const rechargerResultats = useCallback(async () => setResultats(await lireResultats()), []);
+  const contexteDe = useMemo(() => contexteAnalyse(contenu ?? contenuVide(), resultats), [contenu, resultats]);
 
   useEffect(() => {
     (async () => {
       try {
         await recharger();
+        await rechargerResultats();
         if (await assurerCopieDuJour()) await recharger();
       } catch (e) {
         setErreur(e instanceof Error ? e.message : String(e));
@@ -52,7 +60,11 @@ export function App() {
       if (document.visibilityState === "visible") assurerCopieDuJour().catch(() => {});
     };
     document.addEventListener("visibilitychange", auRetour);
-    const surHash = () => setRoute(lireRoute());
+    // L'adresse complète est gardée aussi : une fiche équipe à une autre se réaffiche.
+    const surHash = () => {
+      setRoute(lireRoute());
+      setAdresse(window.location.hash);
+    };
     window.addEventListener("hashchange", surHash);
     const arreterPwa = ecouterPwa(setPwa);
     return () => {
@@ -60,7 +72,7 @@ export function App() {
       window.removeEventListener("hashchange", surHash);
       arreterPwa();
     };
-  }, [recharger]);
+  }, [recharger, rechargerResultats]);
 
   // Changement d'écran : on remonte en haut et on place le focus sur le titre (lecteurs d'écran).
   useEffect(() => {
@@ -111,7 +123,7 @@ export function App() {
     );
   }
 
-  const appli: Appli = { contenu, recharger, message, confirmer, pwa, dernierExport };
+  const appli: Appli = { contenu, recharger, message, confirmer, pwa, dernierExport, resultats, rechargerResultats, contexteDe };
   const Ecran = ECRANS[route];
   const vide = estVide(contenu);
 

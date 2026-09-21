@@ -3,6 +3,8 @@
  * confirmations, état de la PWA.
  */
 import { createContext, useContext } from "react";
+import type { ContexteDe } from "../core/cotes";
+import type { Resultat } from "../core/types";
 import type { Contenu } from "../data/contenu";
 import type { EtatPwa } from "../pwa/pwa";
 
@@ -20,6 +22,11 @@ export interface Appli {
   confirmer: (o: OptionsConfirmation) => Promise<boolean>;
   pwa: EtatPwa;
   dernierExport: Date | null;
+  /** Historiques CSV (résultats passés). */
+  resultats: Resultat[];
+  rechargerResultats: () => Promise<void>;
+  /** Contexte d'analyse de chaque match (réglages, chiffres de son championnat). */
+  contexteDe: ContexteDe;
 }
 
 export const ContexteAppli = createContext<Appli | null>(null);
@@ -30,7 +37,7 @@ export function useAppli(): Appli {
   return a;
 }
 
-export type Route = "accueil" | "matchs" | "paris" | "donnees" | "reglages";
+export type Route = "accueil" | "matchs" | "paris" | "donnees" | "reglages" | "equipe";
 
 export const ROUTES: ReadonlyArray<{ route: Route; libelle: string; titre: string }> = [
   { route: "accueil", libelle: "Accueil", titre: "Accueil" },
@@ -42,7 +49,22 @@ export const ROUTES: ReadonlyArray<{ route: Route; libelle: string; titre: strin
 
 export function lireRoute(): Route {
   const r = window.location.hash.replace(/^#\/?/, "").split(/[/?]/)[0];
+  if (r === "equipe") return "equipe";
   return (ROUTES.find((x) => x.route === r)?.route ?? "accueil") as Route;
+}
+
+/** Paramètres de l'adresse (« #/equipe?nom=Lens&contre=Brest »). */
+export function parametresRoute(): URLSearchParams {
+  const h = window.location.hash;
+  const i = h.indexOf("?");
+  return new URLSearchParams(i >= 0 ? h.slice(i + 1) : "");
+}
+
+/** Adresse de la fiche d'une équipe. */
+export function lienEquipe(nom: string, contre?: string | null): string {
+  const p = new URLSearchParams({ nom });
+  if (contre) p.set("contre", contre);
+  return "#/equipe?" + p.toString();
 }
 
 /** Nombre de jours entiers écoulés depuis une date. */

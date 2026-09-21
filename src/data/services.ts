@@ -5,6 +5,7 @@
  */
 import { amorcerSuivi, nouvellesAlertes, suivreCotes, type AlerteCote } from "../core/cotes";
 import type { CotesMatch, Marche, Match, Resultat } from "../core/types";
+import { contexteDepuisBase } from "./analyse";
 import { estVide, jsonCanonique, resumer, type Contenu } from "./contenu";
 import {
   ajouterVersion,
@@ -131,7 +132,7 @@ async function ecrireMatchsVerifies(aEcrire: readonly Match[]): Promise<AlerteCo
     );
     throw new ErreurImport("Les matchs ne se sont pas écrits correctement : l'état précédent a été remis en place.");
   }
-  return nouvellesAlertes(avant.filter((m): m is Match => !!m), aEcrire);
+  return nouvellesAlertes(avant.filter((m): m is Match => !!m), aEcrire, await contexteDepuisBase());
 }
 
 export interface ResultatImportMatchs {

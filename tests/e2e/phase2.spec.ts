@@ -154,19 +154,23 @@ test("Cotes ressaisies à la main : contrôle de saisie, marge, nouveau relevé"
   await page.fill(`${base}-over25`, "abc");
   await c.getByRole("button", { name: "Enregistrer ces cotes" }).click();
   await expect(c.getByRole("alert")).toContainText("Plus de 2,5 : tape une cote supérieure à 1");
-  await page.fill(`${base}-over25`, "1,88");
+  // Nouvelle cote au-dessus de la cote minimale calculée : l'alerte suit l'enregistrement
+  const mini = Number((await c.locator('[data-test="cote-min-over25"]').textContent())!.match(/^(\d+,\d+)/)![1].replace(",", "."));
+  const cote = (Math.round(mini * 100) + 10) / 100;
+  const coteFr = cote.toFixed(2).replace(".", ",");
+  const miniFr = mini.toFixed(2).replace(".", ",");
+  await page.fill(`${base}-over25`, coteFr);
   await page.fill(`${base}-under25`, "1,95");
   await page.fill(`${base}-bookmaker`, "Winamax");
   await c.getByRole("button", { name: "Enregistrer ces cotes" }).click();
-  // 1,88 atteint la cote mini calculée par le carnet (1,73) : l'alerte suit l'enregistrement
-  await expect(page.locator('[data-test="toast"]')).toHaveText("Cote atteinte : Lens – Brest : plus de 2,5 buts à 1,88 (cote mini calculée : 1,73)");
-  await expect(c.locator('[data-test="alerte-cote"]')).toContainText("plus de 2,5 buts à 1,88, cote mini 1,73");
-  // 1/1,88 + 1/1,95 − 1 = 4,5 %
-  await expect(c.locator('[data-test="marge"]')).toHaveText("4,5 % (2,5 buts)");
+  await expect(page.locator('[data-test="toast"]')).toHaveText(`Cote atteinte : Lens – Brest : plus de 2,5 buts à ${coteFr} (cote mini calculée : ${miniFr})`);
+  await expect(c.locator('[data-test="alerte-cote"]')).toContainText(`plus de 2,5 buts à ${coteFr}, cote mini ${miniFr}`);
+  const marge = ((1 / cote + 1 / 1.95 - 1) * 100).toFixed(1).replace(".", ",");
+  await expect(c.locator('[data-test="marge"]')).toHaveText(`${marge} % (2,5 buts)`);
   const releves = c.locator('[data-test="historique-cotes"] li');
   await expect(releves).toHaveCount(2);
   await expect(releves.first()).toContainText("saisie · Winamax");
-  await expect(releves.first()).toContainText("+2,5 1,88");
+  await expect(releves.first()).toContainText(`+2,5 ${coteFr}`);
   await expect(releves.first().getByLabel("en hausse")).toBeVisible();
   await expect(releves.first()).toContainText("+1,5 1,25", { useInnerText: true });
 });

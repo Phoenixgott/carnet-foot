@@ -2,6 +2,36 @@
 
 Format : chaque version liste ce qui a été ajouté, modifié ou corrigé.
 
+## 0.3.0 — 21 septembre 2026 — Phase 3 : analyse
+
+### Ajouté
+- **Nouveau modèle de buts attendus** (`src/core/modele-v2/`), affiché à côté des chiffres du carnet :
+  forces d'attaque et de défense rapportées à la moyenne de la compétition et ramenées vers la moyenne
+  (4 matchs fictifs), avantage du terrain du championnat tiré des historiques CSV (1,25 sinon, neutre
+  pour une finale), forme récente (±15 % au plus), absents avec un poids réglable, et incertitude
+  (erreur d'échantillonnage + 8 % d'erreur de modèle).
+- Par méthode : probabilité et fourchette (± 1 écart type, environ 2 chances sur 3), cote juste,
+  cote minimale (bas de la fourchette), value en % d'après la cote actuelle (+2.5), risque de 1 à 5,
+  estimation du bookmaker marge retirée, avertissement si elle s'écarte de 10 points ou plus.
+  Méthode +2.5 : modèle mélangé 70/30 avec la part réelle de matchs à 3+ buts des deux équipes.
+- **Live (+1.5)** : répartition réelle des buts dans le temps (≈ 45 % en 1re mi-temps, plus en fin de
+  mi-temps), ajustée au championnat quand les CSV donnent les mi-temps, et prise en compte du 0-0
+  lui-même. Constat honnête : à la 20ᵉ minute, l'écart avec le calcul du carnet est faible (< 0,05 but).
+- **Verdict ✅ / ⏳ / ❌ expliqué en une phrase**, qui tient compte des critères, de la fiabilité et de la
+  cote (sous la cote juste : on passe ; entre cote juste et cote minimale : à revoir) ; « Pourquoi ? »
+  détaille chaque critère et chaque étape du calcul.
+- **Critères réglables** (Réglages → Analyse des matchs) : seuils +1.5 et +2.5, contextes acceptés,
+  poids des absents ; retour aux critères du carnet en un geste.
+- **Tri par intérêt** (verdict, value, probabilité prudente, fiabilité) et **comparaison de deux matchs**.
+- **Fiche équipe** (touche le nom d'une équipe) : chiffres de la saison, 10 derniers matchs, bilan,
+  séries en cours, confrontations directes ; noms reconnus entre la réponse de Claude et les CSV
+  (PSG = Paris SG, OM = Marseille…), jamais devinés en cas de doute.
+
+### Modifié
+- Les critères du carnet acceptent des seuils ; avec ceux du carnet (par défaut), tout reste identique
+  (tests de non-régression inchangés et verts).
+- La cote minimale par défaut des alertes de cote est celle du nouveau modèle.
+
 ## 0.2.2 — 21 septembre 2026 — Correctif de mise à jour (cause réelle et réparation)
 
 ### Corrigé

@@ -1,13 +1,14 @@
 /**
  * Historiques de résultats : import des fichiers CSV de football-data.co.uk
  * (un ou plusieurs à la fois), aperçu, doublons, puis résumé par championnat et saison.
- * Ils serviront au nouveau modèle (phase 3) et au backtest (phase 7).
+ * Ils servent au nouveau modèle (avantage du terrain, part des buts en 1re mi-temps),
+ * aux fiches équipe, et serviront au backtest (phase 7).
  */
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { dateCourte, fr } from "../../core/format";
 import { ErreurImport } from "../../data/import-carnet";
 import { resumerResultats, type GroupeResultats } from "../../data/import-csv";
-import { importerResultats, lireResultats, previsualiserCsv, supprimerGroupeResultats, type ApercuCsv } from "../../data/services";
+import { importerResultats, previsualiserCsv, supprimerGroupeResultats, type ApercuCsv } from "../../data/services";
 import { lireFichierTexte } from "../composants";
 import { useAppli } from "../contexte";
 
@@ -48,19 +49,12 @@ function TableauGroupes({ groupes, supprimer }: { groupes: GroupeResultats[]; su
 }
 
 export function Historiques() {
-  const { message, confirmer } = useAppli();
-  const [enregistres, setEnregistres] = useState<GroupeResultats[] | null>(null);
+  const { message, confirmer, resultats, rechargerResultats } = useAppli();
+  const enregistres = resumerResultats(resultats);
   const [fichiers, setFichiers] = useState<ApercuFichier[]>([]);
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
-
-  const rafraichir = () =>
-    lireResultats()
-      .then((rs) => setEnregistres(resumerResultats(rs)))
-      .catch(() => setEnregistres([]));
-  useEffect(() => {
-    rafraichir();
-  }, []);
+  const rafraichir = rechargerResultats;
 
   const choisir = async (liste: FileList | null) => {
     setErreur(null);
@@ -111,8 +105,8 @@ export function Historiques() {
       <h2 id="titre-historiques">Historiques de résultats (CSV)</h2>
       <p className="aide">
         Sur football-data.co.uk, rubrique « Data Files », télécharge le fichier CSV d'un championnat et d'une saison (ex. France, Ligue 1), puis
-        choisis-le ici. Tu peux en choisir plusieurs à la fois. Ils serviront au nouveau modèle (phase 3) et aux tests sur les saisons passées
-        (phase 7).
+        choisis-le ici. Tu peux en choisir plusieurs à la fois. Ils donnent au nouveau modèle le vrai avantage du terrain de chaque
+        championnat, remplissent les fiches équipe, et serviront aux tests sur les saisons passées (phase 7).
       </p>
       <p className="aide">
         Ce sont des données publiques : elles ne sont pas dans la sauvegarde fichier ni dans l'historique des versions. En cas de perte, il suffit
@@ -187,9 +181,7 @@ export function Historiques() {
         </div>
       )}
       <h3>Enregistrés sur ce téléphone</h3>
-      {enregistres === null ? (
-        <p className="aide">Chargement…</p>
-      ) : enregistres.length === 0 ? (
+      {enregistres.length === 0 ? (
         <p className="vide">Aucun historique pour l'instant.</p>
       ) : (
         <TableauGroupes groupes={enregistres} supprimer={supprimer} />

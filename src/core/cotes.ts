@@ -5,13 +5,19 @@
  * un relevé est ajouté à `historiqueCotes`. Une alerte est active quand la
  * dernière cote d'un marché atteint (≥) la cote minimale :
  *  - celle choisie à la main (`coteCible`), sinon
- *  - pour « plus de 2,5 buts », la cote mini calculée par le carnet (méthode +2.5).
+ *  - pour « plus de 2,5 buts », la cote minimale du nouveau modèle (méthode +2.5), calculée avec
+ *    les réglages et les historiques de l'utilisateur (`contexteDe`).
  * Pour « plus de 1,5 but », pas de cote mini par défaut : la méthode +1.5 se joue
  * en live, sa cote mini (à la 20ᵉ minute) ne se compare pas à la cote avant-match.
  */
-import { analyser } from "./carnet-v1/analyse";
 import { estNombre, fr } from "./format";
+import { analyserV2, type ContexteAnalyse } from "./modele-v2/analyse";
+import { REGLAGES_ANALYSE_DEFAUT } from "./modele-v2/reglages";
 import type { CotesMatch, Marche, Match, ReleveCotes } from "./types";
+
+/** Contexte d'analyse d'un match (historiques de son championnat, réglages). */
+export type ContexteDe = (m: Match) => ContexteAnalyse;
+export const CONTEXTE_PAR_DEFAUT: ContexteDe = () => ({ stats: null, reglages: REGLAGES_ANALYSE_DEFAUT });
 
 export const MARCHES: readonly Marche[] = ["over15", "over25"];
 
@@ -78,12 +84,12 @@ export interface CoteMinimale {
 }
 
 /** Cote minimale d'un marché pour ce match (null si aucune). */
-export function coteMinimale(m: Match, marche: Marche): CoteMinimale | null {
+export function coteMinimale(m: Match, marche: Marche, contexteDe: ContexteDe = CONTEXTE_PAR_DEFAUT): CoteMinimale | null {
   const choisie = m.coteCible?.[marche];
   if (estNombre(choisie) && choisie > 1) return { valeur: choisie, origine: "choisie" };
   if (marche === "over25") {
-    const fair = analyser(m, "+2.5").fair;
-    if (Number.isFinite(fair) && fair > 1) return { valeur: fair, origine: "calculee" };
+    const mini = analyserV2(m, "+2.5", contexteDe(m)).coteMinimale;
+    if (Number.isFinite(mini) && mini > 1) return { valeur: mini, origine: "calculee" };
   }
   return null;
 }
@@ -103,11 +109,11 @@ const nomMatch = (m: Match) => `${m.domicile?.nom ?? "?"} – ${m.exterieur?.nom
  * Comparaison sur la cote affichée à 2 décimales, comme le reste de l'application
  * (une cote mini de 1,7999 s'affiche 1,80 : une cote de 1,80 l'atteint).
  */
-export function alertesCote(m: Match): AlerteCote[] {
+export function alertesCote(m: Match, contexteDe: ContexteDe = CONTEXTE_PAR_DEFAUT): AlerteCote[] {
   const alertes: AlerteCote[] = [];
   for (const marche of MARCHES) {
     const cote = m.cotes?.[marche];
-    const min = coteMinimale(m, marche);
+    const min = coteMinimale(m, marche, contexteDe);
     if (!estNombre(cote) || !min) continue;
     if (Math.round(cote * 100) >= Math.round(min.valeur * 100)) {
       alertes.push({
@@ -123,9 +129,9 @@ export function alertesCote(m: Match): AlerteCote[] {
 }
 
 /** Alertes présentes après un changement mais pas avant : ce sont elles qu'on notifie. */
-export function nouvellesAlertes(avant: readonly Match[], apres: readonly Match[]): AlerteCote[] {
-  const deja = new Set(avant.flatMap(alertesCote).map((a) => a.matchId + "|" + a.marche));
-  return apres.flatMap(alertesCote).filter((a) => !deja.has(a.matchId + "|" + a.marche));
+export function nouvellesAlertes(avant: readonly Match[], apres: readonly Match[], contexteDe: ContexteDe = CONTEXTE_PAR_DEFAUT): AlerteCote[] {
+  const deja = new Set(avant.flatMap((m) => alertesCote(m, contexteDe)).map((a) => a.matchId + "|" + a.marche));
+  return apres.flatMap((m) => alertesCote(m, contexteDe)).filter((a) => !deja.has(a.matchId + "|" + a.marche));
 }
 
 /** Évolution d'une cote par rapport au relevé précédent : +1 monte, −1 baisse, 0 identique ou inconnu. */

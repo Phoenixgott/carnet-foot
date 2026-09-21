@@ -48,8 +48,8 @@ function Fleche({ s }: { s: -1 | 0 | 1 }) {
 }
 
 function CoteMinimale({ m, marche }: { m: Match; marche: Marche }) {
-  const { recharger, message } = useAppli();
-  const min = coteMinimale(m, marche);
+  const { recharger, message, contexteDe } = useAppli();
+  const min = coteMinimale(m, marche, contexteDe);
   const [texte, setTexte] = useState("");
   const [erreur, setErreur] = useState<string | null>(null);
   const id = `${idHtml(m.id)}-min-${marche}`;
@@ -214,7 +214,8 @@ function Historique({ m }: { m: Match }) {
 
 /** Bandeau d'alerte affiché sur la carte quand une cote atteint la cote minimale. */
 export function AlerteCotes({ m }: { m: Match }) {
-  const alertes = alertesCote(m);
+  const { contexteDe } = useAppli();
+  const alertes = alertesCote(m, contexteDe);
   if (!alertes.length) return null;
   return (
     <div className="alerte-cote" role="status" data-test="alerte-cote">

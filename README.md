@@ -46,7 +46,19 @@ notification si elles sont activées.
 **Historiques** : onglet Données, « Historiques de résultats (CSV) », choisis les fichiers
 téléchargés sur football-data.co.uk (rubrique Data Files).
 
-### 3. Sauvegarder
+### 3. Lire l'analyse
+
+Chaque match montre, pour +1.5 et +2.5 : le verdict (✅ On joue, ⏳ À revoir, ❌ On passe) et sa raison
+en une phrase, les chances et leur fourchette, la cote juste et la cote minimale (à exiger par
+prudence), la value quand la cote est connue, le risque sur 5, et les chiffres du carnet à côté.
+« Pourquoi ? » détaille chaque critère et chaque étape du calcul. **Par intérêt** classe les matchs
+du jour ; **Comparer** en met deux côte à côte ; le nom d'une équipe ouvre sa fiche (forme, séries,
+confrontations, grâce aux historiques CSV). Les seuils des critères et le poids des absents se
+règlent dans **Réglages → Analyse des matchs**.
+
+Rappel : ces chances sont des estimations. Seul le Freebet est garanti.
+
+### 4. Sauvegarder
 
 - **Données → Sauvegarde en un fichier** : « Enregistrer le fichier », « Partager (Drive, mail…) »
   ou « Copier le texte ». Garde ce fichier hors du téléphone : si le navigateur efface ses
@@ -56,7 +68,7 @@ téléchargés sur football-data.co.uk (rubrique Data Files).
 - **Restaurer** : choisis le fichier ou colle son texte. Une empreinte vérifie que le fichier
   n'a pas été abîmé ou modifié ; sinon il est refusé.
 
-### 4. Installer sur Android (version hébergée)
+### 5. Installer sur Android (version hébergée)
 
 L'application est hébergée sur GitHub Pages : https://phoenixgott.github.io/carnet-foot/
 Ouvre cette adresse dans Chrome, puis **Réglages → Installer l'application**
@@ -104,6 +116,9 @@ src/
     demande.ts     demande à l'autre conversation Claude (jour, compléments, cotes du jour J)
     cotes.ts       suivi des cotes, cote minimale, alertes ; marge.ts : marge du bookmaker
     saison.ts      saison d'après la date
+    modele-v2/     nouveau modèle (phase 3) : buts attendus et incertitude (modele.ts), analyse par
+                   méthode (analyse.ts), répartition des buts dans le temps (temps.ts), chiffres
+                   des championnats (championnat.ts), intérêt, fiches équipe, réglages
   data/            stockage IndexedDB, import du carnet, import des matchs (import-matchs.ts),
                    historiques CSV (import-csv.ts), vérification, sauvegardes, versions
   pwa/             service worker (hors ligne), installation, notifications

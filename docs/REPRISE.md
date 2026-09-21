@@ -43,10 +43,12 @@ Il fait foi.
 
 ## État actuel
 
-- **Phase 2 terminée** (étiquette `v0.2.0`, puis correctifs `v0.2.1` et `v0.2.2` (écran blanc après mise à jour), 21 septembre 2026) : voir `CHANGELOG.md`.
-  60 tests unitaires + 31 tests de bout en bout, tous verts. En ligne sur
+- **Phase 3 terminée** (étiquette `v0.3.0`, 21 septembre 2026) : voir `CHANGELOG.md`.
+  Phases précédentes : `v0.1.0`, `v0.2.0` (+ correctifs `v0.2.1`, `v0.2.2` : écran blanc après mise à jour).
+  76 tests unitaires + 36 tests de bout en bout, tous verts. En ligne sur
   https://phoenixgott.github.io/carnet-foot/ (dépôt `Phoenixgott/carnet-foot`, branche `gh-pages`).
-- **Prochaine étape : phase 3 (analyse), seulement après l'accord de l'utilisateur.**
+- **Prochaine étape : phase 4 (mode live), seulement après l'accord de l'utilisateur.** Le calcul live
+  (répartition des buts dans le temps, 0-0 à une minute donnée) existe déjà : `src/core/modele-v2/temps.ts`.
 - Ressenti de l'utilisateur après la phase 1 : l'app « ne ressemble en rien » à son carnet et ne lui
   sert à rien pour l'instant. Il a choisi de continuer le plan. Garder en tête : lui rendre vite un
   usage quotidien (récupérer les matchs, analyser, noter ses paris) et rester proche du carnet.

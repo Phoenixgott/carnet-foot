@@ -1,10 +1,49 @@
 /**
  * Critères des méthodes +1.5 et +2.5 du carnet d'origine, repris à l'identique
- * (seuils, textes et verdicts). Les seuils deviendront réglables en phase 3.
+ * (seuils, textes et verdicts). Depuis la phase 3, les seuils sont réglables ;
+ * avec les seuils du carnet (SEUILS_CARNET, par défaut), tout est identique au carnet.
  */
 import { estNombre, fr } from "../format";
 import type { Equipe, Match } from "../types";
 import { moyennes } from "./modele";
+
+export interface SeuilsPlus15 {
+  /** Une équipe « marque peu » ou « encaisse peu » à ce nombre de buts par match ou moins. */
+  butsParMatch: number;
+  /** % minimum de matchs à 2 buts ou plus, pour chaque équipe. */
+  pctPlus15: number;
+  /** Contextes acceptés (les autres rendent le match imprévisible). */
+  contextesAcceptes: string[];
+}
+
+export interface SeuilsPlus25 {
+  /** Moyenne de buts de la compétition : il faut strictement plus. */
+  moyenneCompetition: number;
+  /** Forme : buts récents au moins égaux à cette part de la moyenne de la saison (0,7 = 70 %). */
+  formeMin: number;
+  /** Nombre minimum de confrontations directes pour juger. */
+  h2hMinMatchs: number;
+  /** Part des confrontations à 3+ buts : bon signe à partir de… */
+  h2hBon: number;
+  /** … mauvais signe (bloquant) en dessous de. */
+  h2hMauvais: number;
+  /** Nombre de signaux favorables pour « On joue ». */
+  scoreOk: number;
+}
+
+export interface SeuilsCriteres {
+  plus15: SeuilsPlus15;
+  plus25: SeuilsPlus25;
+}
+
+/** Seuils du carnet d'origine. */
+export const SEUILS_CARNET: SeuilsCriteres = {
+  plus15: { butsParMatch: 1, pctPlus15: 70, contextesAcceptes: ["normal", "retour_coupe_retard"] },
+  plus25: { moyenneCompetition: 2.7, formeMin: 0.7, h2hMinMatchs: 3, h2hBon: 0.6, h2hMauvais: 0.4, scoreOk: 4 },
+};
+
+/** Nombre écrit à la française sans zéros inutiles (2,7 ; 70 ; 0,65). */
+const nb = (x: number) => String(x).replace(".", ",");
 
 /** Verdict : ok = « On joue », mid = « À revoir », ko = « On passe ». */
 export type Verdict = "ok" | "mid" | "ko";
@@ -43,25 +82,28 @@ export const CONTEXTES: Readonly<Record<string, string>> = {
 const minusculeInitiale = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
 
 /** Méthode +1.5 (le `evalM1` du carnet). */
-export function evaluerPlus15(m: Match): Evaluation {
+export function evaluerPlus15(m: Match, seuils: SeuilsPlus15 = SEUILS_CARNET.plus15): Evaluation {
   const h: Equipe = m.domicile || {};
   const a: Equipe = m.exterieur || {};
   const H = moyennes(h);
   const A = moyennes(a);
   const c: Critere[] = [];
   const surDix = m.selection ? " Sur leurs 10 derniers matchs." : "";
+  const b = seuils.butsParMatch;
 
   if ([H.s, H.c, A.s, A.c].some((v) => !Number.isFinite(v))) {
     c.push({ ok: null, t: "Buts marqués et encaissés inconnus" });
   } else {
     const f: string[] = [];
-    if (H.s <= 1) f.push(`${h.nom} marque peu`);
-    if (H.c <= 1) f.push(`${h.nom} encaisse peu`);
-    if (A.s <= 1) f.push(`${a.nom} marque peu`);
-    if (A.c <= 1) f.push(`${a.nom} encaisse peu`);
+    if (H.s <= b) f.push(`${h.nom} marque peu`);
+    if (H.c <= b) f.push(`${h.nom} encaisse peu`);
+    if (A.s <= b) f.push(`${a.nom} marque peu`);
+    if (A.c <= b) f.push(`${a.nom} encaisse peu`);
     c.push({
       ok: !f.length,
-      t: f.length ? f.join(", ") : "Les deux équipes marquent et encaissent plus d'1 but par match",
+      t: f.length
+        ? f.join(", ")
+        : `Les deux équipes marquent et encaissent plus ${b === 1 ? "d'1 but" : `de ${nb(b)} but${b > 1 ? "s" : ""}`} par match`,
       d: `${h.nom} : ${fr(H.s, 1)} marqué(s) et ${fr(H.c, 1)} encaissé(s) par match. ${a.nom} : ${fr(A.s, 1)} et ${fr(A.c, 1)}.${surDix}`,
     });
   }
@@ -69,11 +111,11 @@ export function evaluerPlus15(m: Match): Evaluation {
   if (!estNombre(h.pctOver15) || !estNombre(a.pctOver15)) {
     c.push({ ok: null, t: "% de matchs à 2 buts ou plus inconnu" });
   } else {
-    const ok = h.pctOver15 >= 70 && a.pctOver15 >= 70;
+    const ok = h.pctOver15 >= seuils.pctPlus15 && a.pctOver15 >= seuils.pctPlus15;
     c.push({
       ok,
       t: ok ? "Leurs matchs ont presque toujours 2 buts ou plus" : "Trop de matchs à 0 ou 1 but",
-      d: `${h.nom} : ${h.pctOver15} % de matchs à 2 buts ou plus. ${a.nom} : ${a.pctOver15} %. Minimum : 70 %.${surDix}`,
+      d: `${h.nom} : ${h.pctOver15} % de matchs à 2 buts ou plus. ${a.nom} : ${a.pctOver15} %. Minimum : ${nb(seuils.pctPlus15)} %.${surDix}`,
     });
   }
 
@@ -83,7 +125,7 @@ export function evaluerPlus15(m: Match): Evaluation {
   });
 
   const cx = m.contexte || "normal";
-  const ok4 = cx === "normal" || cx === "retour_coupe_retard";
+  const ok4 = seuils.contextesAcceptes.includes(cx);
   c.push({ ok: ok4, t: ok4 ? "Pas de pression particulière" : CONTEXTES[cx] + " : match imprévisible" });
 
   const echecs = c.filter((x) => x.ok === false).length;
@@ -103,7 +145,7 @@ export function evaluerPlus15(m: Match): Evaluation {
 }
 
 /** Méthode +2.5 (le `evalM3` du carnet). */
-export function evaluerPlus25(m: Match): Evaluation {
+export function evaluerPlus25(m: Match, seuils: SeuilsPlus25 = SEUILS_CARNET.plus25): Evaluation {
   const h: Equipe = m.domicile || {};
   const a: Equipe = m.exterieur || {};
   const c: Critere[] = [];
@@ -116,12 +158,12 @@ export function evaluerPlus25(m: Match): Evaluation {
     inconnus++;
     c.push({ ok: null, t: "Moyenne de buts de la compétition inconnue" });
   } else {
-    const ok = lg > 2.7;
+    const ok = lg > seuils.moyenneCompetition;
     if (ok) score++;
     c.push({
       ok,
       t: ok ? "Compétition où ça marque beaucoup" : "Compétition où ça marque peu",
-      d: `${m.ligue || "Compétition"} : ${fr(lg)} buts par match en moyenne. Minimum : 2,7.`,
+      d: `${m.ligue || "Compétition"} : ${fr(lg)} buts par match en moyenne. Minimum : ${nb(seuils.moyenneCompetition)}.`,
     });
   }
 
@@ -134,7 +176,7 @@ export function evaluerPlus25(m: Match): Evaluation {
       continue;
     }
     const formeActuelle = l.reduce((s, x) => s + x, 0) / l.length;
-    const ok = formeActuelle >= 0.7 * S;
+    const ok = formeActuelle >= seuils.formeMin * S;
     if (ok) score++;
     else bloquant = true;
     c.push({
@@ -145,12 +187,12 @@ export function evaluerPlus25(m: Match): Evaluation {
   }
 
   const hh = m.h2h;
-  if (hh && estNombre(hh.joues) && hh.joues >= 3 && estNombre(hh.over25)) {
+  if (hh && estNombre(hh.joues) && hh.joues >= seuils.h2hMinMatchs && estNombre(hh.over25)) {
     const r = hh.over25 / hh.joues;
-    if (r >= 0.6) {
+    if (r >= seuils.h2hBon) {
       score++;
       c.push({ ok: true, t: "Leurs matchs entre eux donnent souvent 3 buts ou plus", d: `${hh.over25} fois sur ${hh.joues}.` });
-    } else if (r < 0.4) {
+    } else if (r < seuils.h2hMauvais) {
       bloquant = true;
       c.push({
         ok: false,
@@ -180,7 +222,8 @@ export function evaluerPlus25(m: Match): Evaluation {
     c.push({ ok: "plus", t: "Bonus : une équipe doit attaquer pour remonter" });
   }
 
-  const v: Verdict = bloquant ? "ko" : score >= 4 ? "ok" : score + inconnus >= 4 || score >= 3 ? "mid" : "ko";
+  const k = seuils.scoreOk;
+  const v: Verdict = bloquant ? "ko" : score >= k ? "ok" : score + inconnus >= k || score >= k - 1 ? "mid" : "ko";
   const f = c.find((x) => x.ok === false);
   const why =
     v === "ok"
