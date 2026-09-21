@@ -2,6 +2,17 @@
 
 Format : chaque version liste ce qui a été ajouté, modifié ou corrigé.
 
+## 0.2.2 — 21 septembre 2026 — Correctif de mise à jour (cause réelle et réparation)
+
+### Corrigé
+- Cause réelle de l'écran blanc : à l'installation, le service worker mettait en cache la page gardée
+  par le navigateur (GitHub Pages autorise 10 minutes), donc une page d'une version avec les scripts
+  d'une autre. Les fichiers sont maintenant chargés sans passer par cette copie, et l'installation
+  vérifie que la page appelle bien les scripts de sa version (sinon elle attend et réessaie).
+- Réparation automatique : si la version en service a un cache abîmé, la nouvelle version prend le
+  relais sans attendre « Mettre à jour » et recharge les fenêtres ouvertes.
+- Le filet de sécurité active une version en attente avant de recharger la page.
+
 ## 0.2.1 — 21 septembre 2026 — Correctif de mise à jour
 
 ### Corrigé

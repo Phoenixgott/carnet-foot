@@ -1,7 +1,7 @@
 /**
  * Application installable et hors ligne, thème, notifications locales.
  */
-import { readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "playwright/test";
 import { donneesCarnet } from "./outils";
@@ -112,6 +112,71 @@ test("Mise à jour : les fichiers de la version précédente restent disponibles
     renameSync(DIST + "assets/" + nouveau, DIST + "assets/" + ancien);
     writeFileSync(DIST + "index.html", html);
     writeFileSync(SW, sw);
+  }
+});
+
+/** Prépare une « nouvelle version » dans dist/ : script copié sous un autre nom, sw.js modifié. */
+function nouvelleVersion(avecPage: boolean) {
+  const ancien = readdirSync(DIST + "assets").find((f) => /^app-.*\.js$/.test(f))!;
+  const nouveau = "app-NOUVEAU1.js";
+  const html = readFileSync(DIST + "index.html", "utf8");
+  const sw = readFileSync(SW, "utf8");
+  writeFileSync(DIST + "assets/" + nouveau, readFileSync(DIST + "assets/" + ancien));
+  writeFileSync(SW, sw.split(ancien).join(nouveau).replace(/[0-9a-f]{12}/, "fedcba987654"));
+  const publierPage = () => writeFileSync(DIST + "index.html", html.replace(ancien, nouveau));
+  if (avecPage) publierPage();
+  return {
+    ancien,
+    publierPage,
+    annuler: () => {
+      writeFileSync(DIST + "index.html", html);
+      writeFileSync(SW, sw);
+      rmSync(DIST + "assets/" + nouveau, { force: true });
+    },
+  };
+}
+
+test("Déploiement pas encore complet (ancienne page servie) : la nouvelle version attend au lieu de s'installer de travers", async ({ page }) => {
+  await page.goto("/#/reglages");
+  await expect(page.locator('[data-test="etat-hors-ligne"]')).toHaveText("Prête", { timeout: 15_000 });
+  const v = nouvelleVersion(false);
+  try {
+    const etat = await page.evaluate(async () => {
+      const reg = (await navigator.serviceWorker.getRegistration())!;
+      await reg.update().catch(() => null);
+      await new Promise((r) => setTimeout(r, 1500));
+      return { attente: !!reg.waiting, caches: (await caches.keys()).length };
+    });
+    expect(etat).toEqual({ attente: false, caches: 1 });
+    await expect(page.getByText("Une nouvelle version de l'application est prête.")).toHaveCount(0);
+    // La page arrive enfin : la nouvelle version s'installe normalement
+    v.publierPage();
+    await page.evaluate(async () => (await navigator.serviceWorker.getRegistration())!.update());
+    await expect(page.getByText("Une nouvelle version de l'application est prête.")).toBeVisible({ timeout: 15_000 });
+  } finally {
+    v.annuler();
+  }
+});
+
+test("Réparation : si la version en service a un cache abîmé, la nouvelle prend le relais et recharge la page", async ({ page }) => {
+  await page.goto("/#/reglages");
+  await expect(page.locator('[data-test="etat-hors-ligne"]')).toHaveText("Prête", { timeout: 15_000 });
+  // Abîme le cache en service comme le faisaient les versions 0.1.0 à 0.2.0 : la page appelle un script absent
+  await page.evaluate(async () => {
+    const c = await caches.open((await caches.keys())[0]);
+    for (const r of await c.keys()) if (/\/assets\/app-.*\.js$/.test(r.url)) await c.delete(r);
+  });
+  const v = nouvelleVersion(true);
+  try {
+    await Promise.all([
+      page.waitForEvent("load", { timeout: 15_000 }),
+      page.evaluate(async () => (await navigator.serviceWorker.getRegistration())!.update()),
+    ]);
+    await expect(page.getByRole("heading", { level: 1, name: "Réglages" })).toBeVisible();
+    await expect(page.getByText("Une nouvelle version de l'application est prête.")).toHaveCount(0);
+    expect(await page.evaluate(() => [...document.scripts].some((s) => s.src.includes("app-NOUVEAU1.js")))).toBe(true);
+  } finally {
+    v.annuler();
   }
 });
 
