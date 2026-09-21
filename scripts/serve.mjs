@@ -1,7 +1,7 @@
 /**
  * Petit serveur statique local (sans dépendance), pour essayer l'app et pour les tests.
  *   node scripts/serve.mjs dist 4173
- * Toute adresse inconnue renvoie index.html (navigation dans l'app).
+ * Une adresse inconnue sans extension renvoie index.html ; un fichier introuvable renvoie 404.
  */
 import http from "node:http";
 import fs from "node:fs/promises";
@@ -32,7 +32,12 @@ http
         fichier = path.join(fichier, "index.html");
         stat = await fs.stat(fichier).catch(() => null);
       }
-      if (!stat) fichier = path.join(dossier, "index.html");
+      if (!stat) {
+        // Fichier introuvable (script, image…) : 404, comme GitHub Pages. Seules les adresses
+        // sans extension retombent sur l'application.
+        if (path.extname(fichier)) throw new Error("introuvable");
+        fichier = path.join(dossier, "index.html");
+      }
       const corps = await fs.readFile(fichier);
       res.writeHead(200, {
         "Content-Type": TYPES[path.extname(fichier)] ?? "application/octet-stream",

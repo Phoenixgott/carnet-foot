@@ -6,6 +6,9 @@
  * - Une nouvelle version s'installe en arrière-plan et attend que l'utilisateur
  *   choisisse « Mettre à jour » (message « activer-nouvelle-version »).
  * - Aucune requête vers un autre site n'est interceptée ni faite.
+ * - Le cache de la version précédente est gardé : une page encore ouverte avec elle
+ *   (ou servie par l'ancien service worker juste avant la bascule) peut toujours charger
+ *   ses fichiers, qui n'existent plus sur le serveur. Sans cela, l'écran restait blanc.
  */
 declare const self: ServiceWorkerGlobalScope;
 declare const __PRECACHE__: string[];
@@ -13,15 +16,30 @@ declare const __CACHE_VERSION__: string;
 
 const PREFIXE = "carnet-foot-";
 const CACHE = PREFIXE + __CACHE_VERSION__;
+/** Entrée technique de chaque cache : date d'installation, pour savoir lequel est le précédent. */
+const INSTALLE_LE = "./__installe-le";
 
 self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(__PRECACHE__)));
+  e.waitUntil(
+    caches.open(CACHE).then(async (c) => {
+      await c.addAll(__PRECACHE__);
+      await c.put(INSTALLE_LE, new Response(String(Date.now())));
+    }),
+  );
 });
 
 self.addEventListener("activate", (e) => {
   e.waitUntil(
     (async () => {
-      for (const cle of await caches.keys()) if (cle.startsWith(PREFIXE) && cle !== CACHE) await caches.delete(cle);
+      const anciens = (await caches.keys()).filter((cle) => cle.startsWith(PREFIXE) && cle !== CACHE);
+      const dates = await Promise.all(
+        anciens.map(async (cle) => {
+          const r = await (await caches.open(cle)).match(INSTALLE_LE);
+          return r ? Number(await r.text()) || 0 : 0;
+        }),
+      );
+      const precedent = anciens.length ? anciens[dates.indexOf(Math.max(...dates))] : null;
+      for (const cle of anciens) if (cle !== precedent) await caches.delete(cle);
       await self.clients.claim();
     })(),
   );
@@ -49,7 +67,8 @@ self.addEventListener("fetch", (e) => {
   e.respondWith(
     (async () => {
       const cache = await caches.open(CACHE);
-      return (await cache.match(req, { ignoreSearch: true })) ?? fetch(req);
+      // D'abord la version actuelle, puis la précédente (fichiers d'une page ouverte avant la bascule).
+      return (await cache.match(req, { ignoreSearch: true })) ?? (await caches.match(req, { ignoreSearch: true })) ?? fetch(req);
     })(),
   );
 });

@@ -43,8 +43,8 @@ Il fait foi.
 
 ## État actuel
 
-- **Phase 2 terminée** (étiquette `v0.2.0`, 21 septembre 2026) : voir `CHANGELOG.md`.
-  60 tests unitaires + 27 tests de bout en bout, tous verts. En ligne sur
+- **Phase 2 terminée** (étiquette `v0.2.0`, puis correctif `v0.2.1`, 21 septembre 2026) : voir `CHANGELOG.md`.
+  60 tests unitaires + 29 tests de bout en bout, tous verts. En ligne sur
   https://phoenixgott.github.io/carnet-foot/ (dépôt `Phoenixgott/carnet-foot`, branche `gh-pages`).
 - **Prochaine étape : phase 3 (analyse), seulement après l'accord de l'utilisateur.**
 - Ressenti de l'utilisateur après la phase 1 : l'app « ne ressemble en rien » à son carnet et ne lui
@@ -54,11 +54,7 @@ Il fait foi.
   `%LOCALAPPDATA%\Programs\PortableGit` (pas dans le PATH ; `bin\bash.exe` pour publier-pages.sh).
   Le Chromium de Playwright ne démarre pas sur ce PC : `PW_CANAL=chrome npm run e2e`.
 
-## Fait lors de la reprise (session du 21 septembre 2026)
-
-Les étapes ci-dessous ont été faites ; elles restent pour mémoire.
-
-## À faire en premier dans la nouvelle session (fait)
+## Reprise du 21 septembre 2026 (fait, gardé pour mémoire)
 
 1. **Publier le code** : l'archive `carnet-paris-foot-code-source.zip` a été soit déposée par
    l'utilisateur à la racine du dépôt (via « Add file → Upload files » sur GitHub), soit jointe à la

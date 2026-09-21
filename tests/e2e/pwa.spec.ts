@@ -1,12 +1,13 @@
 /**
  * Application installable et hors ligne, thème, notifications locales.
  */
-import { readFileSync, writeFileSync } from "node:fs";
+import { readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "playwright/test";
 import { donneesCarnet } from "./outils";
 
 const SW = fileURLToPath(new URL("../../dist/sw.js", import.meta.url));
+const DIST = fileURLToPath(new URL("../../dist/", import.meta.url));
 
 test("Manifeste complet et icônes présentes (installable sur Android)", async ({ page, request }) => {
   await page.goto("/");
@@ -82,6 +83,47 @@ test("Notifications : activation puis notification de test via le service worker
   await expect(page.locator('[data-test="toast"]')).toHaveText("Notification envoyée");
   const affichees = await page.evaluate(async () => (await (await navigator.serviceWorker.ready).getNotifications()).map((n) => n.body));
   expect(affichees).toContain("Les notifications fonctionnent.");
+});
+
+test("Mise à jour : les fichiers de la version précédente restent disponibles après la bascule (pas d'écran blanc)", async ({ page }) => {
+  await page.goto("/#/reglages");
+  await expect(page.locator('[data-test="etat-hors-ligne"]')).toHaveText("Prête", { timeout: 15_000 });
+  // Simule une nouvelle version : le script de l'app change de nom, l'ancien disparaît du serveur.
+  const ancien = readdirSync(DIST + "assets").find((f) => /^app-.*\.js$/.test(f))!;
+  const nouveau = "app-NOUVEAU0.js";
+  const html = readFileSync(DIST + "index.html", "utf8");
+  const sw = readFileSync(SW, "utf8");
+  try {
+    renameSync(DIST + "assets/" + ancien, DIST + "assets/" + nouveau);
+    writeFileSync(DIST + "index.html", html.replace(ancien, nouveau));
+    writeFileSync(SW, sw.split(ancien).join(nouveau).replace(/[0-9a-f]{12}/, "0123456789ab"));
+    expect((await page.request.get("/assets/" + ancien)).status()).toBe(404);
+    await page.evaluate(async () => (await navigator.serviceWorker.getRegistration())!.update());
+    await expect(page.getByText("Une nouvelle version de l'application est prête.")).toBeVisible({ timeout: 15_000 });
+    await Promise.all([page.waitForEvent("load"), page.getByRole("button", { name: "Mettre à jour" }).click()]);
+    await expect(page.getByRole("heading", { level: 1, name: "Réglages" })).toBeVisible();
+    // Le nouveau service worker contrôle la page et sert encore l'ancien script depuis le cache précédent
+    const r = await page.evaluate(async (f) => {
+      const rep = await fetch("./assets/" + f);
+      return { statut: rep.status, caches: (await caches.keys()).filter((k) => k.startsWith("carnet-foot-")).length };
+    }, ancien);
+    expect(r).toEqual({ statut: 200, caches: 2 });
+  } finally {
+    renameSync(DIST + "assets/" + nouveau, DIST + "assets/" + ancien);
+    writeFileSync(DIST + "index.html", html);
+    writeFileSync(SW, sw);
+  }
+});
+
+test("Démarrage raté (script introuvable) : la page se recharge une fois toute seule", async ({ page }) => {
+  let echecs = 0;
+  await page.route(/\/assets\/app-.*\.js$/, (route) => {
+    if (echecs++ === 0) return route.fulfill({ status: 404, body: "" });
+    return route.continue();
+  });
+  await page.goto("/#/accueil");
+  await expect(page.getByRole("heading", { level: 1, name: "Accueil" })).toBeVisible({ timeout: 15_000 });
+  expect(echecs).toBe(2);
 });
 
 test("Mise à jour : une nouvelle version est proposée puis appliquée", async ({ page }) => {

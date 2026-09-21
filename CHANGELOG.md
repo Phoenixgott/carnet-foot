@@ -2,6 +2,16 @@
 
 Format : chaque version liste ce qui a été ajouté, modifié ou corrigé.
 
+## 0.2.1 — 21 septembre 2026 — Correctif de mise à jour
+
+### Corrigé
+- Écran blanc possible juste après une mise à jour (présent depuis la 0.1.0) : l'ancien service worker
+  servait l'ancienne page pendant que le nouveau effaçait l'ancien cache ; le script de l'ancienne page,
+  supprimé du serveur, était alors introuvable. Le cache de la version précédente est désormais gardé
+  et consulté, et un filet de sécurité (`public/demarrage.js`) recharge la page une fois si
+  l'application n'a pas démarré.
+- Serveur local de test : un fichier introuvable renvoie 404, comme GitHub Pages.
+
 ## 0.2.0 — 21 septembre 2026 — Phase 2 : données et import
 
 ### Ajouté
