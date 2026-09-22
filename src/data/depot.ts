@@ -86,6 +86,21 @@ export async function remplacerContenu(c: Contenu): Promise<void> {
 }
 
 /**
+ * Remise à zéro : efface matchs, paris, réglages (sauf le thème), photos des tickets et
+ * historiques CSV, en une seule transaction. L'historique des versions est gardé : une copie
+ * faite juste avant permet de revenir en arrière.
+ */
+export async function effacerTout(): Promise<void> {
+  const db = await ouvrirBase();
+  await transaction(db, ["matchs", "paris", "reglages", "tickets", "resultats"], "readwrite", async (tx) => {
+    const sr = tx.objectStore("reglages");
+    const theme = (await requete(sr.getAll() as IDBRequest<Reglage[]>)).filter((r) => r.cle === "theme");
+    await Promise.all(["matchs", "paris", "reglages", "tickets", "resultats"].map((s) => requete(tx.objectStore(s).clear())));
+    await Promise.all(theme.map((r) => requete(sr.put(r))));
+  });
+}
+
+/**
  * Écrit (ajoute ou remplace) des matchs et en supprime d'autres, en une seule transaction.
  * Les paris et réglages ne sont pas touchés.
  */

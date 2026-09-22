@@ -35,7 +35,7 @@ export function Simulateur() {
   return (
     <div className="section" data-test="simulateur">
       <p className="aide">
-        Rejoue tes paris terminés avec une autre façon de miser, et compare au résultat réel. Un pari « sécurisé » (freebet, cash-out, couverture…)
+        Rejoue tes paris terminés avec une autre façon de miser, et compare au résultat réel. Un pari « sécurisé » (cash-out, couverture…)
         garde son gain réel : sa mise ne se recalcule pas comme celle d'un pari classique.
       </p>
       <Choix<Type> libelle="Façon de miser" valeur={type} options={[["fixe", "Mise fixe"], ["pourcent", "% de la bankroll"]]} changer={setType} />

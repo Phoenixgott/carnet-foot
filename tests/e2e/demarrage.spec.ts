@@ -27,7 +27,7 @@ test("Premier démarrage : une seule question (la bankroll), puis trois tuiles p
   await expect(page.locator('[data-test="bankroll"]')).toHaveText("33,00 €");
   await expect(page.locator('[data-test="bankroll-entete"]')).toHaveText("33,00 €");
   const tuiles = page.locator('[data-test="premiers-pas"]');
-  await expect(tuiles.getByRole("link")).toHaveCount(3);
+  await expect(tuiles.getByRole("link")).toHaveCount(4); // + « J'ai déjà un carnet » tant que l'app est vide
 
   await tuiles.getByRole("link", { name: /Noter un pari/ }).click();
   await expect(page).toHaveURL(/#\/paris$/);
@@ -62,6 +62,45 @@ test("Ma bankroll dans les réglages : modifiable, la mise conseillée suit", as
   await page.fill("#bankroll-depart", "-5");
   await page.getByRole("button", { name: "Enregistrer ma bankroll" }).click();
   await expect(page.getByRole("alert")).toContainText("supérieur à 0");
+});
+
+test("Tout remettre à zéro : confirmation, tout est effacé, une copie de sécurité reste", async ({ page }) => {
+  await page.goto("/");
+  await page.fill("#bienvenue-bankroll", "33");
+  await page.getByRole("button", { name: "C'est parti" }).click();
+  await page.goto("/#/paris");
+  await page.getByRole("button", { name: "Ajouter un pari" }).click();
+  await expect(page.locator("#pari-methode option")).toHaveText(["+1.5", "+2.5"]); // plus de Freebet
+  await page.fill("#pari-match", "Lens – Brest");
+  await page.fill("#pari-cote", "1,80");
+  await page.fill("#pari-mise", "5");
+  await page.getByRole("button", { name: "Ajouter le pari" }).click();
+  await expect(page.locator(".pari")).toHaveCount(1);
+
+  // Annulé : rien ne bouge
+  await page.goto("/#/reglages");
+  await page.getByRole("button", { name: "Tout remettre à zéro" }).click();
+  await expect(page.getByRole("dialog")).toContainText("Tout remettre à zéro ?");
+  await page.getByRole("dialog").getByRole("button", { name: "Annuler" }).click();
+  await expect(page.locator('[data-test="bankroll-entete"]')).toHaveText("33,00 €");
+
+  // Confirmé : retour au premier démarrage
+  await page.getByRole("button", { name: "Tout remettre à zéro" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Tout effacer" }).click();
+  await expect(page.locator('[data-test="toast"]')).toHaveText("Tout est remis à zéro");
+  await expect(page.locator('[data-test="bienvenue"]')).toContainText("Combien as-tu pour parier ?");
+  await expect(page.locator('[data-test="bankroll-entete"]')).toHaveCount(0);
+  await page.goto("/#/paris");
+  await expect(page.locator(".pari")).toHaveCount(0);
+  await page.goto("/#/donnees");
+  await expect(page.locator(".versions li", { hasText: "Avant une remise à zéro" })).toHaveCount(1);
+});
+
+test("Plus de Freebet : 5 onglets, l'ancienne adresse ramène à l'accueil", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("nav.onglets a")).toHaveText(["Accueil", "Matchs", "Live", "Mes paris", "Données"]);
+  await page.goto("/#/freebet");
+  await expect(page.getByRole("heading", { level: 1, name: "Accueil" })).toBeVisible();
 });
 
 test("Import du carnet après le premier démarrage : la bankroll choisie dans l'app est gardée", async ({ context, page }) => {

@@ -7,7 +7,6 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { pAuPlus, pPlusDe, lambdaRestant } from "../../src/core/poisson";
 import { couvertureLay, couverturePariContraire, resultatCashOut } from "../../src/core/couverture";
-import { calculerFreebet } from "../../src/core/freebet";
 import { bilan, gainPari, miseConseillee } from "../../src/core/paris";
 import { eur, fr, pc } from "../../src/core/format";
 import type { Pari } from "../../src/core/types";
@@ -58,35 +57,6 @@ test("Couverture par lay avec commission : les deux issues donnent le même rés
 test("Cash-out : bénéfice = montant proposé − mise", () => {
   assert.equal(resultatCashOut(20, 26), 6);
   assert.equal(resultatCashOut(20, 14.5), -5.5);
-});
-
-test("Freebet : exemple du carnet (qualif 100 € à 2,05/1,95 ; freebet 100 € à 4,50/1,30)", () => {
-  const r = calculerFreebet({
-    mode: "book", qMise: 100, qCote: 2.05, qCoteInverse: 1.95, qCommission: 0,
-    fMontant: 100, fCote: 4.5, fCoteInverse: 1.3, fCommission: 0,
-  });
-  proche(r.qualif.miseCouverture, 105.1282051, 1e-6);
-  assert.equal(eur(r.qualif.resultat), "−0,13 €");
-  proche(r.freebet.miseCouverture, 269.2307692, 1e-6);
-  assert.equal(eur(r.freebet.resultat), "80,77 €");
-  assert.equal(eur(r.total), "80,64 €");
-  assert.equal(pc(r.conversion), "81 %");
-  // Garantie : même résultat si le pari Unibet gagne ou perd
-  const gagneUnibet = 100 * (4.5 - 1) - r.freebet.miseCouverture;
-  const perdUnibet = r.freebet.miseCouverture * (1.3 - 1);
-  proche(gagneUnibet, perdUnibet, 1e-9, "freebet garanti");
-});
-
-test("Freebet sur exchange : même résultat quelle que soit l'issue", () => {
-  const c = 0.05;
-  const r = calculerFreebet({
-    mode: "lay", qMise: 50, qCote: 2.2, qCoteInverse: 2.26, qCommission: c,
-    fMontant: 50, fCote: 5, fCoteInverse: 5.2, fCommission: c,
-  });
-  const L = r.freebet.miseCouverture;
-  proche(50 * (5 - 1) - L * (5.2 - 1), L * (1 - c), 1e-9, "freebet lay");
-  const Lq = r.qualif.miseCouverture;
-  proche(50 * (2.2 - 1) - Lq * (2.26 - 1), Lq * (1 - c) - 50, 1e-9, "qualif lay");
 });
 
 const pari = (p: Partial<Pari>): Pari => ({

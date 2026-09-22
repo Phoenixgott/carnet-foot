@@ -17,7 +17,6 @@ import { evaluerPlus15, evaluerPlus25 } from "../../src/core/carnet-v1/criteres"
 import { analyser, niveauRisque } from "../../src/core/carnet-v1/analyse";
 import { decisionAvantMatch, decisionEntreeLive, tableauCotesLive } from "../../src/core/carnet-v1/decisions";
 import { couvertureLay, couverturePariContraire, resultatCashOut } from "../../src/core/couverture";
-import { appreciationConversion, calculerFreebet } from "../../src/core/freebet";
 import { gainPari, gainsTotaux, miseConseillee } from "../../src/core/paris";
 import { eur, fr, pc } from "../../src/core/format";
 
@@ -125,37 +124,6 @@ test("Couverture +1.5 (pari contraire, exchange, cash-out) : mêmes montants que
     html = carnet.els["#h1Out"].innerHTML;
     const g = resultatCashOut(S, C);
     assert.ok(html.includes(g > 0 ? `Tu gagnes ${eur(g)}` : `Tu perds ${eur(-g)}`), `cash-out — ${lieu}`);
-  }
-});
-
-test("Freebet (autre bookmaker et exchange) : mêmes montants que le carnet", () => {
-  const r = aleatoire(99);
-  for (let i = 0; i < 300; i++) {
-    const e = {
-      qMise: r.reel(5, 200, 0), qCote: r.reel(1.5, 3), qCoteInverse: r.reel(1.5, 3), qCommission: r.choix([0, 0.02, 0.05]),
-      fMontant: r.reel(5, 200, 0), fCote: r.reel(2, 8), fCoteInverse: r.reel(1.1, 2), fCommission: r.choix([0, 0.02, 0.05]),
-    };
-    const champs: Record<string, number> = {
-      "#qStake": e.qMise, "#qOdd": e.qCote, "#qOpp": e.qCoteInverse, "#qComm": e.qCommission * 100,
-      "#fStake": e.fMontant, "#fOdd": e.fCote, "#fOpp": e.fCoteInverse, "#fComm": e.fCommission * 100,
-    };
-    for (const [sel, v] of Object.entries(champs)) carnet.els[sel] = { value: String(v), checked: false, innerHTML: "" };
-    for (const mode of ["book", "lay"] as const) {
-      for (const sel of ["#qOut", "#fOut", "#fbTotal"]) carnet.els[sel] = { value: "", checked: false, innerHTML: "" };
-      carnet.setFbMode(mode);
-      O.calcFB();
-      const res = calculerFreebet({ ...e, mode });
-      const lieu = `${mode} ${JSON.stringify(e)}`;
-      const q = carnet.els["#qOut"].innerHTML, f = carnet.els["#fOut"].innerHTML, t = carnet.els["#fbTotal"].innerHTML;
-      assert.ok(q.includes(`<strong>Mise ${eur(res.qualif.miseCouverture)}</strong>`), `mise qualif — ${lieu}`);
-      assert.ok(q.includes(`<b>${eur(res.qualif.resultat)}</b>`), `résultat qualif — ${lieu}`);
-      assert.ok(q.includes(`answer ${res.qualif.resultat > -e.qMise * 0.05 ? "ok" : "mid"}`), `appréciation qualif — ${lieu}`);
-      assert.ok(f.includes(`<strong>Mise ${eur(res.freebet.miseCouverture)}</strong>`), `mise freebet — ${lieu}`);
-      assert.ok(f.includes(`tu gagnes <b>${eur(res.freebet.resultat)}</b>`), `résultat freebet — ${lieu}`);
-      assert.ok(t.includes(`>${eur(res.total)}</b>`), `total — ${lieu}`);
-      assert.ok(t.includes(`Tu transformes ${pc(res.conversion)} du freebet`), `conversion — ${lieu}`);
-      assert.ok(t.includes(`<div class="answer ${appreciationConversion(res.conversion)}">`), `appréciation conversion — ${lieu}`);
-    }
   }
 });
 

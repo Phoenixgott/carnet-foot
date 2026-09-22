@@ -50,6 +50,7 @@ test("Demande : jour, compétitions, nombre de matchs, saison d'après la date ;
   const rec = page.locator('[data-test="recuperer"]');
   await expect(rec).toHaveAttribute("open", "");
   await page.fill("#demande-date", "2027-03-10");
+  await rec.locator('[data-test="options-demande"] > summary').click();
   await expect(rec).toContainText("Saison des statistiques : 2026-2027.");
   await rec.getByText("WSL", { exact: true }).click();
   await page.selectOption("#demande-par-reponse", "6");
@@ -66,6 +67,7 @@ test("Demande : jour, compétitions, nombre de matchs, saison d'après la date ;
   expect(await page.evaluate(() => navigator.clipboard.readText())).toContain('"under25"');
 
   await page.reload();
+  await rec.locator('[data-test="options-demande"] > summary').click();
   await expect(page.getByRole("checkbox", { name: "WSL" })).toBeChecked();
   await expect(page.locator("#demande-par-reponse")).toHaveValue("6");
   await expect(page.locator("#demande-max")).toHaveValue("10");
@@ -97,6 +99,7 @@ test("Réponse de Claude : aperçu, suite, compléments, doublons, fiabilité, s
 
   // Cote minimale choisie : 1,90 sur « plus de 2,5 buts » (la cote actuelle 1,70 ne l'atteint pas)
   const lensCarte = carte(page, "Lens");
+  await lensCarte.locator('[data-test="infos-match"] > summary').click();
   await lensCarte.getByText("Cotes et suivi").click();
   const idMin = `#m-${DATE}-lens-brest-min-over25`;
   await page.fill(idMin, "1,90");
@@ -148,6 +151,7 @@ test("Cotes ressaisies à la main : contrôle de saisie, marge, nouveau relevé"
   await coller(page, reponse([match("Lens", "Brest", { cotes: { over15: 1.25, over25: 1.7, bookmaker: "Unibet" } })]));
   await page.getByRole("button", { name: "Enregistrer 1 nouveau" }).click();
   const c = carte(page, "Lens");
+  await c.locator('[data-test="infos-match"] > summary').click();
   await c.getByText("Cotes et suivi").click();
   await expect(c.locator('[data-test="marge"]')).toContainText("⏳");
   const base = `#m-${DATE}-lens-brest`;
@@ -256,6 +260,7 @@ test("Mise à niveau : une base de la version 0.1.0 garde ses paris, matchs et r
   await page.locator('[data-test="recuperer"] > summary').click();
   await coller(page, reponse([{ id: "vieux", date: DATE, domicile: { nom: "Nantes" }, exterieur: { nom: "Nice" }, cotes: { over25: 2.0 } }]));
   await page.getByRole("button", { name: "Enregistrer 1 complété" }).click();
+  await carte(page, "Nantes").locator('[data-test="infos-match"] > summary').click();
   await carte(page, "Nantes").getByText("Cotes et suivi").click();
   const releves = carte(page, "Nantes").locator('[data-test="historique-cotes"] li');
   await expect(releves).toHaveCount(2);

@@ -83,11 +83,13 @@ function Etape1() {
       <span className="etape-num" aria-hidden="true">1</span>
       <div className="section">
         <h3>Copie la demande</h3>
-        <div className="grille-champs">
-          <label className="champ" htmlFor="demande-date">
-            Jour des matchs
-            <input id="demande-date" type="date" value={date} onChange={(e: Event) => setDate((e.target as HTMLInputElement).value)} />
-          </label>
+        <label className="champ" htmlFor="demande-date">
+          Jour des matchs
+          <input id="demande-date" type="date" value={date} onChange={(e: Event) => setDate((e.target as HTMLInputElement).value)} />
+        </label>
+        <details className="repli" data-test="options-demande">
+          <summary>Choisir les championnats (facultatif)</summary>
+          <div className="section">
           <label className="champ" htmlFor="demande-un-match">
             Un seul match ? (facultatif)
             <input
@@ -98,7 +100,6 @@ function Etape1() {
               onChange={(e: Event) => setUnMatch((e.target as HTMLInputElement).value)}
             />
           </label>
-        </div>
         {dateOk && <p className="aide">Saison des statistiques : {saisonDe(date)}.</p>}
         {!unMatch.trim() &&
           (Object.keys(LIBELLE_GROUPE) as GroupeCompetition[]).map((g) => (
@@ -143,6 +144,8 @@ function Etape1() {
             </label>
           )}
         </div>
+          </div>
+        </details>
         {!unMatch.trim() && choisies.length === 0 && (
           <p className="bandeau attention">Aucune compétition cochée : la demande portera sur la Ligue 1.</p>
         )}

@@ -80,6 +80,17 @@ Il fait foi.
   ne sert plus qu'aux données d'avant et aux tests qui vont directement sur un écran.
   Pistes de simplification restantes si l'utilisateur les demande : écran Matchs (récupération en
   3 étapes via l'autre conversation Claude) et Live, encore denses.
+- **`v0.8.0` (retour utilisateur)** : « enlève le freebet, garde les deux méthodes », « un bouton qui
+  remette tout à zéro », « simplifie tout, accessible à quelqu'un qui ne comprend rien ». Livré :
+  suppression complète du module Freebet (écran, calculateur, comparateur, offres, `core/freebet.ts`,
+  `offres.ts`, `ics.ts`, tests associés — tout reste dans l'historique git, étiquette `v0.7.1`) ;
+  5 onglets ; `METHODES_JOUABLES` = +1.5 et +2.5 (le type `Methode` garde « Freebet » pour relire les
+  anciens paris) ; bouton « Tout remettre à zéro » (`remettreAZero` dans `services.ts`,
+  `effacerTout` dans `depot.ts`, copie « avant-remise-a-zero » avant d'effacer) ; cartes de match,
+  Live et formulaire de pari simplifiés (chiffres rangés dans des `<details>` — les tests e2e
+  ouvrent ces blocs avant d'interagir) ; mention 18+.
+  **Reste à simplifier si l'utilisateur le demande** : l'écran Données (CSV, versions, stockage) et
+  la récupération des matchs en 3 étapes.
 - **Prochaine étape : demander à l'utilisateur ce qu'il veut ensuite.** Le cahier des charges est
   entièrement couvert sauf la phase 7 (backtest), volontairement mise de côté. Pistes possibles :
   revenir sur la phase 7, étendre le style bleu-et-noir aux autres écrans, ou simplement laisser

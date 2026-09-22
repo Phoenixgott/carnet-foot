@@ -1,7 +1,7 @@
 /**
  * Phase 6 de bout en bout : journal des paris (ajout, modification, suppression, photo du
  * ticket), statistiques avancées, simulateur, réglages de mises et d'objectifs, et intégrations
- * « Noter ce pari » depuis le Live et le Freebet.
+ * « Noter ce pari » depuis le Live.
  */
 import { expect, test, type Page } from "playwright/test";
 import { ouvrirReglagesAvances } from "./outils";
@@ -77,6 +77,7 @@ test("Journal : lier un pari à un match chargé remplit le texte et la compéti
 
   await page.goto("/#/paris");
   await page.getByRole("button", { name: "Ajouter un pari" }).click();
+  await page.locator('[data-test="pari-options"] > summary').click();
   await page.selectOption("#pari-match-lie", m.id);
   await expect(page.locator("#pari-match")).toHaveValue("Lens – Brest");
   await expect(page.locator("#pari-date")).toHaveValue("2030-05-04");
@@ -269,28 +270,4 @@ test("Live : un pari couvert et rentable se note comme sécurisé, avec le gain 
   await expect(page.locator("#pari-pnl")).toHaveValue("1,17");
   await page.getByRole("button", { name: "Ajouter le pari" }).click();
   await expect(page.locator(".pari")).toContainText("1,17 €");
-});
-
-test("Freebet : proposé au journal quand une offre est terminée avec un bénéfice", async ({ page }) => {
-  await page.goto("/#/freebet?vue=offres");
-  await page.getByRole("button", { name: "Ajouter une offre" }).click();
-  await page.fill("#offre-bookmaker", "Winamax");
-  await page.fill("#offre-montant", "20");
-  await page.getByRole("button", { name: "Enregistrer l'offre" }).click();
-  await expect(page.locator('[data-test="toast"]')).toHaveText("Offre ajoutée");
-
-  await page.getByRole("button", { name: "Modifier l'offre Winamax" }).click();
-  await page.selectOption("#offre-statut", "terminee");
-  await page.fill("#offre-benefice", "14,5");
-  await page.getByRole("button", { name: "Enregistrer l'offre" }).click();
-  await expect(page.getByRole("dialog")).toContainText("Ajouter ce freebet à ton journal ?");
-  await expect(page.getByRole("dialog")).toContainText("14,50");
-  await page.getByRole("dialog").getByRole("button", { name: "Ajouter au journal" }).click();
-  await expect(page).toHaveURL(/\/#\/paris$/);
-  await expect(page.locator("#pari-methode")).toHaveValue("Freebet");
-  await expect(page.locator("#pari-statut")).toHaveValue("manuel");
-  await expect(page.locator("#pari-pnl")).toHaveValue("14,5");
-  await expect(page.locator("#pari-match")).toHaveValue("Winamax");
-  await page.getByRole("button", { name: "Ajouter le pari" }).click();
-  await expect(page.locator(".pari")).toContainText("14,50 €");
 });

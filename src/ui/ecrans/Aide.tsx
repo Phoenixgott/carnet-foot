@@ -23,7 +23,7 @@ export function Aide() {
       </div>
 
       <section className="carte" aria-labelledby="titre-methodes-aide">
-        <h2 id="titre-methodes-aide">Les trois méthodes</h2>
+        <h2 id="titre-methodes-aide">Les deux méthodes</h2>
 
         <Section titre="Qu'est-ce que la méthode +1.5 ?">
           <p>
@@ -36,13 +36,6 @@ export function Aide() {
           <p>
             Un pari pris avant le match (pas en direct) : tu paries « plus de 2,5 buts », c'est-à-dire au moins 3 buts au total, sur des matchs
             choisis selon des critères (attaque/défense des équipes, championnat, contexte…).
-          </p>
-        </Section>
-        <Section titre="Qu'est-ce que le Freebet ?">
-          <p>
-            Un bookmaker t'offre un pari gratuit (« freebet »). En le couvrant par un pari inverse chez un autre bookmaker (ou sur un exchange), tu
-            peux transformer ce freebet en gain garanti, quel que soit le résultat du match. C'est la seule méthode de l'app dont le gain est
-            garanti mathématiquement (si les deux paris sont acceptés aux cotes saisies).
           </p>
         </Section>
       </section>
@@ -107,7 +100,7 @@ export function Aide() {
           </p>
         </Section>
         <Section titre="Que veut dire « ROI » ?">
-          <p>Le retour sur investissement : tes gains, divisés par le total misé (hors freebets). Un ROI de 10 % veut dire 10 € gagnés pour 100 € misés.</p>
+          <p>Le retour sur investissement : tes gains, divisés par le total misé. Un ROI de 10 % veut dire 10 € gagnés pour 100 € misés.</p>
         </Section>
         <Section titre="Que veut dire « drawdown » ?">
           <p>La plus grande baisse de ta bankroll entre un sommet et le creux qui a suivi. Il donne une idée du pire passage traversé jusqu'ici.</p>

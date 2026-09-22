@@ -2,7 +2,8 @@
  * Réglages : thème, installation, hors ligne, notifications, à propos.
  */
 import { useState } from "react";
-import { METHODES } from "../../core/methodes";
+import { METHODES, METHODES_JOUABLES } from "../../core/methodes";
+import { ReglagesRemiseAZero } from "../reglages/ReglagesRemiseAZero";
 import { reglage } from "../../data/contenu";
 import { ecrireReglage } from "../../data/depot";
 import { VERSION_APP } from "../../data/services";
@@ -108,7 +109,6 @@ export function Reglages() {
         <p className="aide" data-test="etat-notifs">{TEXTE_NOTIFS[notifs]}</p>
         <p className="aide">
           Elles sont créées sur le téléphone, sans serveur : une alerte ne peut donc partir que si l'application est ouverte ou vient d'être utilisée.
-          Pour les dates limites des freebets, l'onglet Freebet propose un ajout à l'agenda du téléphone, qui te rappelle même application fermée.
         </p>
         {notifs === "a-demander" && (
           <button type="button" className="btn" onClick={async () => setNotifs(await demanderNotifications())}>
@@ -132,25 +132,24 @@ export function Reglages() {
       <section className="carte" aria-labelledby="titre-methodes">
         <h2 id="titre-methodes">Les méthodes</h2>
         <div className="faits">
-          {METHODES.filter((m) => m.nom !== "Autre").map((m) => (
+          {METHODES.filter((m) => METHODES_JOUABLES.includes(m.nom)).map((m) => (
             <div className="fait" key={m.nom} style={{ display: "grid", gap: 2 }}>
               <b style={{ textAlign: "left", fontFamily: "var(--font)" }}>{m.libelle}</b>
               <span>{m.resume}</span>
             </div>
           ))}
         </div>
-        <p className="aide">
-          Seule la méthode Freebet est garantie mathématiquement, à condition que les deux paris soient acceptés aux cotes saisies. Pour +1.5 et +2.5,
-          les chances affichées sont des estimations : elles peuvent se tromper.
-        </p>
+        <p className="aide">Aucune méthode ne gagne à tous les coups : l'app donne des estimations, qui peuvent se tromper.</p>
         <a className="btn secondaire" href="#/aide">Comment ça marche ? (tutoriel complet)</a>
       </section>
 
       <section className="carte" aria-labelledby="titre-recherche">
         <h2 id="titre-recherche">Recherche</h2>
-        <p className="aide">Retrouve un match, un pari ou une offre par un mot.</p>
+        <p className="aide">Retrouve un match ou un pari par un mot.</p>
         <a className="btn secondaire" href="#/recherche">Rechercher</a>
       </section>
+
+      <ReglagesRemiseAZero />
 
       <section className="carte" aria-labelledby="titre-apropos">
         <h2 id="titre-apropos">À propos</h2>
@@ -159,7 +158,10 @@ export function Reglages() {
           <div className="fait"><span>Construite le</span><b>{construitLe}</b></div>
           <div className="fait"><span>Données envoyées à un serveur</span><b>Aucune</b></div>
         </div>
-        <p className="aide">Jouer comporte des risques : endettement, dépendance… Appelle le 09 74 75 13 13 (appel non surtaxé) ou va sur joueurs-info-service.fr.</p>
+        <p className="aide">
+          Réservé aux plus de 18 ans. Jouer comporte des risques : endettement, dépendance… Appelle le 09 74 75 13 13 (appel non surtaxé) ou va
+          sur joueurs-info-service.fr.
+        </p>
       </section>
     </>
   );

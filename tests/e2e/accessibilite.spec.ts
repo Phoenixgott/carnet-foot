@@ -6,7 +6,7 @@
 import { expect, test, type Page } from "playwright/test";
 import { donneesCarnet, exporterDepuisCarnet, importerDansApp, ouvrirCarnet } from "./outils";
 
-const ECRANS = ["accueil", "matchs", "live", "freebet", "paris", "donnees", "reglages", "aide", "recherche"];
+const ECRANS = ["accueil", "matchs", "live", "paris", "donnees", "reglages", "aide", "recherche"];
 
 async function auditer(page: Page, ecran: string) {
   await page.locator("main h1").waitFor();

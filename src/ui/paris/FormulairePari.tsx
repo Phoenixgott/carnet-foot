@@ -4,7 +4,7 @@
  * ticket (redimensionnée avant d'être enregistrée, jamais envoyée nulle part).
  */
 import { useEffect, useRef, useState } from "react";
-import { METHODES } from "../../core/methodes";
+import { METHODES_JOUABLES } from "../../core/methodes";
 import { alerteMise } from "../../core/mises";
 import { pauseActive } from "../../core/jeu-responsable";
 import { LIBELLE_STATUT } from "../../core/paris";
@@ -20,7 +20,6 @@ import { PauseActive } from "../jeu-responsable/PauseActive";
 import { useAppli } from "../contexte";
 
 const STATUTS: StatutPari[] = ["attente", "gagne", "perdu", "manuel", "rembourse"];
-const METHODES_CHOIX = METHODES.map((m) => m.nom);
 
 interface Saisie {
   date: string;
@@ -79,7 +78,7 @@ export function FormulairePari({
 }: {
   /** null : ajout. */
   existant: Pari | null;
-  /** Pré-remplissage venu du Live ou du Freebet (ignoré en modification). */
+  /** Pré-remplissage venu du Live (ignoré en modification). */
   brouillon?: BrouillonPari | null;
   annuler: () => void;
   termine: () => void;
@@ -91,13 +90,19 @@ export function FormulairePari({
   const [photo, setPhoto] = useState<{ url: string; taille: number; nouvelle: boolean } | null>(null);
   const [photoRetiree, setPhotoRetiree] = useState(false);
   const fichierPhoto = useRef<Blob | null>(null);
+  const [optionsOuvertes, setOptionsOuvertes] = useState(() => !!(existant?.notes || existant?.matchId));
+  // +1.5 et +2.5 seulement ; un ancien pari d'une autre méthode (Freebet…) garde la sienne.
+  const methodesChoix = existant && !METHODES_JOUABLES.includes(existant.methode) ? [...METHODES_JOUABLES, existant.methode] : METHODES_JOUABLES;
   const champ = <K extends keyof Saisie>(k: K) => (v: Saisie[K]) => setS((x) => ({ ...x, [k]: v }));
 
   useEffect(() => {
     if (!existant) return;
     let vivant = true;
     lirePhotoDuTicket(existant.id).then((p) => {
-      if (vivant && p) setPhoto({ url: URL.createObjectURL(p.blob), taille: p.blob.size, nouvelle: false });
+      if (vivant && p) {
+        setPhoto({ url: URL.createObjectURL(p.blob), taille: p.blob.size, nouvelle: false });
+        setOptionsOuvertes(true);
+      }
     });
     return () => {
       vivant = false;
@@ -131,6 +136,7 @@ export function FormulairePari({
       fichierPhoto.current = blob;
       setPhoto({ url: URL.createObjectURL(blob), taille: blob.size, nouvelle: true });
       setPhotoRetiree(false);
+      setOptionsOuvertes(true);
     } catch (e) {
       message(e instanceof Error ? e.message : "Photo illisible.");
     }
@@ -195,33 +201,22 @@ export function FormulairePari({
   return (
     <form className="carte" onSubmit={valider} aria-labelledby="titre-form-pari" data-test="form-pari">
       <h3 id="titre-form-pari">{existant ? "Modifier le pari" : "Ajouter un pari"}</h3>
-      <label className="champ" htmlFor="pari-match-lie">
-        Lier à un match chargé (facultatif)
-        <select id="pari-match-lie" value={s.matchId} onChange={(e: Event) => lierMatch((e.target as HTMLSelectElement).value)}>
-          <option value="">Aucun, ou match non chargé</option>
-          {matchsTries.map((m) => (
-            <option key={m.id} value={m.id}>
-              {nomMatch(m)} · {m.date ?? "date ⏳"}
-            </option>
-          ))}
-        </select>
-      </label>
       <label className="champ" htmlFor="pari-match">
-        Match
+        Quel match ?
         <input id="pari-match" type="text" value={s.match} placeholder="ex. Lens – Brest" onChange={(e: Event) => champ("match")((e.target as HTMLInputElement).value)} />
       </label>
       <div className="grille-champs">
-        <label className="champ" htmlFor="pari-date">
-          Date
-          <input id="pari-date" type="date" value={s.date} onChange={(e: Event) => champ("date")((e.target as HTMLInputElement).value)} />
-        </label>
         <label className="champ" htmlFor="pari-methode">
           Méthode
           <select id="pari-methode" value={s.methode} onChange={(e: Event) => champ("methode")((e.target as HTMLSelectElement).value as Pari["methode"])}>
-            {METHODES_CHOIX.map((m) => (
+            {methodesChoix.map((m) => (
               <option key={m} value={m}>{m}</option>
             ))}
           </select>
+        </label>
+        <label className="champ" htmlFor="pari-date">
+          Date
+          <input id="pari-date" type="date" value={s.date} onChange={(e: Event) => champ("date")((e.target as HTMLInputElement).value)} />
         </label>
       </div>
       <div className="grille-champs">
@@ -230,10 +225,11 @@ export function FormulairePari({
           <input id="pari-cote" type="text" inputMode="decimal" value={s.cote} placeholder="ex. 1,85" onChange={(e: Event) => champ("cote")((e.target as HTMLInputElement).value)} />
         </label>
         <label className="champ" htmlFor="pari-mise">
-          Mise (€)
+          Combien tu mises (€)
           <input id="pari-mise" type="text" inputMode="decimal" value={s.mise} placeholder="ex. 10" onChange={(e: Event) => champ("mise")((e.target as HTMLInputElement).value)} />
         </label>
       </div>
+      <p className="aide">La cote, c'est le chiffre affiché par le site de paris : 10 € misés à 1,85 rapportent 8,50 € de gain.</p>
       {alerte && (alerte.parPari || alerte.parJour?.depasse) && (
         <p className="bandeau attention" role="status" data-test="alerte-plafond-pari">
           {alerte.parPari && <>Cette mise dépasse ton plafond par pari. </>}
@@ -257,9 +253,28 @@ export function FormulairePari({
         <label className="champ" htmlFor="pari-pnl">
           Gain sécurisé (€) — négatif si perte
           <input id="pari-pnl" type="text" inputMode="decimal" value={s.pnl} placeholder="ex. 6,50" onChange={(e: Event) => champ("pnl")((e.target as HTMLInputElement).value)} />
-          <small className="aide">Pour un cash-out, une couverture ou un freebet : le gain net, pas la mise.</small>
+          <small className="aide">Pour un cash-out ou une couverture : ce que tu as gagné au final, pas la mise.</small>
         </label>
       )}
+      <details
+        className="repli"
+        data-test="pari-options"
+        open={optionsOuvertes}
+        onToggle={(e: Event) => setOptionsOuvertes((e.currentTarget as HTMLDetailsElement).open)}
+      >
+        <summary>Plus d'options (match de la liste, notes, photo)</summary>
+        <div className="section">
+      <label className="champ" htmlFor="pari-match-lie">
+        Choisir parmi les matchs chargés
+        <select id="pari-match-lie" value={s.matchId} onChange={(e: Event) => lierMatch((e.target as HTMLSelectElement).value)}>
+          <option value="">Aucun, ou match non chargé</option>
+          {matchsTries.map((m) => (
+            <option key={m.id} value={m.id}>
+              {nomMatch(m)} · {m.date ?? "date ⏳"}
+            </option>
+          ))}
+        </select>
+      </label>
       <label className="champ" htmlFor="pari-notes">
         Notes (facultatif)
         <textarea id="pari-notes" value={s.notes} onChange={(e: Event) => champ("notes")((e.target as HTMLTextAreaElement).value)} />
@@ -302,6 +317,8 @@ export function FormulairePari({
         </label>
         <p className="aide">La photo reste sur ce téléphone : elle n'est ni dans la sauvegarde fichier, ni dans l'historique des versions.</p>
       </div>
+        </div>
+      </details>
       {erreur && (
         <p className="bandeau erreur" role="alert">
           {erreur}

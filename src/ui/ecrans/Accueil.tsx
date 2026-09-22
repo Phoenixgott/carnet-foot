@@ -1,11 +1,10 @@
 /**
- * Accueil : bankroll et bilan en un coup d'œil, état des données, rappels.
+ * Accueil, pensé pour quelqu'un qui n'y connaît rien : la bankroll en grand, trois gros boutons
+ * « Que veux-tu faire ? », la semaine en une phrase, et les rappels importants.
  */
 import { alertesCote } from "../../core/cotes";
-import { offresARappeler, texteDelai } from "../../core/offres";
-import { offresDe } from "../../data/offres";
 import { analyserV2 } from "../../core/modele-v2/analyse";
-import { dateCourte, eur, pc } from "../../core/format";
+import { eur, pc } from "../../core/format";
 import { bilan } from "../../core/paris";
 import { bilanHebdomadaire } from "../../core/bilan-hebdo";
 import { demarrerPause, pauseActive, rappelPause } from "../../core/jeu-responsable";
@@ -19,7 +18,7 @@ import { useCompte, useInclinaison3D } from "../animation";
 import { Mascotte } from "../mascotte";
 
 /** Petites icônes des cartes de la bankroll (décoratives, la valeur et l'étiquette suffisent à comprendre). */
-function IconeStat({ nom }: { nom: "hausse" | "baisse" | "pourcent" | "etoile" }) {
+function IconeStat({ nom }: { nom: "hausse" | "baisse" | "etoile" | "liste" }) {
   const commun = { viewBox: "0 0 16 16", "aria-hidden": "true", focusable: "false" };
   switch (nom) {
     case "hausse":
@@ -36,12 +35,13 @@ function IconeStat({ nom }: { nom: "hausse" | "baisse" | "pourcent" | "etoile" }
           <path d="M10 13h4v-4" />
         </svg>
       );
-    case "pourcent":
+    case "liste":
       return (
         <svg {...commun} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="5" cy="5" r="1.6" />
-          <circle cx="11" cy="11" r="1.6" />
-          <path d="M12 4 4 12" />
+          <path d="M5 4h8M5 8h8M5 12h8" />
+          <circle cx="2.5" cy="4" r=".6" />
+          <circle cx="2.5" cy="8" r=".6" />
+          <circle cx="2.5" cy="12" r=".6" />
         </svg>
       );
     case "etoile":
@@ -60,40 +60,18 @@ export function Accueil() {
   const ref3d = useInclinaison3D<HTMLElement>();
   const bankrollAnime = useCompte(b.bankroll);
   const gainsAnime = useCompte(b.gains);
-  const rentabiliteAnimee = useCompte(b.rentabilite);
   const tauxAnime = useCompte(b.tauxReussite);
-  const jours = [...new Set(contenu.matchs.map((m) => m.date).filter(Boolean))].sort() as string[];
-  const aJouer = contenu.matchs.filter((m) => analyserV2(m, "+1.5", contexteDe(m)).v === "ok" || analyserV2(m, "+2.5", contexteDe(m)).v === "ok").length;
-  const rappel = !vide && (!dernierExport || joursDepuis(dernierExport) >= RAPPEL_SAUVEGARDE_JOURS);
-  // Alertes de cote des matchs à venir (ou sans date)
   const aujourdhui = jourLocal(new Date());
-  const offresBientot = offresARappeler(offresDe(contenu), aujourdhui);
-  const alertes = contenu.matchs.filter((m) => !m.date || m.date >= aujourdhui).flatMap((m) => alertesCote(m, contexteDe));
+  const aVenir = contenu.matchs.filter((m) => !m.date || m.date >= aujourdhui);
+  const aJouer = aVenir.filter((m) => analyserV2(m, "+1.5", contexteDe(m)).v === "ok" || analyserV2(m, "+2.5", contexteDe(m)).v === "ok").length;
+  const rappel = !vide && (!dernierExport || joursDepuis(dernierExport) >= RAPPEL_SAUVEGARDE_JOURS);
+  const alertes = aVenir.flatMap((m) => alertesCote(m, contexteDe));
   const pause = pauseDe(contenu);
   const enPause = pauseActive(pause, new Date());
   const rappel8 = !vide && !enPause ? rappelPause(contenu.paris, reglagesJeuResponsableDe(contenu), aujourdhui) : null;
   const dureePause = reglagesJeuResponsableDe(contenu).dureePauseHeures;
-  const semaine = !vide ? bilanHebdomadaire(contenu.paris, aujourdhui) : null;
-
-  const bandeauOffres =
-    offresBientot.length > 0 ? (
-      <section className="alerte-cote" aria-labelledby="titre-offres-bientot" data-test="offres-bientot">
-        <h2 id="titre-offres-bientot">
-          <span aria-hidden="true">🎁 </span>
-          {offresBientot.length === 1 ? "Un freebet expire bientôt" : `${offresBientot.length} freebets expirent bientôt`}
-        </h2>
-        <ul>
-          {offresBientot.map((o) => (
-            <li key={o.id}>
-              {o.bookmaker}
-              {o.titre ? ` · ${o.titre}` : ""}
-              {o.montant !== null ? ` (${eur(o.montant)})` : ""} : {texteDelai(o.dateLimite!, aujourdhui)}
-            </li>
-          ))}
-        </ul>
-        <a className="btn" href="#/freebet?vue=offres">Voir mes offres</a>
-      </section>
-    ) : null;
+  const semaine = !vide ? bilanHebdomadaire(contenu.paris, aujourdhui).cetteSemaine : null;
+  const gagnesSemaine = semaine ? Math.round(semaine.tauxReussite * semaine.nb) : 0;
 
   // Tout premier démarrage : une seule question, la bankroll de départ.
   if (vide && !bankrollChoisie(contenu)) {
@@ -104,7 +82,6 @@ export function Accueil() {
           <p className="chapeau">Tes données restent sur ce téléphone : rien n'est envoyé à un serveur.</p>
         </div>
         <ChoixBankroll />
-        {bandeauOffres}
       </>
     );
   }
@@ -114,58 +91,32 @@ export function Accueil() {
       <div>
         <h1 tabIndex={-1}>Accueil</h1>
         <p className="chapeau">Tes données restent sur ce téléphone : rien n'est envoyé à un serveur.</p>
-        {!vide && (
-          <p className="aide">
-            <a href="#/recherche">🔍 Rechercher un match, un pari, une offre</a>
-          </p>
-        )}
       </div>
 
-      {
-        <section className="gazon" aria-labelledby="titre-bankroll" ref={ref3d}>
-          <div className="gazon-fond" aria-hidden="true">
-            <span className="gazon-lueur gazon-lueur-1" />
-            <span className="gazon-lueur gazon-lueur-2" />
-            <span className="gazon-reflet" />
+      <section className="gazon" aria-labelledby="titre-bankroll" ref={ref3d}>
+        <div className="gazon-fond" aria-hidden="true">
+          <span className="gazon-lueur gazon-lueur-1" />
+          <span className="gazon-lueur gazon-lueur-2" />
+          <span className="gazon-reflet" />
+        </div>
+        <Mascotte humeur={b.gains >= 0 ? "content" : "neutre"} />
+        <span className="etiquette" id="titre-bankroll">Mon argent pour parier</span>
+        <span className="gazon-chiffre" data-test="bankroll">{eur(bankrollAnime)}</span>
+        <div className="gazon-ligne">
+          <div className={b.gains >= 0 ? "gazon-pos" : "gazon-neg"}>
+            <b>{eur(gainsAnime)}</b>
+            <small><IconeStat nom={b.gains >= 0 ? "hausse" : "baisse"} /> Gagné / perdu</small>
           </div>
-          <Mascotte humeur={b.gains >= 0 ? "content" : "neutre"} />
-          <span className="etiquette" id="titre-bankroll">Bankroll</span>
-          <span className="gazon-chiffre" data-test="bankroll">{eur(bankrollAnime)}</span>
-          <div className="gazon-ligne">
-            <div className={b.gains >= 0 ? "gazon-pos" : "gazon-neg"}>
-              <b>{eur(gainsAnime)}</b>
-              <small><IconeStat nom={b.gains >= 0 ? "hausse" : "baisse"} /> Gagné / perdu</small>
-            </div>
-            <div>
-              <b>{Number.isFinite(rentabiliteAnimee) ? pc(rentabiliteAnimee) : "—"}</b>
-              <small><IconeStat nom="pourcent" /> Rentabilité</small>
-            </div>
-            <div>
-              <b>{Number.isFinite(tauxAnime) ? pc(tauxAnime) : "—"}</b>
-              <small><IconeStat nom="etoile" /> Paris gagnés</small>
-            </div>
+          <div>
+            <b>{contenu.paris.length}</b>
+            <small><IconeStat nom="liste" /> Paris notés</small>
           </div>
-        </section>
-      }
-
-      {vide && <PremiersPas />}
-
-      {bandeauOffres}
-
-      {alertes.length > 0 && (
-        <section className="alerte-cote" aria-labelledby="titre-alertes" data-test="alertes-accueil">
-          <h2 id="titre-alertes">
-            <span aria-hidden="true">🔔 </span>
-            {alertes.length === 1 ? "Une cote a atteint ta cote minimale" : `${alertes.length} cotes ont atteint ta cote minimale`}
-          </h2>
-          <ul>
-            {alertes.map((a) => (
-              <li key={a.matchId + a.marche}>{a.texte}</li>
-            ))}
-          </ul>
-          <a className="btn" href="#/matchs">Voir les matchs</a>
-        </section>
-      )}
+          <div>
+            <b>{Number.isFinite(tauxAnime) ? pc(tauxAnime) : "—"}</b>
+            <small><IconeStat nom="etoile" /> Gagnés</small>
+          </div>
+        </div>
+      </section>
 
       {rappel8 && (
         <div className="bandeau attention" role="status" data-test="rappel-jeu-responsable">
@@ -186,8 +137,41 @@ export function Accueil() {
 
       {enPause && pause && (
         <div className="bandeau info" role="status" data-test="pause-accueil">
-          <p>Ton journal est en pause. Réglages → Jeu responsable pour voir le temps restant ou l'arrêter.</p>
+          <p>⏸️ Tu es en pause. Pour voir le temps qui reste ou l'arrêter : Réglages → Jeu responsable.</p>
         </div>
+      )}
+
+      {alertes.length > 0 && (
+        <section className="alerte-cote" aria-labelledby="titre-alertes" data-test="alertes-accueil">
+          <h2 id="titre-alertes">
+            <span aria-hidden="true">🔔 </span>
+            {alertes.length === 1 ? "Une cote est devenue intéressante" : `${alertes.length} cotes sont devenues intéressantes`}
+          </h2>
+          <ul>
+            {alertes.map((a) => (
+              <li key={a.matchId + a.marche}>{a.texte}</li>
+            ))}
+          </ul>
+          <a className="btn" href="#/matchs">Voir les matchs</a>
+        </section>
+      )}
+
+      <PremiersPas vide={vide} matchsConseilles={aJouer} />
+
+      {semaine && (
+        <section className="carte" aria-labelledby="titre-semaine" data-test="bilan-semaine">
+          <h2 id="titre-semaine">Cette semaine</h2>
+          <p className="phrase-semaine">
+            {semaine.nb === 0 ? (
+              "Pas encore de pari terminé cette semaine."
+            ) : (
+              <>
+                <b className={semaine.gains >= 0 ? "pos" : "neg"}>{eur(semaine.gains)}</b> sur {semaine.nb} pari{semaine.nb > 1 ? "s" : ""} terminé
+                {semaine.nb > 1 ? "s" : ""} ({gagnesSemaine} gagné{gagnesSemaine > 1 ? "s" : ""}).
+              </>
+            )}
+          </p>
+        </section>
       )}
 
       {rappel && (
@@ -200,72 +184,6 @@ export function Accueil() {
           </p>
           <a className="btn" href="#/donnees">Sauvegarder maintenant</a>
         </div>
-      )}
-
-      {!vide && (
-        <section className="carte" aria-labelledby="titre-matchs">
-          <h2 id="titre-matchs">Matchs</h2>
-          {contenu.matchs.length ? (
-            <div className="faits">
-              <div className="fait"><span>Matchs chargés</span><b>{contenu.matchs.length}</b></div>
-              <div className="fait"><span>Jours</span><b>{jours.length ? jours.map(dateCourte).join(" · ") : "⏳"}</b></div>
-              <div className="fait"><span>Au moins une méthode « On joue »</span><b>{aJouer}</b></div>
-            </div>
-          ) : (
-            <p className="aide">Aucun match chargé : récupère ceux du jour dans l'onglet « Matchs ».</p>
-          )}
-          <a className="btn secondaire" href="#/matchs">{contenu.matchs.length ? "Voir les matchs" : "Récupérer les matchs"}</a>
-        </section>
-      )}
-
-      {!vide && (
-        <section className="carte" aria-labelledby="titre-paris">
-          <h2 id="titre-paris">Paris</h2>
-          <div className="faits">
-            <div className="fait"><span>Paris notés</span><b>{contenu.paris.length}</b></div>
-            <div className="fait"><span>Terminés</span><b>{b.nbTermines}</b></div>
-            {b.parMethode.map((m) => (
-              <div className="fait" key={m.methode}>
-                <span>Méthode {m.methode} ({m.nb})</span>
-                <b className={m.gains >= 0 ? "pos" : "neg"}>{eur(m.gains)}</b>
-              </div>
-            ))}
-          </div>
-          <a className="btn secondaire" href="#/paris">Voir le journal</a>
-        </section>
-      )}
-
-      {semaine && (
-        <section className="carte" aria-labelledby="titre-semaine" data-test="bilan-semaine">
-          <h2 id="titre-semaine">Cette semaine</h2>
-          {semaine.cetteSemaine.nb === 0 ? (
-            <p className="aide">Aucun pari terminé cette semaine pour l'instant.</p>
-          ) : (
-            <>
-              <div className="faits">
-                <div className="fait"><span>Paris terminés</span><b>{semaine.cetteSemaine.nb}</b></div>
-                <div className="fait">
-                  <span>Gagné / perdu</span>
-                  <b className={semaine.cetteSemaine.gains >= 0 ? "pos" : "neg"}>{eur(semaine.cetteSemaine.gains)}</b>
-                </div>
-                <div className="fait"><span>Paris gagnés</span><b>{pc(semaine.cetteSemaine.tauxReussite)}</b></div>
-              </div>
-              <p className="aide">
-                {semaine.cetteSemaine.meilleureMethode && (
-                  <>Ce qui a marché : {semaine.cetteSemaine.meilleureMethode.methode} ({eur(semaine.cetteSemaine.meilleureMethode.gains)}). </>
-                )}
-                {semaine.cetteSemaine.pireMethode && (
-                  <>Ce qui a moins marché : {semaine.cetteSemaine.pireMethode.methode} ({eur(semaine.cetteSemaine.pireMethode.gains)}). </>
-                )}
-                {semaine.semainePrecedente.nb > 0 && (
-                  <>La semaine précédente : {eur(semaine.semainePrecedente.gains)} sur {semaine.semainePrecedente.nb} pari
-                    {semaine.semainePrecedente.nb > 1 ? "s" : ""}.</>
-                )}
-              </p>
-            </>
-          )}
-          <a className="btn secondaire" href="#/paris?vue=statistiques">Voir les statistiques</a>
-        </section>
       )}
     </>
   );

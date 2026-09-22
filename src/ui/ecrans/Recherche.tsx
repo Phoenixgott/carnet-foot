@@ -1,13 +1,12 @@
 /**
- * Recherche globale (phase 8) : retrouve un match, un pari ou une offre par un mot.
+ * Recherche : retrouve un match ou un pari par un mot.
  * Tout reste sur l'appareil, comme le reste de l'application.
  */
 import { useEffect, useRef, useState } from "react";
 import { rechercher, type ResultatRecherche } from "../../core/recherche";
-import { offresDe } from "../../data/offres";
 import { useAppli } from "../contexte";
 
-const LIBELLE_TYPE: Record<ResultatRecherche["type"], string> = { match: "Match", pari: "Pari", offre: "Offre freebet" };
+const LIBELLE_TYPE: Record<ResultatRecherche["type"], string> = { match: "Match", pari: "Pari" };
 
 export function Recherche() {
   const { contenu } = useAppli();
@@ -15,13 +14,13 @@ export function Recherche() {
   const champ = useRef<HTMLInputElement | null>(null);
   useEffect(() => champ.current?.focus(), []);
 
-  const resultats = rechercher(q, contenu.matchs, contenu.paris, offresDe(contenu));
+  const resultats = rechercher(q, contenu.matchs, contenu.paris);
 
   return (
     <>
       <div>
         <h1 tabIndex={-1}>Recherche</h1>
-        <p className="chapeau">Un match, un pari ou une offre : tape un mot pour le retrouver.</p>
+        <p className="chapeau">Tape le nom d'une équipe pour retrouver un match ou un pari.</p>
       </div>
 
       <label className="champ" htmlFor="recherche-mot">
@@ -31,7 +30,7 @@ export function Recherche() {
           id="recherche-mot"
           type="search"
           value={q}
-          placeholder="ex. Lens, Winamax, value…"
+          placeholder="ex. Lens"
           onChange={(e: Event) => setQ((e.target as HTMLInputElement).value)}
         />
       </label>

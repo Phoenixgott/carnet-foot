@@ -16,7 +16,6 @@ import {
 } from "../../src/core/jeu-responsable";
 import { bilanHebdomadaire, debutSemaine, finSemaine } from "../../src/core/bilan-hebdo";
 import { normaliser, rechercher } from "../../src/core/recherche";
-import type { OffreFreebet } from "../../src/core/offres";
 import type { Match, Pari } from "../../src/core/types";
 
 let n = 0;
@@ -106,31 +105,13 @@ test("Bilan hebdomadaire : lundi à dimanche, comparé à la semaine précédent
   assert.equal(b.semainePrecedente.pireMethode, null, "une seule méthode : pas de \"pire\" à opposer");
 });
 
-test("Recherche globale : match, pari et offre, insensible aux accents et à la casse", () => {
+test("Recherche : match et pari, insensible aux accents et à la casse", () => {
   assert.equal(normaliser("Général"), "general");
   const matchs: Match[] = [{ id: "m1", ligue: "Ligue 1", domicile: { nom: "Lens" }, exterieur: { nom: "Brest" } }];
   const paris = [pari({ id: "p1", match: "PSG – Marseille", notes: "value sur le classico" })];
-  const offres: OffreFreebet[] = [
-    {
-      id: "o1",
-      bookmaker: "Winamax",
-      titre: "Freebet 20€",
-      montant: 20,
-      qualifMise: null,
-      coteMin: null,
-      dateLimite: null,
-      conditions: "",
-      rembourse: false,
-      statut: "a-faire",
-      beneficeReel: null,
-      creeLe: "",
-      modifieLe: "",
-    },
-  ];
-  assert.deepEqual(rechercher("l", matchs, paris, offres), [], "requête d'un seul caractère : ignorée");
-  assert.equal(rechercher("brest", matchs, paris, offres)[0]?.type, "match");
-  assert.equal(rechercher("MARSEILLE", matchs, paris, offres)[0]?.id, "p1");
-  assert.equal(rechercher("classico", matchs, paris, offres)[0]?.type, "pari", "trouvé aussi dans les notes");
-  assert.equal(rechercher("winamax", matchs, paris, offres)[0]?.type, "offre");
-  assert.deepEqual(rechercher("zzz", matchs, paris, offres), []);
+  assert.deepEqual(rechercher("l", matchs, paris), [], "requête d'un seul caractère : ignorée");
+  assert.equal(rechercher("brest", matchs, paris)[0]?.type, "match");
+  assert.equal(rechercher("MARSEILLE", matchs, paris)[0]?.id, "p1");
+  assert.equal(rechercher("classico", matchs, paris)[0]?.type, "pari", "trouvé aussi dans les notes");
+  assert.deepEqual(rechercher("zzz", matchs, paris), []);
 });

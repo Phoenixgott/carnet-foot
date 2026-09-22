@@ -450,12 +450,12 @@ export function Donnees() {
     <>
       <div>
         <h1 tabIndex={-1}>Mes données</h1>
-        <p className="chapeau">Tout est enregistré sur ce téléphone, dans le navigateur. Rien n'est envoyé à un serveur.</p>
+        <p className="chapeau">Tout est sur ce téléphone. Pense à enregistrer une sauvegarde de temps en temps : c'est ta copie de secours.</p>
       </div>
-      <ImportCarnet />
-      <Historiques />
       <Sauvegarde />
+      <ImportCarnet />
       <Historique />
+      <Historiques />
       <Stockage />
     </>
   );

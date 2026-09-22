@@ -1,35 +1,31 @@
 import type { Methode } from "./types";
 
 /**
- * Les trois méthodes et leurs noms exacts. Ne jamais les renommer.
- * `garantie` : seul le Freebet est garanti mathématiquement.
+ * Les méthodes et leurs noms exacts. Ne jamais les renommer.
+ * Seules +1.5 et +2.5 sont proposées dans l'application (le Freebet a été retiré à la demande de
+ * l'utilisateur) ; « Freebet » et « Autre » restent connus pour lire les anciens paris.
  */
 export const METHODES: ReadonlyArray<{
   nom: Methode;
   libelle: string;
   resume: string;
-  garantie: boolean;
 }> = [
   {
     nom: "+1.5",
     libelle: "Méthode +1.5",
-    resume: "Pari live à 0-0 vers la 15e-20e minute, puis couverture après le premier but.",
-    garantie: false,
+    resume: "Pendant le match : s'il n'y a toujours pas de but vers la 15ᵉ-20ᵉ minute, on parie qu'il y aura au moins 2 buts.",
   },
   {
     nom: "+2.5",
     libelle: "Méthode +2.5",
-    resume: "Pari avant-match selon des critères d'équipes et de championnat.",
-    garantie: false,
+    resume: "Avant le match : on parie qu'il y aura au moins 3 buts, sur les matchs que l'app conseille.",
   },
-  {
-    nom: "Freebet",
-    libelle: "Méthode Freebet",
-    resume: "Match betting : profit garanti par couverture chez un autre bookmaker.",
-    garantie: true,
-  },
-  { nom: "Autre", libelle: "Autre", resume: "Pari hors méthode.", garantie: false },
+  { nom: "Freebet", libelle: "Freebet (ancien)", resume: "Ancienne méthode, plus proposée." },
+  { nom: "Autre", libelle: "Autre", resume: "Pari hors méthode." },
 ];
+
+/** Les deux méthodes proposées pour un nouveau pari. */
+export const METHODES_JOUABLES: readonly Methode[] = ["+1.5", "+2.5"];
 
 /**
  * Codes internes du carnet d'origine. Attention au croisement :

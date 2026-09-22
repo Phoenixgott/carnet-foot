@@ -70,14 +70,23 @@ function Pourquoi({ a }: { a: AnalyseV2 }) {
   );
 }
 
+const QUESTION_METHODE: Record<string, string> = {
+  "+1.5": "Au moins 2 buts ? (pari pendant le match)",
+  "+2.5": "Au moins 3 buts ? (pari avant le match)",
+};
+
 function BlocMethode({ a, carnet }: { a: AnalyseV2; carnet: Analyse }) {
   const chances = pct(a.p);
   return (
-    <div className="methode" data-test={`methode-${a.methode}`}>
+    <div className={`methode methode-${a.v}`} data-test={`methode-${a.methode}`}>
       <div className="methode-nom">
         <span>Méthode {a.methode}</span>
         <PastilleVerdict v={a.v} />
       </div>
+      <p className="methode-question">{QUESTION_METHODE[a.methode]}</p>
+      <p className="pourquoi-phrase" data-test="why">{a.why}</p>
+      <details className="repli plie" data-test="chiffres">
+        <summary>Voir les chiffres</summary>
       <div className="methode-chiffres">
         <span>{a.methode === "+1.5" ? "Chances si 0-0 à la 20ᵉ" : "Chances"}</span>
         <b data-test="chances">
@@ -104,12 +113,12 @@ function BlocMethode({ a, carnet }: { a: AnalyseV2; carnet: Analyse }) {
         <span>Risque</span>
         <b>{a.niveauRisque ? `${a.niveauRisque}/5` : <Inconnu />}</b>
       </div>
-      <p className="pourquoi-phrase" data-test="why">{a.why}</p>
       <p className="carnet-ligne" data-test="carnet">
         Carnet : <span data-test="chances-carnet">{Number.isFinite(carnet.p) ? Math.round(carnet.p * 100) + " %" : "?"}</span>
         {Number.isFinite(carnet.fair) ? ` · cote mini ${fr(carnet.fair)}` : ""}
       </p>
       <Pourquoi a={a} />
+      </details>
     </div>
   );
 }
@@ -145,7 +154,11 @@ function CarteMatch({ x, rang, comparer, compare }: { x: AnalyseMatch; rang: num
         <BlocMethode a={x.v15} carnet={x.c15} />
         <BlocMethode a={x.v25} carnet={x.c25} />
       </div>
-      <div className="match-bas">
+      <div className="match-actions">
+        <a className="btn secondaire" href={lienLive(m.id)} aria-label={`Suivre ${nomMatch(m)} en live`}>▶ Suivre ce match en direct</a>
+      </div>
+      <details className="repli plie match-bas" data-test="infos-match">
+        <summary>Plus d'infos sur ce match</summary>
         <div className="fiabilite">
           <span>
             Infos{" "}
@@ -186,13 +199,12 @@ function CarteMatch({ x, rang, comparer, compare }: { x: AnalyseMatch; rang: num
           )}
         </span>
         <div className="rangee">
-          <a className="btn discret" href={lienLive(m.id)} aria-label={`Suivre ${nomMatch(m)} en live`}>Suivre en live (+1.5)</a>
           <button type="button" className="btn discret" aria-pressed={compare} onClick={comparer}>
             {compare ? "✓ Dans la comparaison" : "Comparer"}
           </button>
         </div>
         <SuiviCotes m={m} />
-      </div>
+      </details>
     </article>
   );
 }
@@ -283,10 +295,7 @@ export function Matchs() {
     <>
       <div>
         <h1 tabIndex={-1}>Matchs</h1>
-        <p className="chapeau">
-          Nouveau modèle : forces d'attaque et de défense, avantage du terrain, forme, absents, avec sa marge d'erreur. Les chiffres du carnet
-          restent affichés à côté.
-        </p>
+        <p className="chapeau">Pour chaque match, l'app te dit : ✅ on joue, ⏳ à revoir, ❌ on passe.</p>
       </div>
       <Recuperer ouvert={ouvrirRecuperer} />
       {aComparer.length === 2 && <Comparaison a={aComparer[0]} b={aComparer[1]} fermer={() => setCompares([])} />}
@@ -301,7 +310,7 @@ export function Matchs() {
       </div>
       <div className="segments" role="group" aria-label="Filtrer les matchs">
         <button type="button" aria-pressed={filtre === "tous"} onClick={() => setFiltre("tous")}>Tous</button>
-        <button type="button" aria-pressed={filtre === "ok"} onClick={() => setFiltre("ok")}>Seulement « On joue »</button>
+        <button type="button" aria-pressed={filtre === "ok"} onClick={() => setFiltre("ok")}>✅ À jouer</button>
         <button type="button" aria-pressed={filtre === "alerte"} onClick={() => setFiltre("alerte")}>Cote atteinte</button>
       </div>
       {visibles.length === 0 ? (

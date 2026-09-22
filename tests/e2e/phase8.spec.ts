@@ -78,12 +78,11 @@ test("Bilan hebdomadaire : chiffres de la semaine en cours affichés sur l'accue
 
   await page.goto("/#/accueil");
   const carte = page.locator('[data-test="bilan-semaine"]');
-  await expect(carte).toContainText("Paris terminés");
-  await expect(carte).toContainText("2");
   await expect(carte).toContainText("−5,00 €"); // 5 - 10
+  await expect(carte).toContainText("sur 2 paris terminés (1 gagné)");
 });
 
-test("Recherche globale : retrouve un match, un pari et une offre par un mot", async ({ page }) => {
+test("Recherche : retrouve un match et un pari par un mot", async ({ page }) => {
   await page.goto("/#/matchs");
   const rec = page.locator('[data-test="recuperer"]');
   if ((await rec.getAttribute("open")) === null) await rec.locator("> summary").click();
@@ -95,20 +94,12 @@ test("Recherche globale : retrouve un match, un pari et une offre par un mot", a
   await page.goto("/#/paris");
   await ajouterPari(page, { match: "Un pari notable", cote: "2,00", mise: "10" });
 
-  await page.goto("/#/freebet?vue=offres");
-  await page.getByRole("button", { name: "Ajouter une offre" }).click();
-  await page.fill("#offre-bookmaker", "ParionsSport");
-  await page.getByRole("button", { name: "Enregistrer l'offre" }).click();
-
   await page.goto("/#/recherche");
   await page.fill("#recherche-mot", "brest");
   await expect(page.locator('[data-test="resultats-recherche"]')).toContainText("Lens – Brest");
 
   await page.fill("#recherche-mot", "notable");
   await expect(page.locator('[data-test="resultats-recherche"]')).toContainText("Un pari notable");
-
-  await page.fill("#recherche-mot", "parionssport");
-  await expect(page.locator('[data-test="resultats-recherche"]')).toContainText("ParionsSport");
 
   await page.fill("#recherche-mot", "azertyintrouvable");
   await expect(page.locator('[data-test="recherche-nb"]')).toHaveText("Aucun résultat.");

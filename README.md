@@ -1,12 +1,11 @@
 # Carnet de Paris Foot
 
-Application privée et hors ligne pour les méthodes **+1.5**, **+2.5** et **Freebet**.
+Application privée et hors ligne pour les méthodes **+1.5** et **+2.5**. Réservée aux plus de 18 ans.
 Tout reste sur ton téléphone : aucune donnée n'est envoyée à un serveur, et l'application
 interdit elle-même toute connexion vers un autre site (règle de sécurité `connect-src 'self'`).
 
-> Seule la méthode Freebet est garantie mathématiquement, à condition que les deux paris
-> soient acceptés aux cotes saisies. Pour +1.5 et +2.5, les chances affichées sont des
-> estimations qui peuvent se tromper.
+> Aucune méthode ne gagne à tous les coups : les chances affichées sont des estimations, qui
+> peuvent se tromper. Réservé aux plus de 18 ans.
 
 ---
 
@@ -62,7 +61,7 @@ du jour ; **Comparer** en met deux côte à côte ; le nom d'une équipe ouvre s
 confrontations, grâce aux historiques CSV). Les seuils des critères et le poids des absents se
 règlent dans **Réglages → Analyse des matchs**.
 
-Rappel : ces chances sont des estimations. Seul le Freebet est garanti.
+Rappel : ces chances sont des estimations, elles peuvent se tromper.
 
 ### 4. Suivre un match en live (méthode +1.5)
 
@@ -97,24 +96,7 @@ La mise conseillée suit le réglage choisi dans **Réglages → Mises et object
 Kelly fractionné, avec un plafond par pari et par jour (avertissement, jamais un blocage) et un
 objectif de gain / budget du mois.
 
-### 6. Freebet (profit garanti)
-
-Onglet **Freebet**, trois sections :
-
-- **Calculateur** : tape le pari qui débloque le freebet (mise, cote chez le bookmaker de l'offre, cote
-  inverse chez l'autre site) puis le freebet (montant, cote, cote inverse). Tu obtiens les mises de
-  couverture, le coût du pari qui débloque, le bénéfice garanti et le taux de conversion. Choisis
-  « Exchange (lay) » si tu couvres ainsi, et « Remboursé » si le freebet rend la mise en cas de gain.
-- **Comparateur** : tape le montant du freebet (et la cote minimale de l'offre) ; il classe les matchs
-  chargés par taux de conversion. « Calculer avec ce match » remplit le calculateur.
-- **Offres** : note chaque offre (bookmaker, montant, date limite, conditions) et son statut. Les offres
-  qui expirent dans 3 jours apparaissent sur l'accueil. **Ajouter à l'agenda** crée un fichier que ton
-  agenda rappelle même application fermée (alarmes la veille et 3 jours avant, à 9 h). Dès qu'une offre
-  passe à « Terminée » avec un bénéfice, l'application propose de l'ajouter à ton journal des paris.
-
-Le gain n'est garanti que si les deux paris sont acceptés aux cotes saisies.
-
-### 7. Jeu responsable, recherche et aide
+### 6. Jeu responsable, recherche et aide
 
 - **Réglages → Jeu responsable** : un rappel peut s'afficher sur l'accueil après un nombre de
   défaites d'affilée ou un plafond du jour dépassé (à toi de les régler, désactivés par défaut).
@@ -125,8 +107,10 @@ Le gain n'est garanti que si les deux paris sont acceptés aux cotes saisies.
   tapant un mot.
 - **Comment ça marche ?** (Réglages) : chaque méthode et chaque chiffre affiché dans l'app, expliqué
   en une phrase.
+- **Tout remettre à zéro** (Réglages, en bas) : efface paris, matchs, bankroll et réglages pour
+  repartir comme au premier jour. Une copie de sécurité reste dans Données → Historique des versions.
 
-### 8. Sauvegarder
+### 7. Sauvegarder
 
 - **Données → Sauvegarde en un fichier** : « Enregistrer le fichier », « Partager (Drive, mail…) »
   ou « Copier le texte ». Garde ce fichier hors du téléphone : si le navigateur efface ses
@@ -136,7 +120,7 @@ Le gain n'est garanti que si les deux paris sont acceptés aux cotes saisies.
 - **Restaurer** : choisis le fichier ou colle son texte. Une empreinte vérifie que le fichier
   n'a pas été abîmé ou modifié ; sinon il est refusé.
 
-### 9. Installer sur Android (version hébergée)
+### 8. Installer sur Android (version hébergée)
 
 L'application est hébergée sur GitHub Pages : https://phoenixgott.github.io/carnet-foot/
 Ouvre cette adresse dans Chrome, puis **Réglages → Installer l'application**
@@ -178,9 +162,6 @@ src/
                    fiabilité sur 8, critères +1.5/+2.5, verdicts, décisions live/avant-match)
     poisson.ts     loi de Poisson
     couverture.ts  couverture +1.5 (pari contraire, lay, cash-out)
-    freebet.ts     freebet remboursé ou non (autre bookmaker ou exchange), coût, conversion
-    freebet-comparateur.ts  classement des matchs pour utiliser un freebet
-    offres.ts      suivi des offres : statuts, délais, rappels, bilan ; ics.ts : fichier d'agenda
     paris.ts       gains, bankroll, bilan, ROI
     bankroll.ts    courbe de bankroll, drawdown maximal, séries, ventilations (méthode, compétition,
                    jour de semaine, tranche de cote)
@@ -256,13 +237,13 @@ téléchargements : pas de hors ligne, pas d'installation, sauvegarde par copie 
   `coteCible` (cote minimale choisie). Un champ absent ou `null` est une donnée inconnue, affichée ⏳.
 - **Résultat** (historiques CSV) : magasin `resultats` à part, hors sauvegarde (données publiques).
 - **Live** : réglage local `live` (`src/data/live.ts`), hors sauvegarde et jamais remplacé par une restauration.
-- **Offres de freebet** : tableau dans le réglage `offres` (donc dans la sauvegarde), voir `src/core/offres.ts`.
-  Un réimport du carnet ne touche pas aux réglages que le carnet ne fournit pas.
+- Un réimport du carnet ne touche pas aux réglages que le carnet ne fournit pas, ni à la bankroll
+  déjà choisie dans l'application.
 - **Pari** (`src/core/types.ts`) : ceux du carnet, plus `ligue` et `matchId` (facultatifs, remplis en
   liant un match chargé) et `origine.carnet` (index et empreinte du contenu au moment de l'import,
   pour la fusion additive — absent pour un pari ajouté dans l'application). Réglages `mises` et
   `objectifs` (Kelly, plafonds, objectif/budget du mois) dans la sauvegarde ; `brouillonPari` (pari
-  préparé depuis le Live ou le Freebet, en attente d'être confirmé dans le journal) hors sauvegarde.
+  préparé depuis le Live, en attente d'être confirmé dans le journal) hors sauvegarde.
 - **Photo du ticket** : magasin IndexedDB `tickets` à part (JPEG redimensionné), hors sauvegarde
   fichier et hors historique des versions — elle ne quitte jamais le téléphone.
 - **Jeu responsable** : réglage `jeuResponsable` (seuils de rappel, durée de pause proposée) et

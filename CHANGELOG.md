@@ -2,6 +2,37 @@
 
 Format : chaque version liste ce qui a été ajouté, modifié ou corrigé.
 
+## 0.8.0 — 22 septembre 2026 — Deux méthodes, plus simple, remise à zéro
+
+Demande de l'utilisateur : retirer le Freebet, garder seulement +1.5 et +2.5, pouvoir tout
+remettre à zéro, et simplifier l'application pour quelqu'un qui n'y connaît rien.
+
+### Ajouté
+- **Tout remettre à zéro** (Réglages, en bas) : efface paris, matchs, bankroll et réglages pour
+  repartir comme au premier jour. Confirmation obligatoire, et une copie de sécurité « Avant une
+  remise à zéro » est gardée dans Données → Historique des versions.
+- Mention **18 ans et plus** au premier démarrage et dans « À propos ».
+
+### Retiré
+- **Le Freebet** : onglet, calculateur, comparateur et suivi des offres. Il reste 5 onglets
+  (Accueil, Matchs, Live, Mes paris, Données) et deux méthodes, +1.5 et +2.5. Les anciens paris
+  « Freebet » déjà notés restent dans le journal et dans les statistiques.
+
+### Modifié — tout est plus simple
+- **Cartes de match** : le verdict (✅ on joue / ⏳ à revoir / ❌ on passe), la question en clair
+  (« Au moins 2 buts ? ») et la raison en une phrase. Tous les chiffres sont rangés dans
+  « Voir les chiffres », les détails techniques dans « Plus d'infos sur ce match ».
+- **Live** : trois étapes expliquées en haut de l'écran ; les chiffres et les tableaux sont repliés.
+- **Formulaire de pari** : match, méthode, date, cote, mise, résultat ; le match de la liste, les
+  notes et la photo passent dans « Plus d'options ».
+- **Accueil** : la bankroll en grand, trois gros boutons « Que veux-tu faire ? », la semaine en une
+  phrase. **Données** : la sauvegarde d'abord.
+- Textes réécrits en mots simples (« Mon argent pour parier », « Combien tu mises »…).
+
+### Corrigé
+- Un message flottant (toast) pouvait bloquer un bouton placé juste en dessous ; il ne capte plus
+  les touchers, et la page garde une marge au-dessus de la barre d'onglets.
+
 ## 0.7.1 — 22 septembre 2026 — Démarrage simple, ta bankroll, plus d'animations
 
 Retour de l'utilisateur : trop compliqué pour un nouvel utilisateur, pas assez « joli », et

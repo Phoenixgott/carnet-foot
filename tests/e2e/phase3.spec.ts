@@ -50,6 +50,7 @@ test("Nouveau modèle : chances et fourchette, cote juste et mini, value, chiffr
   await expect(m25.locator('[data-test="value"]')).toHaveText(/^3,50 · \+\d+ %$/);
   await expect(m25.locator('[data-test="why"]')).toHaveText(/^Oui : la cote 3,50 donne une value de \+\d+ %/);
   await expect(m25.locator('[data-test="carnet"]')).toHaveText(/^Carnet : \d+ % · cote mini \d,\d\d$/);
+  await m25.getByText("Voir les chiffres").click();
   await m25.getByText("Pourquoi ?").click();
   await expect(m25.locator(".pourquoi")).toContainText("Avantage du terrain : 1,25 (valeur moyenne");
   await expect(m25.locator(".pourquoi")).toContainText("Mélange 70 / 30");
@@ -72,6 +73,7 @@ test("Critères réglables : un seuil plus exigeant change le verdict, retour au
   await page.goto("/#/matchs");
   await expect(m15.locator(".verdict")).toContainText("On passe");
   await expect(m15.locator('[data-test="why"]')).toHaveText("Non : trop de matchs à 0 ou 1 but.");
+  await m15.getByText("Voir les chiffres").click();
   await m15.getByText("Pourquoi ?").click();
   await expect(m15.locator(".pourquoi")).toContainText("Minimum : 95 %.");
   // Saisie refusée avec un message clair
@@ -116,8 +118,10 @@ test("Tri par intérêt et comparaison de deux matchs", async ({ page }) => {
   await expect(premiere.locator('[data-test="rang"]')).toHaveText(/^n° 1 · \+2\.5 : On joue, value \+\d+ %/);
   await expect(page.locator("article.match").last()).toContainText("Metz");
 
+  await carte(page, "Lens").locator('[data-test="infos-match"] > summary').click();
   await carte(page, "Lens").getByRole("button", { name: "Comparer" }).click();
   await expect(page.getByRole("status").filter({ hasText: "Choisis un 2ᵉ match" })).toBeVisible();
+  await carte(page, "Metz").locator('[data-test="infos-match"] > summary').click();
   await carte(page, "Metz").getByRole("button", { name: "Comparer" }).click();
   const comp = page.locator('[data-test="comparaison"]');
   await expect(comp.locator("thead")).toContainText("Lens – Brest");
@@ -153,6 +157,7 @@ test("Historiques : avantage du terrain du championnat dans le calcul, fiche éq
 
   await importer(page, [match("PSG", "RC Lens")]);
   const m25 = carte(page, "PSG").locator('[data-test="methode-+2.5"]');
+  await m25.getByText("Voir les chiffres").click();
   await m25.getByText("Pourquoi ?").click();
   await expect(m25.locator(".pourquoi")).toContainText(/Avantage du terrain : 1,\d\d buts à domicile pour 1,\d\d à l'extérieur \(41 matchs, 2025-2026\)/);
 

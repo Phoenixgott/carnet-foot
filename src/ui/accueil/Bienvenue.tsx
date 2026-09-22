@@ -69,24 +69,32 @@ export function ChoixBankroll() {
         </div>
         {erreur && <p className="bandeau erreur" role="alert">{erreur}</p>}
         <button type="submit" className="btn large">C'est parti</button>
-        <p className="aide">C'est ta bankroll de départ. Tu pourras la changer à tout moment dans Réglages.</p>
+        <p className="aide">C'est ta bankroll de départ. Tu pourras la changer à tout moment dans Réglages. Réservé aux plus de 18 ans.</p>
       </form>
     </section>
   );
 }
 
-const PREMIERS_PAS: Array<{ lien: string; icone: "paris" | "matchs" | "donnees"; titre: string; texte: string }> = [
-  { lien: "#/paris", icone: "paris", titre: "Noter un pari", texte: "Tu as déjà parié ? Note-le, l'app suit ta bankroll." },
-  { lien: "#/matchs", icone: "matchs", titre: "Trouver des matchs", texte: "Récupère les matchs du jour et vois lesquels jouer." },
-  { lien: "#/donnees", icone: "donnees", titre: "J'ai déjà un carnet", texte: "Importe tes anciens paris en un collage." },
-];
+type Tuile = { lien: string; icone: "paris" | "matchs" | "live" | "donnees"; titre: string; texte: string };
 
-export function PremiersPas() {
+/** Les gros boutons de l'accueil : ce qu'on peut faire, en mots simples. */
+export function PremiersPas({ vide, matchsConseilles }: { vide: boolean; matchsConseilles: number }) {
+  const tuiles: Tuile[] = [
+    {
+      lien: "#/matchs",
+      icone: "matchs",
+      titre: "Trouver des matchs",
+      texte: matchsConseilles > 0 ? `${matchsConseilles} match${matchsConseilles > 1 ? "s" : ""} conseillé${matchsConseilles > 1 ? "s" : ""} ✅` : "L'app te dit sur quels matchs parier.",
+    },
+    { lien: "#/live", icone: "live", titre: "Parier pendant un match", texte: "Un chrono te dit quand parier (+1.5)." },
+    { lien: "#/paris", icone: "paris", titre: "Noter un pari", texte: "Note ce que tu as parié : l'app compte tes gains." },
+  ];
+  if (vide) tuiles.push({ lien: "#/donnees", icone: "donnees", titre: "J'ai déjà un carnet", texte: "Récupère tes anciens paris." });
   return (
     <section aria-labelledby="titre-premiers-pas" data-test="premiers-pas">
-      <h2 id="titre-premiers-pas" className="titre-section">Par où commencer ?</h2>
+      <h2 id="titre-premiers-pas" className="titre-section">{vide ? "Par où commencer ?" : "Que veux-tu faire ?"}</h2>
       <ul className="tuiles-action">
-        {PREMIERS_PAS.map((p) => (
+        {tuiles.map((p) => (
           <li key={p.lien}>
             <a className="tuile-action" href={p.lien}>
               <span className="tuile-action-icone" aria-hidden="true"><Icone nom={p.icone} /></span>

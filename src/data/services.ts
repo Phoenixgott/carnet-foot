@@ -10,6 +10,7 @@ import { bankrollChoisie, bankrollDe, estVide, jsonCanonique, resumer, type Cont
 import {
   ajouterVersion,
   ecrireMatchs,
+  effacerTout,
   ecrirePhotoTicket,
   ecrireParis,
   ecrireReglage,
@@ -333,6 +334,16 @@ export async function restaurerSauvegarde(texte: string): Promise<{ resume: Retu
 }
 
 /** Revient à une version de l'historique (après une copie de sécurité de l'état actuel). */
+/**
+ * Remet l'application à zéro, comme au premier jour (la bankroll de départ sera redemandée).
+ * Une copie « Avant une remise à zéro » est faite avant : on peut revenir en arrière depuis
+ * Données → Historique des versions.
+ */
+export async function remettreAZero(): Promise<void> {
+  await creerVersion("avant-remise-a-zero");
+  await effacerTout();
+}
+
 export async function restaurerVersion(id: string): Promise<Version> {
   const v = await lireVersion(id);
   if (!v) throw new ErreurImport("Cette version n'existe plus.");

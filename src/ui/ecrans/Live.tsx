@@ -272,7 +272,10 @@ export function Live() {
     <>
       <div>
         <h1 tabIndex={-1}>Live +1.5</h1>
-        <p className="chapeau">Pari live à 0-0 vers la 15ᵉ-20ᵉ minute, puis couverture après le premier but.</p>
+        <p className="chapeau">
+          1. Touche « Coup d'envoi » quand le match commence. 2. Vers la 15ᵉ minute, s'il n'y a pas de but, l'app te dit si tu peux parier.
+          3. Quand un but tombe, touche « BUT ! » : l'app te dit comment gagner à coup sûr.
+        </p>
       </div>
 
       {autreMatch && (
@@ -445,20 +448,8 @@ export function Live() {
               La décision reste la tienne.
             </p>
           )}
-          {Number.isFinite(decision.p) && (
-            <div className="faits" data-test="chiffres-live">
-              <div className="fait"><span>Chances (à 0-0 à la {minute}ᵉ)</span><b>{pc(decision.p)} ({Math.round(decision.pBas * 100)}-{Math.round(decision.pHaut * 100)} %)</b></div>
-              <div className="fait"><span>Cote juste · cote minimale</span><b>{fr(decision.coteJuste)} · {fr(decision.coteMinimale)}</b></div>
-              <div className="fait">
-                <span>Value avec ta cote</span>
-                <b className={Number.isFinite(decision.value) ? (decision.value >= 0 ? "pos" : "neg") : ""}>
-                  {Number.isFinite(decision.value) ? (decision.value >= 0 ? "+" : "−") + Math.abs(Math.round(decision.value * 100)) + " %" : "⏳"}
-                </b>
-              </div>
-            </div>
-          )}
           <label className="champ" htmlFor="live-mise">
-            Mise (vide : celle conseillée)
+            Combien tu mises (vide : la mise conseillée)
             <input
               id="live-mise"
               type="text"
@@ -472,6 +463,21 @@ export function Live() {
           <button type="button" className="btn enorme" disabled={!(typeof cote === "number" && cote > 1)} onClick={parier}>
             J'ai parié
           </button>
+          <details className="repli" data-test="chiffres-entree">
+            <summary>Voir les chiffres</summary>
+            <div className="section">
+          {Number.isFinite(decision.p) && (
+            <div className="faits" data-test="chiffres-live">
+              <div className="fait"><span>Chances (à 0-0 à la {minute}ᵉ)</span><b>{pc(decision.p)} ({Math.round(decision.pBas * 100)}-{Math.round(decision.pHaut * 100)} %)</b></div>
+              <div className="fait"><span>Cote juste · cote minimale</span><b>{fr(decision.coteJuste)} · {fr(decision.coteMinimale)}</b></div>
+              <div className="fait">
+                <span>Value avec ta cote</span>
+                <b className={Number.isFinite(decision.value) ? (decision.value >= 0 ? "pos" : "neg") : ""}>
+                  {Number.isFinite(decision.value) ? (decision.value >= 0 ? "+" : "−") + Math.abs(Math.round(decision.value * 100)) + " %" : "⏳"}
+                </b>
+              </div>
+            </div>
+          )}
           {tableau.length > 0 && (
             <>
               <h3>Cote minimale selon la minute (si toujours 0-0)</h3>
@@ -501,6 +507,8 @@ export function Live() {
               </p>
             </>
           )}
+            </div>
+          </details>
         </section>
       )}
 
@@ -614,7 +622,9 @@ export function Live() {
             </p>
           )}
 
-          <h3>Résultat de chaque scénario</h3>
+          <details className="repli" data-test="details-scenarios">
+            <summary>Voir ce que je gagne dans chaque cas</summary>
+            <div className="section">
           <div className="tableau-defilant">
             <table className="scenarios" data-test="scenarios">
               <thead>
@@ -653,6 +663,8 @@ export function Live() {
               mais tu perds toute ta mise dans les autres cas. Ce sont des estimations : elles peuvent se tromper.
             </p>
           )}
+            </div>
+          </details>
           <button
             type="button"
             className="btn secondaire"

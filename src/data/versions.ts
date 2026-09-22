@@ -6,7 +6,7 @@
  */
 import type { Contenu, ResumeContenu } from "./contenu";
 
-export type RaisonVersion = "quotidienne" | "avant-import" | "avant-modification" | "avant-restauration" | "manuelle";
+export type RaisonVersion = "quotidienne" | "avant-import" | "avant-modification" | "avant-restauration" | "avant-remise-a-zero" | "manuelle";
 
 export interface Version {
   id: string;
@@ -26,6 +26,7 @@ export const LIBELLE_RAISON: Readonly<Record<RaisonVersion, string>> = {
   "avant-import": "Avant un import",
   "avant-modification": "Avant une modification",
   "avant-restauration": "Avant une restauration",
+  "avant-remise-a-zero": "Avant une remise à zéro",
   manuelle: "Copie manuelle",
 };
 

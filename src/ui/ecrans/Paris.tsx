@@ -30,7 +30,7 @@ export function Paris() {
     <>
       <div>
         <h1 tabIndex={-1}>Mes paris</h1>
-        <p className="chapeau">Ton journal : ajoute et modifie tes paris ici. Un réimport du carnet ne touche jamais à ce que tu as saisi.</p>
+        <p className="chapeau">Note chaque pari ici : l'app compte ce que tu gagnes et ce que tu perds.</p>
       </div>
 
       <div className="tuiles">
@@ -47,7 +47,7 @@ export function Paris() {
       </div>
       <p className="aide">
         Bankroll de départ {eur(reglages.depart)} · mise conseillée {eur(mise.montant)} ({fr(reglages.pctMise, 1)} % de la bankroll).{" "}
-        <a href="#/reglages">Changer ma bankroll</a>. Rentabilité calculée sans les mises Freebet.
+        <a href="#/reglages">Changer ma bankroll</a>.
       </p>
 
       <div className="segments" role="group" aria-label="Section">

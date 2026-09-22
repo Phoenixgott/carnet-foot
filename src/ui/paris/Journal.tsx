@@ -38,7 +38,7 @@ export function Journal() {
   const [brouillon, setBrouillon] = useState<BrouillonPari | null>(null);
   const [photos, setPhotos] = useState<Set<string>>(new Set());
 
-  // Un pari préparé depuis le Live ou le Freebet ouvre directement le formulaire.
+  // Un pari préparé depuis le Live ouvre directement le formulaire.
   useEffect(() => {
     retirerBrouillonPari().then((b) => {
       if (b) {
