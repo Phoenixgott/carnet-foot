@@ -80,6 +80,9 @@ h3 { font-size: 17px; margin: 0; }
 .gazon {
   background: repeating-linear-gradient(90deg, var(--turf1) 0 56px, var(--turf2) 56px 112px);
   color: var(--onturf); border-radius: 18px; padding: 20px 18px; display: grid; gap: 14px; position: relative; overflow: hidden;
+  transform: perspective(900px) rotateX(var(--incl-x, 0deg)) rotateY(var(--incl-y, 0deg));
+  transition: transform .4s cubic-bezier(.2,.8,.2,1); will-change: transform;
+  box-shadow: 0 14px 30px -12px rgba(10,30,20,.45);
 }
 .gazon::after {
   content: ""; position: absolute; right: -60px; top: 50%; width: 160px; height: 160px;
@@ -92,6 +95,43 @@ h3 { font-size: 17px; margin: 0; }
 .gazon-ligne div { background: rgba(255,255,255,.14); border-radius: 12px; padding: 10px 8px; text-align: center; }
 .gazon-ligne b { display: block; font-size: 19px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .gazon-ligne small { font-size: 13px; opacity: .92; }
+
+/* Fond animé : deux lueurs qui dérivent doucement + un reflet qui balaie la carte. */
+.gazon > .gazon-fond { position: absolute; inset: 0; z-index: 0; overflow: hidden; border-radius: inherit; pointer-events: none; }
+.gazon-lueur { position: absolute; border-radius: 50%; filter: blur(26px); opacity: .5; }
+.gazon-lueur-1 { width: 150px; height: 150px; background: #E9B949; top: -46px; left: -36px; animation: gazon-derive 9s ease-in-out infinite; }
+.gazon-lueur-2 { width: 190px; height: 190px; background: #3FDE8B; bottom: -70px; right: -46px; animation: gazon-derive 11s ease-in-out infinite reverse; }
+.gazon-reflet {
+  position: absolute; inset: -20% -50%;
+  background: linear-gradient(75deg, transparent 42%, rgba(255,255,255,.2) 50%, transparent 58%);
+  animation: gazon-reflet 6s ease-in-out infinite;
+}
+@keyframes gazon-derive { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(16px,-12px); } }
+@keyframes gazon-reflet { 0%, 15% { transform: translateX(-45%); } 55%, 100% { transform: translateX(45%); } }
+
+/* La mascotte se pose en haut à droite de la carte bankroll. */
+.gazon > .mascotte { position: absolute; top: 10px; right: 10px; z-index: 1; width: 60px; height: 60px; }
+
+/* ---------- Mascotte (ballon animé, décoratif) ---------- */
+.bienvenue-entete { display: flex; align-items: center; gap: 14px; }
+.bienvenue-entete h2 { flex: 1; min-width: 0; }
+.mascotte { width: 84px; height: 84px; flex: none; filter: drop-shadow(0 6px 10px rgba(0,0,0,.2)); }
+.mascotte-salut { width: 104px; height: 104px; }
+.mascotte-svg { width: 100%; height: 100%; display: block; }
+.mascotte-corps, .mascotte-ombre, .mascotte-oeil, .mascotte-etincelle { transform-box: fill-box; transform-origin: center; }
+.mascotte-corps { animation: mascotte-rebond 2.6s ease-in-out infinite; }
+.mascotte-ombre { animation: mascotte-ombre 2.6s ease-in-out infinite; opacity: .18; }
+.mascotte-content .mascotte-corps { animation: mascotte-rebond-content 1.7s ease-in-out infinite; }
+.mascotte-content .mascotte-ombre { animation-duration: 1.7s; }
+.mascotte-oeil { animation: mascotte-clin 4.4s ease-in-out infinite; }
+.mascotte-oeil-d { animation-duration: 5.1s; }
+.mascotte-etincelle { animation: mascotte-etincelle 1.5s ease-in-out infinite; opacity: 0; }
+.mascotte-etincelle-2 { animation-delay: .5s; }
+@keyframes mascotte-rebond { 0%, 100% { transform: translateY(0) scale(1,1); } 50% { transform: translateY(-8px) scale(1.02,.98); } }
+@keyframes mascotte-rebond-content { 0%, 100% { transform: translateY(0) rotate(0deg) scale(1,1); } 50% { transform: translateY(-14px) rotate(-4deg) scale(1.04,.96); } }
+@keyframes mascotte-ombre { 0%, 100% { transform: scaleX(1); opacity: .18; } 50% { transform: scaleX(.75); opacity: .1; } }
+@keyframes mascotte-clin { 0%, 90%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.12); } }
+@keyframes mascotte-etincelle { 0%, 100% { opacity: 0; transform: scale(.6) rotate(0deg); } 50% { opacity: 1; transform: scale(1) rotate(20deg); } }
 
 /* ---------- Boutons ---------- */
 .btn {

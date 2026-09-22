@@ -47,7 +47,16 @@ Il fait foi.
   Phases précédentes : `v0.1.0`, `v0.2.0` (+ correctifs `v0.2.1`, `v0.2.2` : écran blanc après mise à jour),
   `v0.3.0`, `v0.4.0`, `v0.5.0`. 116 tests unitaires + 57 tests de bout en bout, tous verts. En ligne sur
   https://phoenixgott.github.io/carnet-foot/ (dépôt `Phoenixgott/carnet-foot`, branche `gh-pages`).
-- **Prochaine étape : phase 7 (backtest), seulement après l'accord de l'utilisateur.**
+- **`v0.6.1`, hors plan** : l'utilisateur a demandé d'abandonner la phase 7 pour l'instant et de refaire
+  le look de l'app « énorme et jolie », « un peu 3D et gadget ». Choix recueillis (AskUserQuestion) :
+  style **spectaculaire**, gadget **mascotte animée** (un ballon, réagit au bilan, jamais triste sur une
+  perte), en commençant par l'**Accueil** avant les autres écrans. Livré : carte bankroll en relief
+  (inclinaison 3D, lueurs, reflet, chiffres qui comptent) + mascotte, en CSS/SVG maison (pas de
+  bibliothèque 3D, hors ligne, respecte `prefers-reduced-motion` déjà coupé globalement dans
+  `styles.css`). Voir `src/ui/animation.ts`, `src/ui/mascotte.tsx`.
+- **Prochaine étape : demander à l'utilisateur s'il veut étendre ce style aux autres écrans
+  (Matchs, Live, Freebet, Paris, Données) ou l'ajuster d'abord — puis, plus tard, la phase 7 (backtest)
+  reste dans le plan si l'utilisateur veut y revenir.**
 - **Décision prise en phase 6** (question posée à l'utilisateur, réponse « L'app devient le carnet ») :
   l'application est désormais le carnet de paris principal. Le journal se modifie dans l'app (ajout,
   modification, suppression, Live et Freebet y notent directement) ; réimporter le carnet original reste

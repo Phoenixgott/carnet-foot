@@ -10,11 +10,18 @@ import { bilan } from "../../core/paris";
 import { bankrollDe, estVide } from "../../data/contenu";
 import { jourLocal } from "../../data/versions";
 import { joursDepuis, RAPPEL_SAUVEGARDE_JOURS, useAppli } from "../contexte";
+import { useCompte, useInclinaison3D } from "../animation";
+import { Mascotte } from "../mascotte";
 
 export function Accueil() {
   const { contenu, dernierExport, contexteDe } = useAppli();
   const vide = estVide(contenu);
   const b = bilan(contenu.paris, bankrollDe(contenu));
+  const ref3d = useInclinaison3D<HTMLElement>();
+  const bankrollAnime = useCompte(b.bankroll);
+  const gainsAnime = useCompte(b.gains);
+  const rentabiliteAnimee = useCompte(b.rentabilite);
+  const tauxAnime = useCompte(b.tauxReussite);
   const jours = [...new Set(contenu.matchs.map((m) => m.date).filter(Boolean))].sort() as string[];
   const aJouer = contenu.matchs.filter((m) => analyserV2(m, "+1.5", contexteDe(m)).v === "ok" || analyserV2(m, "+2.5", contexteDe(m)).v === "ok").length;
   const rappel = !vide && (!dernierExport || joursDepuis(dernierExport) >= RAPPEL_SAUVEGARDE_JOURS);
@@ -31,8 +38,11 @@ export function Accueil() {
       </div>
 
       {vide ? (
-        <section className="carte" aria-labelledby="bienvenue">
-          <h2 id="bienvenue">Récupère tes données du carnet</h2>
+        <section className="carte carte-bienvenue" aria-labelledby="bienvenue">
+          <div className="bienvenue-entete">
+            <Mascotte humeur="salut" />
+            <h2 id="bienvenue">Récupère tes données du carnet</h2>
+          </div>
           <ol className="aide" style={{ margin: 0, paddingLeft: 20, display: "grid", gap: 6 }}>
             <li>Ouvre ton carnet, onglet « Mes paris ».</li>
             <li>Tout en bas, touche « Tout exporter » : le texte est copié.</li>
@@ -43,20 +53,26 @@ export function Accueil() {
           <a className="btn secondaire large" href="#/matchs">Récupérer les matchs</a>
         </section>
       ) : (
-        <section className="gazon" aria-labelledby="titre-bankroll">
+        <section className="gazon" aria-labelledby="titre-bankroll" ref={ref3d}>
+          <div className="gazon-fond" aria-hidden="true">
+            <span className="gazon-lueur gazon-lueur-1" />
+            <span className="gazon-lueur gazon-lueur-2" />
+            <span className="gazon-reflet" />
+          </div>
+          <Mascotte humeur={b.gains >= 0 ? "content" : "neutre"} />
           <span className="etiquette" id="titre-bankroll">Bankroll</span>
-          <span className="gazon-chiffre" data-test="bankroll">{eur(b.bankroll)}</span>
+          <span className="gazon-chiffre" data-test="bankroll">{eur(bankrollAnime)}</span>
           <div className="gazon-ligne">
             <div>
-              <b>{eur(b.gains)}</b>
+              <b>{eur(gainsAnime)}</b>
               <small>Gagné / perdu</small>
             </div>
             <div>
-              <b>{pc(b.rentabilite)}</b>
+              <b>{pc(rentabiliteAnimee)}</b>
               <small>Rentabilité</small>
             </div>
             <div>
-              <b>{pc(b.tauxReussite)}</b>
+              <b>{pc(tauxAnime)}</b>
               <small>Paris gagnés</small>
             </div>
           </div>

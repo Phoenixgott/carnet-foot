@@ -2,6 +2,24 @@
 
 Format : chaque version liste ce qui a été ajouté, modifié ou corrigé.
 
+## 0.6.1 — 22 septembre 2026 — Nouveau look de l'accueil (3D, animations, mascotte)
+
+Hors plan des 8 phases, à la demande de l'utilisateur : un style plus spectaculaire, en commençant
+par l'écran d'accueil pour valider la direction avant de l'étendre aux autres écrans.
+
+### Ajouté
+- **Carte bankroll en relief** : légère inclinaison 3D qui suit la souris (immobile au doigt), lueurs
+  animées à la dérive, reflet qui balaie la carte, chiffres (bankroll, gagné/perdu, rentabilité, taux
+  de réussite) qui comptent jusqu'à leur valeur au lieu d'apparaître d'un coup.
+- **Mascotte** : un petit ballon animé et décoratif, qui rebondit et cligne des yeux. Sourire et
+  étincelles quand le bilan est positif ; jamais de mine triste sur une perte (encourageant, jamais
+  culpabilisant). Présent sur l'écran d'accueil vide (accueil) et sur la carte bankroll.
+
+### Choix
+- Tout est fait en CSS et SVG « maison » (aucune bibliothèque 3D) : ça reste léger, ça marche hors
+  ligne sans rien télécharger, et ça respecte immédiatement « Réduire les animations » du téléphone
+  (déjà coupé partout dans l'app) ainsi que les cibles tactiles et contrastes déjà vérifiés.
+
 ## 0.6.0 — 22 septembre 2026 — Phase 6 : paris et bankroll
 
 ### Ajouté
