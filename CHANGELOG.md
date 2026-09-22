@@ -2,6 +2,21 @@
 
 Format : chaque version liste ce qui a été ajouté, modifié ou corrigé.
 
+## 0.8.1 — 22 septembre 2026 — Boutons énormes, guide numéroté, remise à zéro sur l'accueil
+
+Retour de l'utilisateur : encore plus simple, des gros boutons, guider comme si l'utilisateur ne
+comprenait rien du tout ; le bouton de remise à zéro doit être facile à trouver.
+
+### Modifié
+- **Boutons agrandis partout** : hauteur et texte plus grands pour tous les boutons principaux
+  (54 px minimum, 60 px pour les gros boutons « J'ai parié », « C'est parti »…), tuiles de l'accueil
+  plus hautes avec icônes et texte plus grands, barre d'onglets plus lisible (5 onglets, le Freebet
+  n'existant plus).
+- **Guide numéroté** : au tout premier démarrage, chaque grande case « Par où commencer ? » porte un
+  numéro (1, 2, 3…) pour montrer dans quel ordre les toucher.
+- **« Tout remettre à zéro »** est maintenant aussi sur l'écran d'accueil (en plus de Réglages), en
+  rouge, impossible à manquer — avec la même confirmation et la même copie de sécurité qu'avant.
+
 ## 0.8.0 — 22 septembre 2026 — Deux méthodes, plus simple, remise à zéro
 
 Demande de l'utilisateur : retirer le Freebet, garder seulement +1.5 et +2.5, pouvoir tout

@@ -28,7 +28,7 @@ export function ReglagesRemiseAZero() {
     <section className="carte zone-danger" aria-labelledby="titre-remise-a-zero" data-test="remise-a-zero">
       <h2 id="titre-remise-a-zero">Tout remettre à zéro</h2>
       <p className="aide">Efface tout pour recommencer comme au premier jour.</p>
-      <button type="button" className="btn danger" onClick={effacer}>
+      <button type="button" className="btn danger large" onClick={effacer}>
         Tout remettre à zéro
       </button>
     </section>

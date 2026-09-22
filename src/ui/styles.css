@@ -155,15 +155,15 @@ h3 { font-size: 17px; margin: 0; }
 
 /* ---------- Boutons ---------- */
 .btn {
-  font: 700 16px var(--font); background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 12px;
-  min-height: 48px; padding: 12px 18px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font: 700 18px var(--font); background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 14px;
+  min-height: 54px; padding: 14px 20px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   text-decoration: none; text-align: center;
 }
 .btn:disabled { opacity: .55; cursor: not-allowed; }
-.btn.secondaire { background: transparent; color: var(--accent); border: 1.5px solid var(--line); }
+.btn.secondaire { background: transparent; color: var(--accent); border: 2px solid var(--line); }
 .btn.danger { background: var(--bad); color: #FFFFFF; }
-.btn.discret { background: transparent; color: var(--accent); min-height: 44px; padding: 8px 10px; }
-.btn.large { width: 100%; }
+.btn.discret { background: transparent; color: var(--accent); min-height: 44px; padding: 8px 10px; font-size: 16px; }
+.btn.large { width: 100%; min-height: 60px; font-size: 20px; }
 .rangee { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .rangee > .btn { flex: 1 1 160px; }
 
@@ -433,12 +433,12 @@ nav.onglets {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: var(--surface); border-top: 1px solid var(--line);
   padding: 0 4px env(safe-area-inset-bottom, 0px);
 }
-nav.onglets ul { list-style: none; margin: 0 auto; padding: 0; max-width: 720px; display: grid; grid-template-columns: repeat(6, 1fr); }
+nav.onglets ul { list-style: none; margin: 0 auto; padding: 0; max-width: 720px; display: grid; grid-template-columns: repeat(5, 1fr); }
 nav.onglets a {
-  display: grid; justify-items: center; gap: 2px; min-height: var(--nav-h); padding: 8px 2px; text-decoration: none;
-  color: var(--muted); font-size: 12px; font-weight: 700;
+  display: grid; justify-items: center; gap: 3px; min-height: var(--nav-h); padding: 8px 2px; text-decoration: none;
+  color: var(--muted); font-size: 13px; font-weight: 700;
 }
-nav.onglets a svg { width: 24px; height: 24px; }
+nav.onglets a svg { width: 27px; height: 27px; }
 nav.onglets a[aria-current="page"] { color: var(--accent); }
 nav.onglets a[aria-current="page"] svg { stroke-width: 2.4; }
 
@@ -462,29 +462,35 @@ dialog.confirmation p { margin: 0; }
 .maj { position: sticky; top: calc(58px + env(safe-area-inset-top, 0px)); z-index: 9; }
 
 /* ---------- Premier démarrage ---------- */
-.bienvenue { gap: 16px; }
-.bienvenue h2 { font-size: 24px; }
-label.champ-geant { font-size: 18px; color: var(--ink); }
+.bienvenue { gap: 18px; }
+.bienvenue h2 { font-size: 26px; }
+label.champ-geant { font-size: 20px; color: var(--ink); font-weight: 700; }
 .champ-euro { position: relative; display: block; }
-.champ-euro input { font-size: 34px; font-weight: 800; padding: 14px 52px 14px 16px; font-variant-numeric: tabular-nums; }
-.champ-euro span { position: absolute; right: 18px; top: 50%; translate: 0 -50%; font-size: 28px; font-weight: 800; color: var(--muted); pointer-events: none; }
+.champ-euro input { font-size: 40px; font-weight: 800; padding: 18px 58px 18px 18px; font-variant-numeric: tabular-nums; }
+.champ-euro span { position: absolute; right: 20px; top: 50%; translate: 0 -50%; font-size: 32px; font-weight: 800; color: var(--muted); pointer-events: none; }
 .puces-montants { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-.puces-montants .btn { padding: 10px 4px; }
-.titre-section { margin: 0 0 10px; }
-ul.tuiles-action { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.puces-montants .btn { padding: 10px 4px; font-size: 17px; min-height: 50px; }
+.titre-section { margin: 0 0 12px; font-size: 22px; }
+ul.tuiles-action { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
 .tuile-action {
-  display: grid; grid-template-columns: 52px 1fr 20px; gap: 14px; align-items: center; min-height: 76px;
-  background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px;
+  position: relative;
+  display: grid; grid-template-columns: 68px 1fr 26px; gap: 16px; align-items: center; min-height: 96px;
+  background: var(--surface); border: 2px solid var(--line); border-radius: 18px; padding: 14px 16px;
   color: var(--ink); text-decoration: none;
 }
-.tuile-action-icone { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
-.tuile-action-icone svg { width: 28px; height: 28px; }
+.tuile-action-numero {
+  position: absolute; top: -10px; left: -10px; width: 30px; height: 30px; border-radius: 50%;
+  background: var(--ink); color: var(--bg); font-size: 16px; font-weight: 800; display: grid; place-items: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,.25);
+}
+.tuile-action-icone { width: 68px; height: 68px; border-radius: 16px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
+.tuile-action-icone svg { width: 36px; height: 36px; }
 li:nth-child(2) > .tuile-action .tuile-action-icone { background: var(--good-soft); color: var(--good); }
 li:nth-child(3) > .tuile-action .tuile-action-icone { background: var(--warn-soft); color: var(--warn); }
-.tuile-action-texte { display: grid; gap: 2px; min-width: 0; }
-.tuile-action-texte b { font-size: 17px; }
-.tuile-action-texte small { font-size: 14px; color: var(--muted); }
-.tuile-action-fleche { font-size: 26px; color: var(--muted); }
+.tuile-action-texte { display: grid; gap: 3px; min-width: 0; }
+.tuile-action-texte b { font-size: 20px; }
+.tuile-action-texte small { font-size: 15px; color: var(--muted); line-height: 1.3; }
+.tuile-action-fleche { font-size: 30px; color: var(--muted); }
 
 /* Réglages avancés : repliés par défaut, pour garder l'écran simple. */
 details.avances { background: var(--surface); border: 1.5px dashed var(--line); border-radius: var(--r); padding: 4px 16px 14px; }

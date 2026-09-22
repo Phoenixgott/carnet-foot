@@ -91,6 +91,13 @@ Il fait foi.
   ouvrent ces blocs avant d'interagir) ; mention 18+.
   **Reste à simplifier si l'utilisateur le demande** : l'écran Données (CSV, versions, stockage) et
   la récupération des matchs en 3 étapes.
+- **`v0.8.1` (retour utilisateur)** : « pas trop mal mais [pas] gros bouton, encore plus simple, guider
+  l'utilisateur de façon TRES DEBILE », « un bouton qui réinitialise la totale ». Livré : `.btn` de
+  base agrandi (54 px, 18 px de police ; `.btn.large` 60 px), tuiles `.tuile-action` agrandies avec
+  un badge numéroté (1, 2, 3…) affiché uniquement au tout premier démarrage (`PremiersPas` dans
+  `src/ui/accueil/Bienvenue.tsx`) pour guider pas à pas ; `ReglagesRemiseAZero` (déjà créé en
+  v0.8.0) réutilisé tel quel sur l'accueil en plus de Réglages, pour que le bouton rouge soit
+  impossible à manquer. `nav.onglets` passé à `repeat(5, 1fr)` (oubli depuis le retrait du Freebet).
 - **Prochaine étape : demander à l'utilisateur ce qu'il veut ensuite.** Le cahier des charges est
   entièrement couvert sauf la phase 7 (backtest), volontairement mise de côté. Pistes possibles :
   revenir sur la phase 7, étendre le style bleu-et-noir aux autres écrans, ou simplement laisser

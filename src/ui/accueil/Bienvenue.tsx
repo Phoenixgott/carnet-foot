@@ -92,11 +92,12 @@ export function PremiersPas({ vide, matchsConseilles }: { vide: boolean; matchsC
   if (vide) tuiles.push({ lien: "#/donnees", icone: "donnees", titre: "J'ai déjà un carnet", texte: "Récupère tes anciens paris." });
   return (
     <section aria-labelledby="titre-premiers-pas" data-test="premiers-pas">
-      <h2 id="titre-premiers-pas" className="titre-section">{vide ? "Par où commencer ?" : "Que veux-tu faire ?"}</h2>
+      <h2 id="titre-premiers-pas" className="titre-section">{vide ? "Par où commencer ? Touche une case." : "Que veux-tu faire ? Touche une case."}</h2>
       <ul className="tuiles-action">
-        {tuiles.map((p) => (
+        {tuiles.map((p, i) => (
           <li key={p.lien}>
             <a className="tuile-action" href={p.lien}>
+              {vide && <span className="tuile-action-numero" aria-hidden="true">{i + 1}</span>}
               <span className="tuile-action-icone" aria-hidden="true"><Icone nom={p.icone} /></span>
               <span className="tuile-action-texte">
                 <b>{p.titre}</b>

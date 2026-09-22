@@ -12,6 +12,7 @@ import { pauseDe, reglagesJeuResponsableDe } from "../../data/jeu-responsable";
 import { ecrireReglage } from "../../data/depot";
 import { bankrollChoisie, bankrollDe, estVide } from "../../data/contenu";
 import { ChoixBankroll, PremiersPas } from "../accueil/Bienvenue";
+import { ReglagesRemiseAZero } from "../reglages/ReglagesRemiseAZero";
 import { jourLocal } from "../../data/versions";
 import { joursDepuis, RAPPEL_SAUVEGARDE_JOURS, useAppli } from "../contexte";
 import { useCompte, useInclinaison3D } from "../animation";
@@ -185,6 +186,8 @@ export function Accueil() {
           <a className="btn" href="#/donnees">Sauvegarder maintenant</a>
         </div>
       )}
+
+      {!vide && <ReglagesRemiseAZero />}
     </>
   );
 }
