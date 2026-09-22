@@ -133,10 +133,18 @@ export interface Pari {
   /** Gain saisi à la main quand le statut est « manuel » (pari sécurisé). */
   pnl?: number;
   notes?: string;
+  /** Compétition, quand connue (liée à un match ou tapée) : sert à ventiler les statistiques. */
+  ligue?: string | null;
+  /** Match lié, si choisi dans la liste des matchs chargés (peut ne plus exister). */
+  matchId?: string | null;
   creeLe: string;
   modifieLe: string;
-  /** Trace de l'origine quand le pari vient du carnet d'origine. */
-  origine?: { carnet: { index: number; methode: string } };
+  /**
+   * Trace de l'origine quand le pari vient du carnet d'origine (sert à fusionner sans doublon).
+   * `cle` fige le contenu du pari tel qu'il était dans le carnet au moment de cet import
+   * (date|méthode|cote|mise) : elle ne change jamais, même si le pari est ensuite modifié dans l'app.
+   */
+  origine?: { carnet: { index: number; methode: string; cle: string } };
 }
 
 export interface ReglagesBankroll {

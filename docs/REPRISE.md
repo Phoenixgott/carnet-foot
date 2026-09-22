@@ -43,21 +43,24 @@ Il fait foi.
 
 ## État actuel
 
-- **Phase 5 terminée** (étiquette `v0.5.0`, 22 septembre 2026) : voir `CHANGELOG.md`.
+- **Phase 6 terminée** (étiquette `v0.6.0`, 22 septembre 2026) : voir `CHANGELOG.md`.
   Phases précédentes : `v0.1.0`, `v0.2.0` (+ correctifs `v0.2.1`, `v0.2.2` : écran blanc après mise à jour),
-  `v0.3.0`, `v0.4.0`. 100 tests unitaires + 48 tests de bout en bout, tous verts. En ligne sur
+  `v0.3.0`, `v0.4.0`, `v0.5.0`. 116 tests unitaires + 57 tests de bout en bout, tous verts. En ligne sur
   https://phoenixgott.github.io/carnet-foot/ (dépôt `Phoenixgott/carnet-foot`, branche `gh-pages`).
-- **Prochaine étape : phase 6 (paris et bankroll), seulement après l'accord de l'utilisateur.**
-  Points à trancher avec lui : (1) le journal des paris est encore importé du carnet en lecture seule ;
-  le live et le freebet ne l'écrivent pas, et un réimport du carnet remplace tout le journal : comment
-  faire cohabiter l'app et le carnet ? (2) les bénéfices réels des offres de freebet (`beneficeReel`) sont
-  un bon candidat pour alimenter la méthode « Freebet » du bilan. (3) mise fixe 2 % par défaut, Kelly
-  fractionné en option (décision déjà prise).
+- **Prochaine étape : phase 7 (backtest), seulement après l'accord de l'utilisateur.**
+- **Décision prise en phase 6** (question posée à l'utilisateur, réponse « L'app devient le carnet ») :
+  l'application est désormais le carnet de paris principal. Le journal se modifie dans l'app (ajout,
+  modification, suppression, Live et Freebet y notent directement) ; réimporter le carnet original reste
+  possible à tout moment mais n'ajoute que ce qu'il connaît de nouveau — il ne remplace ni n'efface plus
+  jamais un pari. Les bénéfices réels des offres de freebet (`beneficeReel`) alimentent le journal via
+  une proposition à l'enregistrement de l'offre (pas d'automatisme silencieux).
 - Navigation : 6 onglets (Accueil, Matchs, Live, Freebet, Paris, Données) ; Réglages est l'engrenage de
   l'en-tête. Prévoir où mettre un éventuel 7ᵉ écran sans surcharger la barre.
 - Ressenti de l'utilisateur après la phase 1 : l'app « ne ressemble en rien » à son carnet et ne lui
   sert à rien pour l'instant. Il a choisi de continuer le plan. Garder en tête : lui rendre vite un
   usage quotidien (récupérer les matchs, analyser, noter ses paris) et rester proche du carnet.
+  Depuis la phase 6, l'app couvre tout le cycle (analyse → live/freebet → journal → statistiques) :
+  vérifier au prochain échange que ce ressenti s'est amélioré.
 - Poste de travail (Windows) : dépôt dans `C:\Users\larri\Desktop\CLAUDE`. Git portable dans
   `%LOCALAPPDATA%\Programs\PortableGit` (pas dans le PATH ; `bin\bash.exe` pour publier-pages.sh).
   Le Chromium de Playwright ne démarre pas sur ce PC : `PW_CANAL=chrome npm run e2e`.

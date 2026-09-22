@@ -17,12 +17,12 @@ interdit elle-même toute connexion vers un autre site (règle de sécurité `co
 1. Ouvre ton carnet (l'artefact « Carnet de Paris Foot »), onglet **Mes paris**.
 2. Tout en bas, touche **Tout exporter** : le texte est copié (sinon, il s'affiche sélectionné, copie-le à la main).
 3. Dans l'application, onglet **Données**, colle le texte dans « Importer depuis le carnet ».
-4. Vérifie les contrôles (nombre de paris, champ par champ, bankroll, gains par méthode :
-   tout doit être ✓), puis touche **Importer ces données**.
+4. L'aperçu montre ce qu'il y a de nouveau (paris, matchs) ; touche **Importer**.
 
-L'import relit ensuite la base et refait tous les contrôles. Au moindre écart, rien n'est gardé.
-Tu peux réimporter autant de fois que tu veux : une copie de sécurité est faite avant,
-et l'historique permet de revenir en arrière.
+L'import n'ajoute que ce que l'application ne connaît pas encore : il ne remplace ni n'efface jamais
+un pari, même modifié dans l'application depuis (**l'application est désormais ton carnet de paris** ;
+le carnet original reste une source que tu peux réimporter à tout moment sans rien perdre).
+Une copie de sécurité est faite avant chaque import, et l'historique permet de revenir en arrière.
 
 L'ancienne sauvegarde du carnet (bouton « Copier ma sauvegarde ») est aussi acceptée,
 mais elle ne contient que les paris et les réglages.
@@ -72,9 +72,26 @@ Onglet **Live** (ou « Suivre en live » sur un match) :
    sans couverture.
 
 Le live est gardé sur ton téléphone : tu peux fermer l'app et la rouvrir. Il n'est pas dans la
-sauvegarde. Note ton pari dans le journal du carnet (l'ajout de paris dans l'app arrive en phase 6).
+sauvegarde. **Noter ce pari dans mon journal** prépare l'ajout dans l'onglet Paris avec la cote, la
+mise et (si tu as couvert) le gain garanti déjà remplis ; il ne reste qu'à confirmer.
 
-### 5. Freebet (profit garanti)
+### 5. Mes paris (journal et bankroll)
+
+Onglet **Paris**, trois sous-écrans :
+
+- **Journal** : ajoute, modifie ou supprime un pari (match, méthode, cote, mise, statut, notes,
+  photo du ticket). Lier un match chargé remplit le texte et la date. Un pari « gain sécurisé »
+  (couverture, cash-out…) se note avec son propre résultat plutôt que la formule de la méthode.
+- **Statistiques** : courbe de bankroll, drawdown maximal, séries en cours, ROI, taux de réussite,
+  et répartition des gains par méthode, compétition, jour de la semaine et tranche de cote.
+- **Simulateur** : rejoue tes paris déjà notés avec une autre mise (fixe ou % de la bankroll de
+  départ) pour comparer au résultat réel, sans toucher à tes vraies données.
+
+La mise conseillée suit le réglage choisi dans **Réglages → Mises et objectifs** : mise fixe ou
+Kelly fractionné, avec un plafond par pari et par jour (avertissement, jamais un blocage) et un
+objectif de gain / budget du mois.
+
+### 6. Freebet (profit garanti)
 
 Onglet **Freebet**, trois sections :
 
@@ -86,11 +103,12 @@ Onglet **Freebet**, trois sections :
   chargés par taux de conversion. « Calculer avec ce match » remplit le calculateur.
 - **Offres** : note chaque offre (bookmaker, montant, date limite, conditions) et son statut. Les offres
   qui expirent dans 3 jours apparaissent sur l'accueil. **Ajouter à l'agenda** crée un fichier que ton
-  agenda rappelle même application fermée (alarmes la veille et 3 jours avant, à 9 h).
+  agenda rappelle même application fermée (alarmes la veille et 3 jours avant, à 9 h). Dès qu'une offre
+  passe à « Terminée » avec un bénéfice, l'application propose de l'ajouter à ton journal des paris.
 
 Le gain n'est garanti que si les deux paris sont acceptés aux cotes saisies.
 
-### 6. Sauvegarder
+### 7. Sauvegarder
 
 - **Données → Sauvegarde en un fichier** : « Enregistrer le fichier », « Partager (Drive, mail…) »
   ou « Copier le texte ». Garde ce fichier hors du téléphone : si le navigateur efface ses
@@ -100,7 +118,7 @@ Le gain n'est garanti que si les deux paris sont acceptés aux cotes saisies.
 - **Restaurer** : choisis le fichier ou colle son texte. Une empreinte vérifie que le fichier
   n'a pas été abîmé ou modifié ; sinon il est refusé.
 
-### 7. Installer sur Android (version hébergée)
+### 8. Installer sur Android (version hébergée)
 
 L'application est hébergée sur GitHub Pages : https://phoenixgott.github.io/carnet-foot/
 Ouvre cette adresse dans Chrome, puis **Réglages → Installer l'application**
@@ -146,6 +164,12 @@ src/
     freebet-comparateur.ts  classement des matchs pour utiliser un freebet
     offres.ts      suivi des offres : statuts, délais, rappels, bilan ; ics.ts : fichier d'agenda
     paris.ts       gains, bankroll, bilan, ROI
+    bankroll.ts    courbe de bankroll, drawdown maximal, séries, ventilations (méthode, compétition,
+                   jour de semaine, tranche de cote)
+    mises.ts       mise conseillée (fixe ou Kelly fractionné), plafonds par pari/jour (alerte, jamais
+                   un blocage)
+    objectifs.ts   objectif de gain et budget du mois
+    simulateur.ts  rejoue les paris notés avec une autre mise, sans toucher aux vraies données
     methodes.ts    noms exacts des méthodes et codes du carnet (m1 = +1.5, m3 = +2.5, m2 = Freebet)
     demande.ts     demande à l'autre conversation Claude (jour, compléments, cotes du jour J)
     cotes.ts       suivi des cotes, cote minimale, alertes ; marge.ts : marge du bookmaker
@@ -154,10 +178,13 @@ src/
                    méthode (analyse.ts), répartition des buts dans le temps (temps.ts), chiffres
                    des championnats (championnat.ts), intérêt, fiches équipe, réglages,
                    live +1.5 : fenêtre, décision d'entrée, couverture et scénarios (live.ts)
-  data/            stockage IndexedDB, import du carnet, import des matchs (import-matchs.ts),
-                   historiques CSV (import-csv.ts), vérification, sauvegardes, versions
+  data/            stockage IndexedDB, import du carnet (fusion additive : n'efface ni ne remplace un
+                   pari déjà connu), import des matchs (import-matchs.ts), historiques CSV
+                   (import-csv.ts), sauvegardes, versions, photo du ticket (magasin à part, hors
+                   sauvegarde)
   pwa/             service worker (hors ligne), installation, notifications
-  ui/              interface (React), écrans, styles
+  ui/              interface (React), écrans, styles (dont ui/paris/ : journal, statistiques,
+                   simulateur)
 tests/
   unit/            tests unitaires, dont la non-régression contre le code original du carnet
   e2e/             tests dans Chromium : migration réelle, sauvegarde, hors ligne, accessibilité
@@ -175,6 +202,9 @@ tests/
 - **Accessibilité** : audit automatique à 360 et 412 px, en clair et en sombre (noms accessibles,
   étiquettes, cibles tactiles ≥ 44 px, pas de défilement horizontal), contrastes AA calculés
   sur les jetons de couleur, navigation au clavier.
+- **Fusion additive du carnet** : un pari importé est reconnu par sa position **et** son contenu
+  (date, méthode, cote, mise) au moment de l'import, pour ne jamais en perdre un si le carnet est
+  réordonné ou qu'un pari y est supprimé entre deux imports (`tests/unit/donnees.test.ts`).
 
 ### Choix techniques et écarts
 
@@ -206,6 +236,13 @@ téléchargements : pas de hors ligne, pas d'installation, sauvegarde par copie 
 - **Live** : réglage local `live` (`src/data/live.ts`), hors sauvegarde et jamais remplacé par une restauration.
 - **Offres de freebet** : tableau dans le réglage `offres` (donc dans la sauvegarde), voir `src/core/offres.ts`.
   Un réimport du carnet ne touche pas aux réglages que le carnet ne fournit pas.
+- **Pari** (`src/core/types.ts`) : ceux du carnet, plus `ligue` et `matchId` (facultatifs, remplis en
+  liant un match chargé) et `origine.carnet` (index et empreinte du contenu au moment de l'import,
+  pour la fusion additive — absent pour un pari ajouté dans l'application). Réglages `mises` et
+  `objectifs` (Kelly, plafonds, objectif/budget du mois) dans la sauvegarde ; `brouillonPari` (pari
+  préparé depuis le Live ou le Freebet, en attente d'être confirmé dans le journal) hors sauvegarde.
+- **Photo du ticket** : magasin IndexedDB `tickets` à part (JPEG redimensionné), hors sauvegarde
+  fichier et hors historique des versions — elle ne quitte jamais le téléphone.
 - **Sauvegarde** : `{ app: "carnet-foot", type: "sauvegarde", schema: 1, creeLe, versionApp,
   contenu: { matchs, paris, reglages }, controle: { nbMatchs, nbParis, bankroll, gainsTotal, empreinte } }`.
   L'empreinte est un SHA-256 du contenu trié.

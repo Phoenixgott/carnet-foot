@@ -353,28 +353,21 @@ export interface AnalyseImportMatchs {
 
 const aCotes = (m: Match) => releveDe(m.cotes, null, "import");
 
-export function analyserImportMatchs(texte: string, existants: readonly Match[], maintenant: Date): AnalyseImportMatchs {
-  const { matchs: bruts, suiteDisponible } = extraireMatchs(texte);
-  const le = maintenant.toISOString();
-  const ignores: string[] = [];
-  const avertissements: string[] = [];
+export interface FusionMatchs {
+  nouveaux: Match[];
+  misAJour: MiseAJourMatch[];
+  /** Matchs déjà présents, sans aucune info nouvelle. */
+  inchanges: Match[];
+  /** Matchs à écrire (nouveaux et mis à jour), dans leur état final. */
+  aEcrire: Match[];
+}
 
-  // Validation, puis regroupement des doublons à l'intérieur de la réponse.
-  const recus: Match[] = [];
-  bruts.forEach((b, i) => {
-    const { match, avertissements: av } = nettoyerMatch(b, i + 1);
-    if (!match) {
-      ignores.push(...av);
-      return;
-    }
-    avertissements.push(...av);
-    const j = recus.findIndex((x) => x.id === match.id || cleMatch(x) === cleMatch(match));
-    if (j >= 0) {
-      avertissements.push(`${match.domicile?.nom} – ${match.exterieur?.nom} apparaît deux fois dans la réponse : les deux versions sont fusionnées.`);
-      recus[j] = fusionnerMatch(recus[j], match);
-    } else recus.push(match);
-  });
-
+/**
+ * Fusionne des matchs déjà nettoyés (un par identifiant : plus de doublons) avec ceux déjà
+ * enregistrés. Réutilisée pour la réponse de l'autre conversation Claude comme pour un export
+ * du carnet : mêmes règles de fusion et de suivi des cotes dans les deux cas.
+ */
+export function fusionnerMatchsAvecExistants(recus: readonly Match[], existants: readonly Match[], le: string): FusionMatchs {
   const nouveaux: Match[] = [];
   const misAJour: MiseAJourMatch[] = [];
   const inchanges: Match[] = [];
@@ -396,14 +389,31 @@ export function analyserImportMatchs(texte: string, existants: readonly Match[],
     else misAJour.push({ avant: existant, apres, champs: [...new Set(champs.map((c) => libelleChamp(c, apres)))], cotesChangees });
   }
 
-  return {
-    nbRecus: bruts.length,
-    nouveaux,
-    misAJour,
-    inchanges,
-    ignores,
-    avertissements,
-    suiteDisponible,
-    aEcrire: [...nouveaux, ...misAJour.map((x) => x.apres)],
-  };
+  return { nouveaux, misAJour, inchanges, aEcrire: [...nouveaux, ...misAJour.map((x) => x.apres)] };
+}
+
+export function analyserImportMatchs(texte: string, existants: readonly Match[], maintenant: Date): AnalyseImportMatchs {
+  const { matchs: bruts, suiteDisponible } = extraireMatchs(texte);
+  const ignores: string[] = [];
+  const avertissements: string[] = [];
+
+  // Validation, puis regroupement des doublons à l'intérieur de la réponse.
+  const recus: Match[] = [];
+  bruts.forEach((b, i) => {
+    const { match, avertissements: av } = nettoyerMatch(b, i + 1);
+    if (!match) {
+      ignores.push(...av);
+      return;
+    }
+    avertissements.push(...av);
+    const j = recus.findIndex((x) => x.id === match.id || cleMatch(x) === cleMatch(match));
+    if (j >= 0) {
+      avertissements.push(`${match.domicile?.nom} – ${match.exterieur?.nom} apparaît deux fois dans la réponse : les deux versions sont fusionnées.`);
+      recus[j] = fusionnerMatch(recus[j], match);
+    } else recus.push(match);
+  });
+
+  const fusion = fusionnerMatchsAvecExistants(recus, existants, maintenant.toISOString());
+
+  return { nbRecus: bruts.length, ...fusion, ignores, avertissements, suiteDisponible };
 }

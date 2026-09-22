@@ -27,7 +27,7 @@ test("Sauvegarde fichier puis restauration : retour exact aux mêmes données", 
 
   // Les données changent (autre import), puis on restaure le fichier
   const autre = await ouvrirCarnet(context, donneesCarnet(22, 3, 1));
-  await importerDansApp(page, await exporterDepuisCarnet(autre), true);
+  await importerDansApp(page, await exporterDepuisCarnet(autre));
   await expect(page.locator('[data-test="bankroll-entete"]')).not.toHaveText(bankroll);
 
   await page.goto("/#/donnees");

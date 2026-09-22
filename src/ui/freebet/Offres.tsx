@@ -21,6 +21,7 @@ import {
   type SaisieOffre,
   type StatutOffre,
 } from "../../core/offres";
+import { deposerBrouillonPari } from "../../data/brouillon-pari";
 import { ecrireOffres, nouvelIdOffre } from "../../data/offres";
 import { jourLocal } from "../../data/versions";
 import { ChampMontant, Choix } from "../champs";
@@ -63,6 +64,27 @@ export function Offres({
     setErreur(null);
     setEdition(null);
     await sauver(existante ? offres.map((o) => (o.id === r.offre.id ? r.offre : o)) : [...offres, r.offre], existante ? "Offre modifiée" : "Offre ajoutée");
+    // Offre tout juste terminée avec un bénéfice saisi : proposer de la noter dans le journal.
+    const venaitDeFinir = r.offre.statut === "terminee" && r.offre.beneficeReel !== null && existante?.statut !== "terminee";
+    if (venaitDeFinir) {
+      const ok = await confirmer({
+        titre: "Ajouter ce freebet à ton journal ?",
+        texte: `« ${r.offre.bookmaker}${r.offre.titre ? " : " + r.offre.titre : ""} », bénéfice ${eur(r.offre.beneficeReel!)}. Tu pourras vérifier et compléter avant d'enregistrer.`,
+        action: "Ajouter au journal",
+      });
+      if (ok) {
+        await deposerBrouillonPari({
+          date: jourLocal(new Date()),
+          match: [r.offre.bookmaker, r.offre.titre].filter(Boolean).join(" : "),
+          methode: "Freebet",
+          cote: r.offre.coteMin ?? 2,
+          mise: r.offre.montant ?? r.offre.qualifMise ?? 0,
+          statut: "manuel",
+          pnl: r.offre.beneficeReel!,
+        });
+        location.hash = "#/paris";
+      }
+    }
   };
 
   const changerStatut = async (o: OffreFreebet, statut: StatutOffre) => {

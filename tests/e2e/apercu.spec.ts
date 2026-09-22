@@ -29,7 +29,7 @@ test("Aperçu : l'app fonctionne dans une page d'artefact, import compris", asyn
   const d = donneesCarnet(40, 9, 0);
   await page.goto(ORIGINE + "#/donnees");
   await page.fill("#texte-carnet", JSON.stringify({ paris: d.paris, reglages: d.reglages }));
-  await page.getByRole("button", { name: "Importer ces données" }).click();
+  await page.locator('[data-test="importer-carnet"]').click();
   await expect(page.locator('[data-test="resultat-import"]')).toContainText("Import réussi");
   await expect(page.getByRole("button", { name: "Enregistrer le fichier" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Copier le texte" })).toBeVisible();

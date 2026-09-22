@@ -1,26 +1,32 @@
 /**
- * Mes paris : bilan et journal (lecture seule en phase 1).
- * Bilan calculé avec les mêmes règles que le carnet d'origine.
+ * Mes paris : bilan, journal (ajout, modification, suppression, photo du ticket), statistiques
+ * avancées (courbe, drawdown, séries, ventilations) et simulateur « et si j'avais parié X ».
  */
-import { dateCourte, eur, fr, pc } from "../../core/format";
-import { bilan, gainPari, LIBELLE_STATUT, miseConseillee } from "../../core/paris";
+import { useState } from "react";
+import { eur, fr, pc } from "../../core/format";
+import { bilan } from "../../core/paris";
+import { miseConseilleeSelonReglages } from "../../core/mises";
+import { reglagesMisesDe } from "../../data/bankroll";
 import { bankrollDe } from "../../data/contenu";
 import { useAppli } from "../contexte";
+import { Journal } from "../paris/Journal";
+import { Simulateur } from "../paris/Simulateur";
+import { Statistiques } from "../paris/Statistiques";
+
+type Vue = "journal" | "statistiques" | "simulateur";
 
 export function Paris() {
   const { contenu } = useAppli();
+  const [vue, setVue] = useState<Vue>("journal");
   const reglages = bankrollDe(contenu);
   const b = bilan(contenu.paris, reglages);
-  const journal = [...contenu.paris].sort((x, y) => y.ordre - x.ordre);
+  const mise = miseConseilleeSelonReglages({ paris: contenu.paris, reglagesBankroll: reglages, reglagesMises: reglagesMisesDe(contenu) });
 
   return (
     <>
       <div>
         <h1 tabIndex={-1}>Mes paris</h1>
-        <p className="chapeau">
-          Journal importé du carnet. L'ajout et la modification des paris arrivent en phase 6 : d'ici là, continue de noter tes paris dans le carnet,
-          puis réimporte.
-        </p>
+        <p className="chapeau">Ton journal : ajoute et modifie tes paris ici. Un réimport du carnet ne touche jamais à ce que tu as saisi.</p>
       </div>
 
       <div className="tuiles">
@@ -36,34 +42,18 @@ export function Paris() {
         ))}
       </div>
       <p className="aide">
-        Bankroll de départ {eur(reglages.depart)} · mise conseillée {eur(miseConseillee(contenu.paris, reglages))} ({fr(reglages.pctMise, 1)} % de la
-        bankroll). Rentabilité calculée sans les mises Freebet.
+        Bankroll de départ {eur(reglages.depart)} · mise conseillée {eur(mise.montant)} ({fr(reglages.pctMise, 1)} % de la bankroll, réglable dans
+        Réglages → Mises et objectifs). Rentabilité calculée sans les mises Freebet.
       </p>
 
-      <section className="section" aria-labelledby="titre-journal">
-        <h2 id="titre-journal">Journal ({journal.length})</h2>
-        {journal.length === 0 ? (
-          <p className="vide">Aucun pari pour l'instant.</p>
-        ) : (
-          <ul className="liste-paris" style={{ listStyle: "none", margin: 0, padding: 0 }}>
-            {journal.map((p) => {
-              const g = gainPari(p);
-              const termine = p.statut !== "attente" && p.statut !== "rembourse";
-              return (
-                <li className="pari" key={p.id}>
-                  <span className="pari-match">{p.match || "Match sans nom"}</span>
-                  <span className={`statut ${p.statut}`}>{LIBELLE_STATUT[p.statut]}</span>
-                  <span className="pari-meta">
-                    {p.date ? dateCourte(p.date) : "date ⏳"} · Méthode {p.methode} · cote <span className="num">{fr(p.cote)}</span> · mise{" "}
-                    <span className="num">{eur(p.mise)}</span>
-                  </span>
-                  <span className={`pari-gain ${g > 0 ? "pos" : g < 0 ? "neg" : ""}`}>{termine ? eur(g) : "—"}</span>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </section>
+      <div className="segments" role="group" aria-label="Section">
+        <button type="button" aria-pressed={vue === "journal"} onClick={() => setVue("journal")}>Journal</button>
+        <button type="button" aria-pressed={vue === "statistiques"} onClick={() => setVue("statistiques")}>Statistiques</button>
+        <button type="button" aria-pressed={vue === "simulateur"} onClick={() => setVue("simulateur")}>Simulateur</button>
+      </div>
+      {vue === "journal" && <Journal />}
+      {vue === "statistiques" && <Statistiques />}
+      {vue === "simulateur" && <Simulateur />}
     </>
   );
 }

@@ -4,7 +4,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { Verdict } from "../core/carnet-v1/criteres";
 import { ICONE_VERDICT, LIBELLE_VERDICT } from "../core/carnet-v1/analyse";
-import type { LigneVerification } from "../data/verification";
 import type { AlerteCote } from "../core/cotes";
 import { notifier } from "../pwa/pwa";
 import { useAppli, type OptionsConfirmation, type Route } from "./contexte";
@@ -46,25 +45,6 @@ export function Inconnu({ titre = "Donnée pas encore disponible" }: { titre?: s
       <span aria-hidden="true">⏳</span>
       <span className="sr-only">{titre}</span>
     </span>
-  );
-}
-
-export function ListeControles({ lignes }: { lignes: LigneVerification[] }) {
-  return (
-    <ul className="controles">
-      {lignes.map((l, i) => (
-        <li key={i}>
-          <span className={`pastille-ico ${l.ok === true ? "ok" : l.ok === false ? "ko" : "info"}`} aria-hidden="true">
-            {l.ok === true ? "✓" : l.ok === false ? "✕" : "i"}
-          </span>
-          <div>
-            <span className="sr-only">{l.ok === true ? "Conforme : " : l.ok === false ? "Écart : " : "Information : "}</span>
-            {l.libelle}
-            <small>{l.detail}</small>
-          </div>
-        </li>
-      ))}
-    </ul>
   );
 }
 

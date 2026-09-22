@@ -2,6 +2,40 @@
 
 Format : chaque version liste ce qui a été ajouté, modifié ou corrigé.
 
+## 0.6.0 — 22 septembre 2026 — Phase 6 : paris et bankroll
+
+### Ajouté
+- **Journal des paris** (onglet Paris) : ajout, modification, suppression à la main, avec compétition
+  et match liés (facultatif, remplit automatiquement le texte et la date). Une photo du ticket peut être
+  jointe (redimensionnée sur le téléphone, jamais dans la sauvegarde fichier ni l'historique des versions).
+- **Statistiques** : courbe de bankroll, drawdown maximal, séries gagnantes/perdantes en cours et
+  records, ROI et taux de réussite, ventilations par méthode, compétition, jour de la semaine et
+  tranche de cote (avec un tableau accessible en plus de la courbe).
+- **Mises conseillées** : Kelly fractionné réglable, en plus de la mise fixe existante ; plafond par
+  pari et par jour avec avertissement doux dans le formulaire d'ajout (jamais un blocage).
+- **Objectifs et budget mensuels** : objectif de gain et budget maximal du mois, réglables et suivis.
+- **Simulateur** : rejoue les paris déjà notés avec une mise fixe ou un pourcentage de la bankroll de
+  départ, comparé au résultat réel (gains, ROI, drawdown). Les résultats qui ne suivent pas une formule
+  (manuel, freebet, cash-out) gardent leur gain réel plutôt que d'être recalculés au hasard.
+- **Live** et **Freebet** notent maintenant directement dans le journal : bouton « Noter ce pari »
+  depuis l'écran Live (gain garanti déjà rempli si le pari a été couvert), et proposition d'ajouter au
+  journal dès qu'une offre de freebet est enregistrée terminée avec un bénéfice.
+
+### Modifié — l'application devient le carnet de paris
+- **L'import du carnet devient additif** : il n'ajoute plus que les paris et matchs que l'application
+  ne connaît pas encore, et ne remplace ni n'efface plus jamais un pari, même modifié dans
+  l'application depuis. Un pari importé est reconnu par sa position **et** son contenu au moment de
+  l'import (date, méthode, cote, mise) pour ne jamais en perdre un si le carnet est réordonné ou
+  qu'un pari y est supprimé entre deux imports.
+- En conséquence, le contrôle strict champ par champ contre les totaux du carnet (qui supposait un
+  remplacement complet à chaque import) a été retiré : l'aperçu montre maintenant ce qui est nouveau
+  (paris, matchs) et ce qui est déjà présent, et l'import reste toujours possible puisqu'il ne peut
+  plus rien effacer.
+
+### Corrigé
+- Le gain pré-rempli en notant un pari sécurisé depuis le Live affichait parfois un nombre à
+  virgule flottante brut (ex. `1,1692307692307686 €`) ; il est maintenant arrondi au centime.
+
 ## 0.5.0 — 22 septembre 2026 — Phase 5 : Freebet
 
 ### Ajouté

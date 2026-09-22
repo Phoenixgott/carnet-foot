@@ -4,29 +4,34 @@
  * retour automatique à l'état précédent si quelque chose ne correspond pas.
  */
 import { amorcerSuivi, nouvellesAlertes, suivreCotes, type AlerteCote } from "../core/cotes";
-import type { CotesMatch, Marche, Match, Resultat } from "../core/types";
+import type { CotesMatch, Marche, Match, Pari, Resultat } from "../core/types";
 import { contexteDepuisBase } from "./analyse";
 import { estVide, jsonCanonique, resumer, type Contenu } from "./contenu";
 import {
   ajouterVersion,
   ecrireMatchs,
+  ecrirePhotoTicket,
+  ecrireParis,
   ecrireReglage,
   ecrireResultats,
   lireContenu,
   lireMatchs,
+  lireParis,
+  lirePhotoTicket,
   lireReglage,
   lireResultats,
   lireVersion,
   listerVersions,
   remplacerContenu,
   supprimerGroupeResultats,
+  supprimerPhotoTicket,
   supprimerVersions,
+  type PhotoTicket,
 } from "./depot";
 import { analyserCsv, comparerResultats, type AnalyseCsv, type ComparaisonResultats } from "./import-csv";
-import { analyserImportMatchs, fusionProfonde, type AnalyseImportMatchs } from "./import-matchs";
-import { analyserTexteCarnet, ErreurImport, type AnalyseImportCarnet } from "./import-carnet";
+import { analyserImportMatchs, fusionnerMatchsAvecExistants, fusionProfonde, type AnalyseImportMatchs, type FusionMatchs } from "./import-matchs";
+import { analyserTexteCarnet, ErreurImport, fusionnerParisCarnet, type AnalyseImportCarnet, type FusionParisCarnet } from "./import-carnet";
 import { creerSauvegarde, lireSauvegarde, nomFichierSauvegarde } from "./sauvegarde";
-import { verifierImportCarnet, type RapportVerification } from "./verification";
 import { faireCopieDuJour, jourLocal, versionsASupprimer, type RaisonVersion, type Version } from "./versions";
 import { empreinte } from "./contenu";
 
@@ -62,54 +67,49 @@ export async function assurerCopieDuJour(): Promise<Version | null> {
   return creerVersion("quotidienne");
 }
 
-export interface ResultatImport {
-  ok: boolean;
+export interface ApercuImportCarnet {
   analyse: AnalyseImportCarnet;
-  /** Vérification de la conversion, avant toute écriture. */
-  avant: RapportVerification;
-  /** Vérification après écriture et relecture de la base (absente si rien n'a été écrit). */
-  apres: RapportVerification | null;
-  /** Vrai si l'état précédent a été remis en place après un écart. */
-  retourArriere: boolean;
-}
-
-/** Première étape de l'import : analyse et vérification de la conversion, sans rien écrire. */
-export function previsualiserImportCarnet(texte: string): { analyse: AnalyseImportCarnet; avant: RapportVerification } {
-  const analyse = analyserTexteCarnet(texte, new Date(), nouvelId);
-  return { analyse, avant: verifierImportCarnet(analyse, analyse.contenu) };
+  matchs: FusionMatchs;
+  paris: FusionParisCarnet;
 }
 
 /**
- * Import depuis le carnet : remplace les données de l'application par celles du carnet.
- * Étapes : vérification de la conversion → copie de sécurité → écriture → relecture
- * et vérification → retour arrière automatique au moindre écart.
+ * Première étape de l'import : analyse du texte, puis ce qui est nouveau par rapport à
+ * l'application (matchs et paris déjà connus ne sont jamais écrasés). Rien n'est écrit.
  */
-export async function importerCarnet(analyse: AnalyseImportCarnet): Promise<ResultatImport> {
-  const avant = verifierImportCarnet(analyse, analyse.contenu);
-  if (!avant.ok) return { ok: false, analyse, avant, apres: null, retourArriere: false };
+export async function previsualiserImportCarnet(texte: string): Promise<ApercuImportCarnet> {
+  const maintenant = new Date();
+  const analyse = analyserTexteCarnet(texte, maintenant, nouvelId);
+  const existant = await lireContenu();
+  const matchs = fusionnerMatchsAvecExistants(analyse.contenu.matchs, existant.matchs, maintenant.toISOString());
+  const paris = fusionnerParisCarnet(analyse.contenu.paris, existant.paris);
+  return { analyse, matchs, paris };
+}
 
-  const precedent = await lireContenu();
-  await creerVersion("avant-import", precedent);
-  // Le carnet fournit les matchs, les paris, la bankroll et les compétitions. Les réglages qu'il ne
-  // connaît pas (thème, critères d'analyse, offres de freebet…) sont gardés : ils n'existent nulle
-  // part ailleurs et ne doivent pas disparaître à chaque import.
-  const conserves = precedent.reglages.filter((r) => !analyse.contenu.reglages.some((x) => x.cle === r.cle));
-  await remplacerContenu({ ...analyse.contenu, reglages: [...analyse.contenu.reglages, ...conserves] });
-  const relu = await lireContenu();
-  const apres = verifierImportCarnet(analyse, relu);
-  if (!apres.ok) {
-    await remplacerContenu(precedent);
-    return { ok: false, analyse, avant, apres, retourArriere: true };
-  }
-  await ecrireReglage("migrationCarnet", {
-    le: new Date().toISOString(),
-    format: analyse.format,
-    exporteLe: analyse.exporteLe,
-    nbParis: relu.paris.length,
-    nbMatchs: relu.matchs.length,
-  });
+/** Les deux réglages que le carnet connaît et continue d'alimenter à chaque import. */
+const CLES_REGLAGES_CARNET: readonly string[] = ["bankroll", "competitions"];
+
+export interface ResultatImportCarnet {
+  nbNouveauxMatchs: number;
+  nbMatchsCompletes: number;
+  nbNouveauxParis: number;
+  alertesCotes: AlerteCote[];
+}
+
+/**
+ * Import depuis le carnet, additif : les matchs et paris qu'il connaît déjà ne sont jamais
+ * modifiés ni supprimés — seuls les nouveaux sont ajoutés (l'application est désormais le
+ * carnet de paris de l'utilisateur). Copie de sécurité avant, écriture vérifiée avec retour
+ * arrière automatique au moindre écart (comme pour les matchs de l'onglet « Matchs »).
+ */
+export async function importerCarnet(apercu: ApercuImportCarnet): Promise<ResultatImportCarnet> {
+  const { analyse, matchs, paris } = apercu;
+  if (matchs.aEcrire.length || paris.nouveaux.length) await creerVersion("avant-import");
+  const alertesCotes = matchs.aEcrire.length ? await ecrireMatchsVerifies(matchs.aEcrire) : [];
+  if (paris.nouveaux.length) await ecrireParisVerifies(paris.nouveaux);
+  for (const r of analyse.contenu.reglages) if (CLES_REGLAGES_CARNET.includes(r.cle)) await ecrireReglage(r.cle, r.valeur);
   await demanderStockagePersistant();
-  return { ok: true, analyse, avant, apres, retourArriere: false };
+  return { nbNouveauxMatchs: matchs.nouveaux.length, nbMatchsCompletes: matchs.misAJour.length, nbNouveauxParis: paris.nouveaux.length, alertesCotes };
 }
 
 /* ---------- Matchs (réponse de l'autre conversation Claude) ---------- */
@@ -174,6 +174,94 @@ export async function definirCoteMinimale(id: string, marche: Marche, valeur: nu
   const m = await lireMatch(id);
   const coteCible = { ...(m.coteCible ?? {}), [marche]: valeur };
   return ecrireMatchsVerifies([{ ...m, coteCible }]);
+}
+
+/* ---------- Journal des paris (phase 6) ---------- */
+
+/**
+ * Écrit des paris après une copie de sécurité, relit la base et vérifie chaque pari.
+ * Au moindre écart, les paris d'avant sont remis en place (même garde-fou que pour les matchs).
+ */
+async function ecrireParisVerifies(aEcrire: readonly Pari[]): Promise<void> {
+  const ids = aEcrire.map((p) => p.id);
+  const avant = await lireParis(ids);
+  await ecrireParis(aEcrire);
+  const relus = await lireParis(ids);
+  const ok = relus.every((p, i) => p && jsonCanonique(p) === jsonCanonique(aEcrire[i]));
+  if (!ok) {
+    await ecrireParis(
+      avant.filter((p): p is Pari => !!p),
+      ids.filter((_, i) => !avant[i]),
+    );
+    throw new ErreurImport("Les paris ne se sont pas écrits correctement : l'état précédent a été remis en place.");
+  }
+}
+
+async function lirePari(id: string): Promise<Pari> {
+  const [p] = await lireParis([id]);
+  if (!p) throw new ErreurImport("Ce pari n'existe plus.");
+  return p;
+}
+
+export interface SaisiePari {
+  date: string;
+  match: string;
+  methode: Pari["methode"];
+  cote: number;
+  mise: number;
+  statut: Pari["statut"];
+  pnl?: number;
+  notes?: string;
+  ligue?: string | null;
+  matchId?: string | null;
+}
+
+/** Ajoute un pari au journal (copie de sécurité avant, écriture vérifiée). */
+export async function ajouterPari(s: SaisiePari): Promise<Pari> {
+  const existants = (await lireContenu()).paris;
+  const maintenant = new Date().toISOString();
+  const p: Pari = {
+    id: nouvelId(),
+    ordre: existants.reduce((max, x) => Math.max(max, x.ordre), -1) + 1,
+    creeLe: maintenant,
+    modifieLe: maintenant,
+    ...s,
+  };
+  await creerVersion("avant-modification");
+  await ecrireParisVerifies([p]);
+  return p;
+}
+
+/** Modifie un pari existant (venu du carnet ou ajouté dans l'app : les deux se modifient pareil). */
+export async function modifierPari(id: string, s: SaisiePari): Promise<Pari> {
+  const avant = await lirePari(id);
+  const p: Pari = { ...avant, ...s, modifieLe: new Date().toISOString() };
+  await creerVersion("avant-modification");
+  await ecrireParisVerifies([p]);
+  return p;
+}
+
+/** Supprime un pari du journal (et sa photo de ticket, le cas échéant). */
+export async function supprimerPari(id: string): Promise<void> {
+  await creerVersion("avant-modification");
+  await ecrireParis([], [id]);
+  await supprimerPhotoTicket(id);
+}
+
+/**
+ * Photo du ticket : redimensionnée avant l'appel (voir `ui/photo.ts`). Gardée hors du « contenu »
+ * (ni sauvegarde fichier, ni historique des versions : elle resterait trop grosse dans les deux cas).
+ */
+export async function enregistrerPhotoTicket(pariId: string, blob: Blob): Promise<void> {
+  await ecrirePhotoTicket({ pariId, blob, type: blob.type, ajouteLe: new Date().toISOString() });
+}
+
+export async function lirePhotoDuTicket(pariId: string): Promise<PhotoTicket | undefined> {
+  return lirePhotoTicket(pariId);
+}
+
+export async function retirerPhotoTicket(pariId: string): Promise<void> {
+  await supprimerPhotoTicket(pariId);
 }
 
 /* ---------- Historiques de résultats (CSV football-data) ---------- */

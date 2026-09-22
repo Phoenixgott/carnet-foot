@@ -2,6 +2,8 @@
  * Migration de bout en bout : le VRAI carnet d'origine exporte ses données,
  * la nouvelle application les importe, et les chiffres affichés des deux côtés
  * doivent être identiques (bankroll, gains par méthode, chances de chaque match).
+ * L'import est additif (l'application est désormais le carnet de paris de l'utilisateur) :
+ * un réimport n'efface et ne remplace jamais ce qui est déjà dans l'app.
  */
 import { expect, test } from "playwright/test";
 import { donneesCarnet, exporterDepuisCarnet, importerDansApp, ouvrirCarnet } from "./outils";
@@ -29,11 +31,12 @@ test("Migration complète : mêmes chiffres dans le carnet et dans l'application
   expect(chancesCarnet.filter((c) => c.p1 !== null && c.p3 !== null).length).toBeGreaterThanOrEqual(3);
   expect(statsCarnet.filter((s) => /^Méthode (\+1,5|\+2,5|Freebet)/.test(s.libelle)).length).toBeGreaterThanOrEqual(3);
 
-  // Import dans l'application
+  // Import dans l'application : tout est nouveau (premier import)
   await importerDansApp(page, texte);
   const resultat = page.locator('[data-test="resultat-import"]');
   await expect(resultat).toContainText("Import réussi");
-  await expect(resultat.locator(".pastille-ico.ko")).toHaveCount(0);
+  await expect(resultat).toContainText("30 nouveaux paris");
+  await expect(resultat).toContainText("6 nouveaux matchs");
 
   // Bankroll identique
   await expect(page.locator('[data-test="bankroll-entete"]')).toHaveText(bankrollCarnet);
@@ -69,30 +72,46 @@ test("Migration complète : mêmes chiffres dans le carnet et dans l'application
   await expect(page.locator('[data-test="bankroll-entete"]')).toHaveText(bankrollCarnet);
 });
 
-test("Réimport : confirmation, copie de sécurité, et retour possible à l'état précédent", async ({ context, page }) => {
+test("Réimport additif : n'efface ni ne remplace un pari déjà présent, même modifié dans l'app depuis", async ({ context, page }) => {
   const d1 = donneesCarnet(3, 12, 3);
   const carnet = await ouvrirCarnet(context, d1);
   const texte1 = await exporterDepuisCarnet(carnet);
   const bankroll1 = (await carnet.textContent("#hdrBank"))!.trim();
   await importerDansApp(page, texte1);
   await expect(page.locator('[data-test="bankroll-entete"]')).toHaveText(bankroll1);
+  await expect(page.locator('[data-test="resultat-import"]')).toContainText("12 nouveaux paris");
 
-  // Le carnet a changé : nouvel export, nouvel import avec confirmation
+  // Réimporter exactement le même export : rien de nouveau, aucun bouton « Importer »
+  await page.goto("/#/donnees");
+  await page.fill("#texte-carnet", texte1);
+  await expect(page.locator('[data-test="import-rien-de-nouveau"]')).toBeVisible();
+  await expect(page.locator('[data-test="importer-carnet"]')).toHaveCount(0);
+
+  // Un pari est modifié dans l'app (statut et cote corrigés à la main)
+  await page.goto("/#/paris");
+  await page.locator(".pari").first().getByRole("button", { name: "Modifier" }).click();
+  await page.selectOption("#pari-statut", "gagne");
+  await page.fill("#pari-cote", "9,99");
+  await page.getByRole("button", { name: "Enregistrer le pari" }).click();
+  await expect(page.locator('[data-test="toast"]')).toHaveText("Pari modifié");
+  await expect(page.locator(".pari").first()).toContainText("9,99");
+
+  // Le carnet a changé (plus de paris) : réimporter ajoute les nouveaux, sans toucher au pari modifié
   const d2 = donneesCarnet(4, 20, 2);
   await carnet.evaluate((d) => localStorage.setItem("cpf_paris", JSON.stringify(d.paris)), d2);
   await carnet.reload();
   const texte2 = await exporterDepuisCarnet(carnet);
-  const bankroll2 = (await carnet.textContent("#hdrBank"))!.trim();
-  await importerDansApp(page, texte2, true);
-  await expect(page.locator('[data-test="resultat-import"]')).toContainText("Import réussi");
-  await expect(page.locator('[data-test="bankroll-entete"]')).toHaveText(bankroll2);
+  await importerDansApp(page, texte2);
+  await expect(page.locator('[data-test="resultat-import"]')).toContainText("20 nouveaux paris");
+  await page.goto("/#/paris");
+  await expect(page.locator(".pari")).toHaveCount(32, { timeout: 10_000 }); // 12 + 20, aucun remplacé
+  await expect(page.locator(".pari", { hasText: "9,99" })).toHaveCount(1); // le pari modifié est toujours là, intact, sans doublon
 
-  // Une copie « Avant un import » existe ; la restaurer ramène l'état 1
-  const copie = page.locator(".versions li", { hasText: "Avant un import" }).first();
-  await expect(copie).toContainText("12 paris");
-  await copie.getByRole("button", { name: /Restaurer/ }).click();
-  await page.getByRole("dialog").getByRole("button", { name: "Revenir à cette version" }).click();
-  await expect(page.locator('[data-test="bankroll-entete"]')).toHaveText(bankroll1);
+  // Une copie de sécurité existe avant la modification et avant le 2e import (le tout premier
+  // import partait d'une app vide : pas de copie à faire, comme pour tout import sur une app vide).
+  await page.goto("/#/donnees");
+  await expect(page.locator(".versions li", { hasText: "Avant un import" })).toHaveCount(1);
+  await expect(page.locator(".versions li", { hasText: "Avant une modification" })).toHaveCount(1);
 });
 
 test("Export abîmé : refusé avec un message clair, rien n'est modifié", async ({ page }) => {
@@ -109,7 +128,7 @@ test("Ancienne sauvegarde du carnet (« Copier ma sauvegarde ») : acceptée ave
   const apercu = page.locator('[data-test="apercu-import"]');
   await expect(apercu).toContainText("Ancienne sauvegarde");
   await expect(apercu).toContainText("ne contient que les paris");
-  await page.getByRole("button", { name: "Importer ces données" }).click();
+  await page.locator('[data-test="importer-carnet"]').click();
   await expect(page.locator('[data-test="resultat-import"]')).toContainText("Import réussi");
   await page.goto("/#/paris");
   await expect(page.locator(".pari")).toHaveCount(5);

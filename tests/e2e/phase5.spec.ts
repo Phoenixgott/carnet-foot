@@ -239,6 +239,9 @@ test("Offres : ajout, délais, rappel sur l'accueil, statuts, bilan, agenda, cal
   await page.fill("#offre-benefice", "6,5");
   await page.getByRole("button", { name: "Enregistrer l'offre" }).click();
   await expect(page.locator('[data-test="toast"]')).toHaveText("Offre modifiée");
+  // Propose de noter le freebet dans le journal (phase 6) : pas l'objet de ce test, on décline.
+  await expect(page.getByRole("dialog")).toContainText("Ajouter ce freebet à ton journal ?");
+  await page.getByRole("dialog").getByRole("button", { name: "Annuler" }).click();
   await expect(page.locator('[data-test="benefice-realise"]')).toHaveText("6,50 €");
   await expect(page.locator('[data-test="conversion-moyenne"]')).toHaveText("65 %"); // 6,5 / 10
   await expect(page.locator('[data-test="liste-offres"] > li').last()).toContainText("Unibet");

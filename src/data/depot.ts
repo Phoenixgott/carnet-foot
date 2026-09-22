@@ -10,6 +10,10 @@
  * Version 2 :
  *  - resultats (clé : id, index : groupe = division|saison) — historiques CSV de football-data.
  *    Données publiques, réimportables : hors du « contenu » (ni sauvegarde fichier, ni versions).
+ * Version 3 :
+ *  - tickets (clé : pariId) — photo optionnelle du ticket d'un pari. Peut être grosse : hors du
+ *    « contenu », donc hors sauvegarde fichier et hors historique des versions (elle resterait
+ *    seule sur ce téléphone dans les deux cas).
  */
 import type { Match, Pari, Reglage, Resultat } from "../core/types";
 import { REGLAGES_LOCAUX, type Contenu } from "./contenu";
@@ -29,6 +33,10 @@ export const MIGRATIONS: readonly Migration[] = [
   // v1 → v2 : historiques de résultats (phase 2)
   (db) => {
     db.createObjectStore("resultats", { keyPath: "id" }).createIndex("groupe", ["division", "saison"]);
+  },
+  // v2 → v3 : photos de tickets (phase 6)
+  (db) => {
+    db.createObjectStore("tickets", { keyPath: "pariId" });
   },
 ];
 
@@ -95,6 +103,50 @@ export async function lireMatchs(ids: readonly string[]): Promise<Array<Match | 
   return transaction(db, ["matchs"], "readonly", (tx) =>
     Promise.all(ids.map((id) => requete(tx.objectStore("matchs").get(id) as IDBRequest<Match | undefined>))),
   );
+}
+
+/**
+ * Écrit (ajoute ou remplace) des paris et en supprime d'autres, en une seule transaction.
+ * Les matchs et réglages ne sont pas touchés.
+ */
+export async function ecrireParis(aEcrire: readonly Pari[], aSupprimer: readonly string[] = []): Promise<void> {
+  const db = await ouvrirBase();
+  await transaction(db, ["paris"], "readwrite", async (tx) => {
+    const s = tx.objectStore("paris");
+    await Promise.all([...aEcrire.map((p) => requete(s.put(p))), ...aSupprimer.map((id) => requete(s.delete(id)))]);
+  });
+}
+
+/** Paris lus par identifiant (undefined pour un identifiant absent). */
+export async function lireParis(ids: readonly string[]): Promise<Array<Pari | undefined>> {
+  const db = await ouvrirBase();
+  return transaction(db, ["paris"], "readonly", (tx) =>
+    Promise.all(ids.map((id) => requete(tx.objectStore("paris").get(id) as IDBRequest<Pari | undefined>))),
+  );
+}
+
+/* ---------- Photos de tickets (un pari → une photo, hors sauvegarde) ---------- */
+
+export interface PhotoTicket {
+  pariId: string;
+  blob: Blob;
+  type: string;
+  ajouteLe: string;
+}
+
+export async function ecrirePhotoTicket(p: PhotoTicket): Promise<void> {
+  const db = await ouvrirBase();
+  await transaction(db, ["tickets"], "readwrite", (tx) => requete(tx.objectStore("tickets").put(p)));
+}
+
+export async function lirePhotoTicket(pariId: string): Promise<PhotoTicket | undefined> {
+  const db = await ouvrirBase();
+  return transaction(db, ["tickets"], "readonly", (tx) => requete(tx.objectStore("tickets").get(pariId) as IDBRequest<PhotoTicket | undefined>));
+}
+
+export async function supprimerPhotoTicket(pariId: string): Promise<void> {
+  const db = await ouvrirBase();
+  await transaction(db, ["tickets"], "readwrite", (tx) => requete(tx.objectStore("tickets").delete(pariId)));
 }
 
 /* ---------- Historiques de résultats (CSV) ---------- */

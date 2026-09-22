@@ -61,12 +61,14 @@ export async function exporterDepuisCarnet(carnet: Page): Promise<string> {
   return carnet.inputValue("#fullExportBox");
 }
 
-/** Colle un export dans l'app et lance l'import ; renvoie la page sur l'écran Données. */
-export async function importerDansApp(app: Page, texte: string, confirmer = false): Promise<void> {
+/**
+ * Colle un export dans l'app et lance l'import (additif : ajoute ce qui est nouveau, n'efface
+ * et ne remplace jamais un match ou un pari déjà présent) ; renvoie la page sur l'écran Données.
+ */
+export async function importerDansApp(app: Page, texte: string): Promise<void> {
   await app.goto("/#/donnees");
   await app.fill("#texte-carnet", texte);
   await app.locator('[data-test="apercu-import"]').waitFor();
-  await app.getByRole("button", { name: /Importer ces données|Remplacer les données/ }).click();
-  if (confirmer) await app.getByRole("dialog").getByRole("button", { name: "Remplacer" }).click();
+  await app.locator('[data-test="importer-carnet"]').click();
   await app.locator('[data-test="resultat-import"]').waitFor();
 }

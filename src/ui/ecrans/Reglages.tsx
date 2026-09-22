@@ -9,6 +9,7 @@ import { VERSION_APP } from "../../data/services";
 import { demanderNotifications, etatNotifications, installer, notifier, type EtatNotifications } from "../../pwa/pwa";
 import { useAppli } from "../contexte";
 import { ReglagesAnalyse } from "../reglages/ReglagesAnalyse";
+import { ReglagesMises } from "../reglages/ReglagesMises";
 import { appliquerTheme, type Theme } from "../theme";
 
 const THEMES: Array<{ t: Theme; libelle: string }> = [
@@ -57,6 +58,7 @@ export function Reglages() {
       </section>
 
       <ReglagesAnalyse />
+      <ReglagesMises />
 
       <section className="carte" aria-labelledby="titre-installation">
         <h2 id="titre-installation">Installation et hors ligne</h2>

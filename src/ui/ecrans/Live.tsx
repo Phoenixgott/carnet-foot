@@ -11,9 +11,10 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { estNombre, eur, fr, lireSaisie, pc } from "../../core/format";
-import { miseConseillee } from "../../core/paris";
+import { alerteMise, miseConseilleeSelonReglages } from "../../core/mises";
 import { analyserV2 } from "../../core/modele-v2/analyse";
 import {
+  chancesLive,
   couvrir,
   decisionLive,
   fenetre,
@@ -23,8 +24,11 @@ import {
 } from "../../core/modele-v2/live";
 import { repartition } from "../../core/modele-v2/temps";
 import type { Match } from "../../core/types";
+import { reglagesMisesDe } from "../../data/bankroll";
+import { deposerBrouillonPari } from "../../data/brouillon-pari";
 import { bankrollDe } from "../../data/contenu";
 import { ecrireEtatLive, ETAT_LIVE_VIDE, lireEtatLive, tempsEcoule, type EtatLive } from "../../data/live";
+import { jourLocal } from "../../data/versions";
 import { etatNotifications, notifier } from "../../pwa/pwa";
 import { PastilleVerdict } from "../composants";
 import { ChampNombre, Choix, nombreOuNull } from "../champs";
@@ -147,9 +151,19 @@ export function Live() {
   const lambda = auto ? analyse!.est.lambda : typeof saisi === "number" ? saisi : NaN;
   const sigma = auto ? analyse!.est.sigma : lambda * 0.15;
   const rep = repartition(ctx?.stats?.partPremiereMiTemps);
-  const miseBase = miseConseillee(contenu.paris, bankrollDe(contenu));
-
   const cote = lireSaisie(coteTexte);
+  // Mise conseillée : Kelly fractionné si réglé (avec les chances live à cette minute), sinon le % fixe du carnet.
+  const reglagesMises = reglagesMisesDe(contenu);
+  const chancesPourMise = Number.isFinite(lambda) ? chancesLive(lambda, sigma, minute, rep) : null;
+  const miseBase = miseConseilleeSelonReglages({
+    paris: contenu.paris,
+    reglagesBankroll: bankrollDe(contenu),
+    reglagesMises,
+    p: chancesPourMise?.p,
+    cote: typeof cote === "number" ? cote : undefined,
+  }).montant;
+  const alerte = typeof cote === "number" ? alerteMise(contenu.paris, reglagesMises, match?.date ?? jourLocal(new Date()), miseBase) : null;
+
   const decision = decisionLive({
     lambda,
     sigma,
@@ -168,11 +182,29 @@ export function Live() {
   );
   const nom = (m: Match) => `${m.domicile?.nom ?? "?"} – ${m.exterieur?.nom ?? "?"}`;
 
+  /** Prépare un pari à moitié rempli pour l'onglet Paris (voir « Noter ce pari » plus bas). */
+  const noterPari = async (partiel: { statut: "attente" } | { statut: "manuel"; pnl: number }) => {
+    if (etat.cote === null || etat.mise === null) return;
+    // Arrondi au centime : évite de coller un résultat à virgule flottante brut dans le formulaire.
+    const p = partiel.statut === "manuel" ? { ...partiel, pnl: Math.round(partiel.pnl * 100) / 100 } : partiel;
+    await deposerBrouillonPari({
+      date: match?.date ?? jourLocal(new Date()),
+      match: match ? nom(match) : "Live +1.5",
+      methode: "+1.5",
+      cote: etat.cote,
+      mise: etat.mise,
+      ligue: match?.ligue ?? null,
+      matchId: match?.id ?? null,
+      ...p,
+    });
+    location.hash = "#/paris";
+  };
+
   const remettreAZero = async (demander: boolean) => {
     if (demander) {
       const ok = await confirmer({
         titre: "Terminer ce live ?",
-        texte: "Le chronomètre et le pari en cours sont effacés de cet écran. Pense à noter ton pari dans ton journal (le carnet, pour l'instant).",
+        texte: "Le chronomètre et le pari en cours sont effacés de cet écran. Pense à le noter dans ton journal (bouton « Noter ce pari ») s'il n'y est pas déjà.",
         action: "Terminer",
         danger: true,
       });
@@ -398,10 +430,21 @@ export function Live() {
             <p>{decision.pourquoi}</p>
             {decision.mise !== null && (
               <p>
-                Mise conseillée : <b>{eur(decision.mise)}</b>
+                Mise conseillée{reglagesMises.methode === "kelly" && chancesPourMise ? " (Kelly)" : ""} : <b>{eur(decision.mise)}</b>
               </p>
             )}
           </div>
+          {decision.mise !== null && alerte && (alerte.parPari || alerte.parJour?.depasse) && (
+            <p className="bandeau attention" role="status" data-test="alerte-plafond">
+              {alerte.parPari && <>Cette mise dépasse ton plafond par pari. </>}
+              {alerte.parJour?.depasse && (
+                <>
+                  Déjà {eur(alerte.parJour.dejaEngage)} misés aujourd'hui : au-delà de ton plafond de {eur(alerte.parJour.plafond)}.{" "}
+                </>
+              )}
+              La décision reste la tienne.
+            </p>
+          )}
           {Number.isFinite(decision.p) && (
             <div className="faits" data-test="chiffres-live">
               <div className="fait"><span>Chances (à 0-0 à la {minute}ᵉ)</span><b>{pc(decision.p)} ({Math.round(decision.pBas * 100)}-{Math.round(decision.pHaut * 100)} %)</b></div>
@@ -480,6 +523,9 @@ export function Live() {
           </button>
           <button type="button" className="btn secondaire" onClick={() => changer({ phase: "avant", cote: null, mise: null, minuteEntree: null, minuteBut: null })}>
             Annuler ce pari
+          </button>
+          <button type="button" className="btn secondaire" onClick={() => noterPari({ statut: "attente" })}>
+            Noter ce pari dans mon journal
           </button>
           <button type="button" className="btn discret" onClick={() => remettreAZero(true)}>Terminer le live</button>
         </section>
@@ -607,6 +653,15 @@ export function Live() {
               mais tu perds toute ta mise dans les autres cas. Ce sont des estimations : elles peuvent se tromper.
             </p>
           )}
+          <button
+            type="button"
+            className="btn secondaire"
+            onClick={() =>
+              noterPari(couverture.calculable && couverture.rentable ? { statut: "manuel", pnl: couverture.garanti } : { statut: "attente" })
+            }
+          >
+            {couverture.calculable && couverture.rentable ? `Noter ce pari sécurisé (${eur(couverture.garanti)})` : "Noter ce pari (résultat à préciser)"}
+          </button>
           <button type="button" className="btn secondaire" onClick={() => changer({ phase: "en-jeu", minuteBut: null })}>But annulé (VAR)</button>
           <button type="button" className="btn discret" onClick={() => remettreAZero(true)}>Terminer le live</button>
         </section>

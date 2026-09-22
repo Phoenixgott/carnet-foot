@@ -57,7 +57,7 @@ for (const largeur of [360, 412]) {
       await page.fill("#texte-carnet", texte);
       await page.locator('[data-test="apercu-import"]').waitFor();
       await auditer(page, "données, aperçu d'import");
-      await page.getByRole("button", { name: "Importer ces données" }).click();
+      await page.locator('[data-test="importer-carnet"]').click();
       await page.locator('[data-test="resultat-import"]').waitFor();
       for (const e of ECRANS) {
         await page.goto(`http://localhost:4173/#/${e}`);
@@ -85,12 +85,13 @@ test("Clavier : lien d'évitement en premier, onglets atteignables, focus visibl
 
 test("Boîte de confirmation : Échap annule, rien n'est modifié", async ({ context, page }) => {
   const carnet = await ouvrirCarnet(context, donneesCarnet(31, 5, 1));
-  const texte = await exporterDepuisCarnet(carnet);
-  await importerDansApp(page, texte);
-  const bankroll = await page.locator('[data-test="bankroll-entete"]').textContent();
+  await importerDansApp(page, await exporterDepuisCarnet(carnet));
+  // Une 2ᵉ import additif crée une copie de sécurité (« avant-import ») : sa restauration est une
+  // action destructrice protégée par une boîte de confirmation, comme le remplacement l'était avant.
   const autre = await ouvrirCarnet(context, donneesCarnet(32, 2, 0));
-  await page.fill("#texte-carnet", await exporterDepuisCarnet(autre));
-  await page.getByRole("button", { name: "Remplacer les données de l'application" }).click();
+  await importerDansApp(page, await exporterDepuisCarnet(autre));
+  const bankroll = await page.locator('[data-test="bankroll-entete"]').textContent();
+  await page.getByRole("button", { name: /^Restaurer la version du/ }).first().click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toBeHidden();

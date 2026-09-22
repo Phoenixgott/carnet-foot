@@ -84,6 +84,11 @@ function nombre(v: unknown): number | null {
   return Number.isFinite(x) ? x : null;
 }
 
+/** Empreinte du contenu d'un pari du carnet (date|méthode|cote|mise), figée à l'import. */
+function clePariCarnet(p: Pick<Pari, "date" | "methode" | "cote" | "mise">): string {
+  return `${p.date}|${p.methode}|${p.cote}|${p.mise}`;
+}
+
 export function analyserTexteCarnet(texte: string, maintenant: Date, nouvelId: () => string): AnalyseImportCarnet {
   const brut = extraireJson(texte) as Record<string, any>;
   if (!brut || typeof brut !== "object" || Array.isArray(brut)) {
@@ -153,8 +158,9 @@ export function analyserTexteCarnet(texte: string, maintenant: Date, nouvelId: (
       statut,
       creeLe: horodatage,
       modifieLe: horodatage,
-      origine: { carnet: { index, methode: String(b.methode) } },
+      origine: { carnet: { index, methode: String(b.methode), cle: "" } },
     };
+    p.origine!.carnet.cle = clePariCarnet(p);
     if (b.pnl !== undefined && b.pnl !== null) {
       const pnl = nombre(b.pnl);
       p.pnl = pnl ?? 0;
@@ -218,4 +224,43 @@ export function analyserTexteCarnet(texte: string, maintenant: Date, nouvelId: (
     matchsExempleIgnores,
     avertissements,
   };
+}
+
+/* ------------------------------------------------------------------ */
+/* Fusion des paris avec le journal existant                           */
+
+export interface FusionParisCarnet {
+  /** Paris du carnet pas encore dans le journal : à ajouter, jamais à la place d'un existant. */
+  nouveaux: Pari[];
+  /** Paris déjà présents (même position dans le carnet lors d'un import précédent) : inchangés. */
+  dejaPresents: number;
+}
+
+/**
+ * Fusionne les paris d'un export du carnet avec le journal de l'application : additive, jamais
+ * destructive. Un pari du carnet est reconnu par sa position ET son contenu d'origine
+ * (`origine.carnet.index` + `.cle`, posés par `analyserTexteCarnet` au moment de cet import) :
+ * une fois importé, il n'est plus jamais retouché, même si l'utilisateur le modifie ensuite dans
+ * l'app (l'app est désormais son carnet de paris) — `cle` reste celle du carnet, pas celle,
+ * changeante, du pari actuel dans l'app.
+ *
+ * Comparer aussi le contenu (pas seulement la position) écarte un risque plus grave qu'un doublon :
+ * si un pari est supprimé au milieu de la liste du carnet, les positions suivantes se décalent ;
+ * sans ce contrôle, un pari réellement nouveau qui hériterait par coïncidence d'une ancienne
+ * position pourrait être pris pour « déjà connu » et silencieusement ignoré. Avec la clé de
+ * contenu, un tel décalage produit au pire un doublon (jamais une perte) : modifier un pari déjà
+ * importé se fait dans l'app, pas dans le carnet.
+ */
+export function fusionnerParisCarnet(candidats: readonly Pari[], existants: readonly Pari[]): FusionParisCarnet {
+  const connus = new Set(
+    existants
+      .map((p) => p.origine?.carnet)
+      .filter((c): c is NonNullable<Pari["origine"]>["carnet"] => c !== undefined)
+      .map((c) => `${c.index}|${c.cle}`),
+  );
+  const ordreDepart = existants.reduce((max, p) => Math.max(max, p.ordre), -1) + 1;
+  const nouveaux = candidats
+    .filter((p) => p.origine?.carnet === undefined || !connus.has(`${p.origine.carnet.index}|${p.origine.carnet.cle}`))
+    .map((p, i) => ({ ...p, ordre: ordreDepart + i }));
+  return { nouveaux, dejaPresents: candidats.length - nouveaux.length };
 }

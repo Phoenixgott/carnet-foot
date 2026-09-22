@@ -25,7 +25,7 @@ test("Hors ligne : l'application redémarre sans réseau, données comprises", a
   const d = donneesCarnet(12, 7, 0);
   await page.goto("/#/donnees");
   await page.fill("#texte-carnet", JSON.stringify({ paris: d.paris, reglages: d.reglages }));
-  await page.getByRole("button", { name: "Importer ces données" }).click();
+  await page.locator('[data-test="importer-carnet"]').click();
   await expect(page.locator('[data-test="resultat-import"]')).toContainText("Import réussi");
   const bankroll = await page.locator('[data-test="bankroll-entete"]').textContent();
   await page.goto("/#/reglages");

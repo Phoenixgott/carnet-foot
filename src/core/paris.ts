@@ -17,20 +17,20 @@ export function gainPari(p: Pick<Pari, "statut" | "mise" | "cote" | "pnl">): num
 }
 
 /** Paris terminés : ni en cours ni remboursés. */
-export function parisTermines<T extends Pick<Pari, "statut">>(paris: T[]): T[] {
+export function parisTermines<T extends Pick<Pari, "statut">>(paris: readonly T[]): T[] {
   return paris.filter((p) => p.statut !== "attente" && p.statut !== "rembourse");
 }
 
-export function gainsTotaux(paris: Pari[]): number {
+export function gainsTotaux(paris: readonly Pari[]): number {
   return parisTermines(paris).reduce((s, p) => s + gainPari(p), 0);
 }
 
-export function bankrollCourante(paris: Pari[], reglages: ReglagesBankroll): number {
+export function bankrollCourante(paris: readonly Pari[], reglages: ReglagesBankroll): number {
   return reglages.depart + gainsTotaux(paris);
 }
 
 /** Mise conseillée : un pourcentage fixe de la bankroll courante. */
-export function miseConseillee(paris: Pari[], reglages: ReglagesBankroll): number {
+export function miseConseillee(paris: readonly Pari[], reglages: ReglagesBankroll): number {
   return (bankrollCourante(paris, reglages) * reglages.pctMise) / 100;
 }
 
@@ -47,7 +47,7 @@ export interface Bilan {
 
 const ORDRE_METHODES: Methode[] = ["+1.5", "Freebet", "+2.5", "Autre"];
 
-export function bilan(paris: Pari[], reglages: ReglagesBankroll): Bilan {
+export function bilan(paris: readonly Pari[], reglages: ReglagesBankroll): Bilan {
   const termines = parisTermines(paris);
   const gains = termines.reduce((s, p) => s + gainPari(p), 0);
   const engage = termines.reduce((s, p) => s + (p.methode === "Freebet" ? 0 : p.mise), 0);

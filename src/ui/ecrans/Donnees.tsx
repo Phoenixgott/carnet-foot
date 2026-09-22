@@ -4,7 +4,7 @@
  */
 import { useEffect, useState } from "react";
 import { eur } from "../../core/format";
-import { bankrollDe, estVide } from "../../data/contenu";
+import { bankrollDe } from "../../data/contenu";
 import { ErreurImport } from "../../data/import-carnet";
 import { listerVersions } from "../../data/depot";
 import { lireSauvegarde, type SauvegardeLue } from "../../data/sauvegarde";
@@ -18,12 +18,13 @@ import {
   previsualiserImportCarnet,
   restaurerSauvegarde,
   restaurerVersion,
+  type ApercuImportCarnet,
   type EtatStockage,
-  type ResultatImport,
+  type ResultatImportCarnet,
 } from "../../data/services";
 import { LIBELLE_RAISON, type Version } from "../../data/versions";
 import { EST_APERCU } from "../../pwa/pwa";
-import { ListeControles, ZoneTexte } from "../composants";
+import { signalerAlertes, ZoneTexte } from "../composants";
 import { joursDepuis, useAppli } from "../contexte";
 import { Historiques } from "../donnees/Historiques";
 
@@ -35,45 +36,40 @@ const dateHeure = (iso: string) =>
 
 /* ------------------------------------------------------------------ */
 function ImportCarnet() {
-  const { contenu, recharger, message, confirmer } = useAppli();
+  const { recharger, message } = useAppli();
   const [texte, setTexte] = useState("");
-  const [apercu, setApercu] = useState<ReturnType<typeof previsualiserImportCarnet> | null>(null);
+  const [apercu, setApercu] = useState<ApercuImportCarnet | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
-  const [resultat, setResultat] = useState<ResultatImport | null>(null);
+  const [resultat, setResultat] = useState<ResultatImportCarnet | null>(null);
   const [enCours, setEnCours] = useState(false);
+  const [analysant, setAnalysant] = useState(false);
 
-  const analyser = (t: string) => {
+  const analyser = async (t: string) => {
     setResultat(null);
     setErreur(null);
     setApercu(null);
     if (!t.trim()) return;
+    setAnalysant(true);
     try {
-      setApercu(previsualiserImportCarnet(t));
+      setApercu(await previsualiserImportCarnet(t));
     } catch (e) {
       setErreur(messageErreur(e));
+    } finally {
+      setAnalysant(false);
     }
   };
 
   const importer = async () => {
     if (!apercu) return;
-    if (!estVide(contenu)) {
-      const ok = await confirmer({
-        titre: "Remplacer les données ?",
-        texte: `L'application contient ${contenu.paris.length} paris et ${contenu.matchs.length} matchs. Ils seront remplacés par ceux du carnet. Une copie de sécurité est faite avant : tu pourras revenir en arrière depuis l'historique.`,
-        action: "Remplacer",
-      });
-      if (!ok) return;
-    }
     setEnCours(true);
     try {
-      const r = await importerCarnet(apercu.analyse);
+      const r = await importerCarnet(apercu);
       setResultat(r);
-      if (r.ok) {
-        setApercu(null);
-        setTexte("");
-        await recharger();
-        message("Import réussi");
-      }
+      setApercu(null);
+      setTexte("");
+      await recharger();
+      message(r.nbNouveauxMatchs || r.nbNouveauxParis ? "Import réussi" : "Rien de nouveau à importer");
+      await signalerAlertes(r.alertesCotes, message);
     } catch (e) {
       setErreur(messageErreur(e));
     } finally {
@@ -82,12 +78,14 @@ function ImportCarnet() {
   };
 
   const a = apercu?.analyse;
+  const rienDeNouveau = apercu ? !apercu.matchs.aEcrire.length && !apercu.paris.nouveaux.length : false;
   return (
     <section className="carte" aria-labelledby="titre-import">
       <h2 id="titre-import">Importer depuis le carnet</h2>
       <p className="aide">
-        Dans ton carnet, onglet « Mes paris », touche « Tout exporter » tout en bas, puis colle le texte ici. Le carnet n'est pas modifié. Tu peux
-        recommencer autant de fois que tu veux : l'import remplace les données de l'application par celles du carnet.
+        Dans ton carnet, onglet « Mes paris », touche « Tout exporter » tout en bas, puis colle le texte ici. Le carnet n'est pas modifié.
+        L'import n'ajoute que ce qu'il ne connaît pas encore : il n'efface et ne remplace jamais un match ou un pari déjà dans l'application, même
+        modifié depuis. Recommence autant de fois que tu veux.
       </p>
       <ZoneTexte
         id="texte-carnet"
@@ -99,6 +97,7 @@ function ImportCarnet() {
           analyser(t);
         }}
       />
+      {analysant && <p className="aide">Analyse…</p>}
       {erreur && (
         <div className="bandeau erreur" role="alert">
           <p>{erreur}</p>
@@ -110,12 +109,28 @@ function ImportCarnet() {
           <div className="faits">
             <div className="fait"><span>Type</span><b>{a.format === "export-complet" ? "Export complet" : "Ancienne sauvegarde"}</b></div>
             {a.exporteLe && <div className="fait"><span>Exporté le</span><b>{dateHeure(a.exporteLe)}</b></div>}
-            <div className="fait"><span>Paris</span><b>{a.contenu.paris.length}</b></div>
+            <div className="fait">
+              <span>Paris</span>
+              <b data-test="paris-nouveaux">{apercu.paris.nouveaux.length} nouveau{apercu.paris.nouveaux.length > 1 ? "x" : ""}</b>
+            </div>
+            {apercu.paris.dejaPresents > 0 && (
+              <div className="fait"><span>Paris déjà importés</span><b data-test="paris-deja-presents">{apercu.paris.dejaPresents}</b></div>
+            )}
             <div className="fait">
               <span>Matchs</span>
-              <b>{a.contenu.matchs.length}{a.matchsExempleIgnores ? ` (+${a.matchsExempleIgnores} d'exemple ignorés)` : ""}</b>
+              <b data-test="matchs-nouveaux">
+                {apercu.matchs.nouveaux.length} nouveau{apercu.matchs.nouveaux.length > 1 ? "x" : ""}
+                {apercu.matchs.misAJour.length ? `, ${apercu.matchs.misAJour.length} complété${apercu.matchs.misAJour.length > 1 ? "s" : ""}` : ""}
+                {a.matchsExempleIgnores ? ` (+${a.matchsExempleIgnores} d'exemple ignorés)` : ""}
+              </b>
             </div>
-            <div className="fait"><span>Bankroll de départ</span><b>{eur(bankrollDe(a.contenu).depart)}</b></div>
+            <div className="fait"><span>Bankroll de départ (carnet)</span><b>{eur(bankrollDe(a.contenu).depart)}</b></div>
+            {a.controle && (
+              <>
+                <div className="fait"><span>Repère carnet : paris terminés</span><b>{a.controle.nbParisTermines}</b></div>
+                <div className="fait"><span>Repère carnet : gains totaux</span><b>{eur(a.controle.gainsTotal)}</b></div>
+              </>
+            )}
           </div>
           {a.avertissements.length > 0 && (
             <div className="bandeau attention">
@@ -123,33 +138,27 @@ function ImportCarnet() {
               <ul>{a.avertissements.map((x, i) => <li key={i}>{x}</li>)}</ul>
             </div>
           )}
-          <h3>Contrôles avant import</h3>
-          <ListeControles lignes={apercu.avant.lignes} />
-          {apercu.avant.ok ? (
-            <button type="button" className="btn large" onClick={importer} disabled={enCours}>
-              {enCours ? "Import en cours…" : estVide(contenu) ? "Importer ces données" : "Remplacer les données de l'application"}
-            </button>
+          {rienDeNouveau ? (
+            <p className="bandeau info" data-test="import-rien-de-nouveau">Rien de nouveau : tout est déjà dans l'application.</p>
           ) : (
-            <div className="bandeau erreur" role="alert"><p>Des écarts empêchent l'import. Rien n'a été modifié.</p></div>
+            <button type="button" className="btn large" data-test="importer-carnet" onClick={importer} disabled={enCours}>
+              {enCours
+                ? "Import en cours…"
+                : `Importer${apercu.paris.nouveaux.length ? ` ${apercu.paris.nouveaux.length} pari${apercu.paris.nouveaux.length > 1 ? "s" : ""}` : ""}${
+                    apercu.paris.nouveaux.length && apercu.matchs.aEcrire.length ? " et" : ""
+                  }${apercu.matchs.aEcrire.length ? ` ${apercu.matchs.aEcrire.length} match${apercu.matchs.aEcrire.length > 1 ? "s" : ""}` : ""}`}
+            </button>
           )}
         </div>
       )}
       {resultat && (
-        <div className="section" data-test="resultat-import">
-          {resultat.ok ? (
-            <div className="bandeau ok" role="status">
-              <p>
-                <b>Import réussi.</b> {resultat.apres?.lignes.filter((l) => l.ok).length} contrôles conformes après relecture de la base.
-              </p>
-            </div>
-          ) : (
-            <div className="bandeau erreur" role="alert">
-              <p>
-                <b>Import annulé.</b> {resultat.retourArriere ? "Un écart est apparu après l'écriture : l'état précédent a été remis en place." : "Rien n'a été modifié."}
-              </p>
-            </div>
-          )}
-          {resultat.apres && <ListeControles lignes={resultat.apres.lignes} />}
+        <div className="bandeau ok" role="status" data-test="resultat-import">
+          <p>
+            <b>Import réussi.</b> {resultat.nbNouveauxParis} nouveau{resultat.nbNouveauxParis > 1 ? "x" : ""} pari
+            {resultat.nbNouveauxParis > 1 ? "s" : ""}, {resultat.nbNouveauxMatchs} nouveau{resultat.nbNouveauxMatchs > 1 ? "x" : ""} match
+            {resultat.nbNouveauxMatchs > 1 ? "s" : ""}
+            {resultat.nbMatchsCompletes ? `, ${resultat.nbMatchsCompletes} complété${resultat.nbMatchsCompletes > 1 ? "s" : ""}` : ""}.
+          </p>
         </div>
       )}
     </section>
