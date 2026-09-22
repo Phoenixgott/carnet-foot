@@ -168,7 +168,7 @@ h3 { font-size: 17px; margin: 0; }
 
 /* ---------- Formulaires ---------- */
 label.champ { display: grid; gap: 6px; font-size: 15px; font-weight: 700; color: var(--muted); }
-textarea, input[type="text"], input[type="number"], input[type="date"], select {
+textarea, input[type="text"], input[type="number"], input[type="date"], input[type="search"], select {
   font: 16px var(--font); color: var(--ink); background: var(--surface2); border: 1px solid var(--line); border-radius: 10px;
   padding: 12px; width: 100%;
 }
@@ -457,6 +457,75 @@ dialog.confirmation p { margin: 0; }
 
 /* ---------- Mise à jour ---------- */
 .maj { position: sticky; top: calc(58px + env(safe-area-inset-top, 0px)); z-index: 9; }
+
+/* ---------- Premier démarrage ---------- */
+.bienvenue { gap: 16px; }
+.bienvenue h2 { font-size: 24px; }
+label.champ-geant { font-size: 18px; color: var(--ink); }
+.champ-euro { position: relative; display: block; }
+.champ-euro input { font-size: 34px; font-weight: 800; padding: 14px 52px 14px 16px; font-variant-numeric: tabular-nums; }
+.champ-euro span { position: absolute; right: 18px; top: 50%; translate: 0 -50%; font-size: 28px; font-weight: 800; color: var(--muted); pointer-events: none; }
+.puces-montants { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.puces-montants .btn { padding: 10px 4px; }
+.titre-section { margin: 0 0 10px; }
+ul.tuiles-action { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.tuile-action {
+  display: grid; grid-template-columns: 52px 1fr 20px; gap: 14px; align-items: center; min-height: 76px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px;
+  color: var(--ink); text-decoration: none;
+}
+.tuile-action-icone { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
+.tuile-action-icone svg { width: 28px; height: 28px; }
+li:nth-child(2) > .tuile-action .tuile-action-icone { background: var(--good-soft); color: var(--good); }
+li:nth-child(3) > .tuile-action .tuile-action-icone { background: var(--warn-soft); color: var(--warn); }
+.tuile-action-texte { display: grid; gap: 2px; min-width: 0; }
+.tuile-action-texte b { font-size: 17px; }
+.tuile-action-texte small { font-size: 14px; color: var(--muted); }
+.tuile-action-fleche { font-size: 26px; color: var(--muted); }
+
+/* Réglages avancés : repliés par défaut, pour garder l'écran simple. */
+details.avances { background: var(--surface); border: 1.5px dashed var(--line); border-radius: var(--r); padding: 4px 16px 14px; }
+details.avances > .aide { margin: 0 0 12px; }
+
+/* ---------- Mouvement : entrées d'écran, survol, appui ----------
+   Propriétés « translate »/« scale » séparées : elles se combinent avec les « transform » existants
+   (inclinaison 3D de la carte bankroll) sans les écraser. Tout est coupé si le téléphone demande
+   de réduire les animations (voir tout en bas). */
+@keyframes entree { from { opacity: 0; translate: 0 14px; } to { opacity: 1; translate: 0 0; } }
+@keyframes zoom-entree { from { opacity: 0; scale: .94; } to { opacity: 1; scale: 1; } }
+@keyframes pop { 0% { scale: .8; } 60% { scale: 1.18; } 100% { scale: 1; } }
+main > * { animation: entree .5s cubic-bezier(.2,.8,.2,1) backwards; }
+main > :nth-child(2) { animation-delay: .06s; }
+main > :nth-child(3) { animation-delay: .12s; }
+main > :nth-child(4) { animation-delay: .18s; }
+main > :nth-child(5) { animation-delay: .24s; }
+main > :nth-child(n+6) { animation-delay: .3s; }
+main > .gazon { animation-name: zoom-entree; animation-duration: .65s; }
+ul.tuiles-action > li { animation: entree .5s cubic-bezier(.2,.8,.2,1) backwards; }
+ul.tuiles-action > li:nth-child(2) { animation-delay: .1s; }
+ul.tuiles-action > li:nth-child(3) { animation-delay: .2s; }
+dialog.confirmation[open] { animation: zoom-entree .25s cubic-bezier(.2,.8,.2,1); }
+.toast { animation: entree .3s cubic-bezier(.2,.8,.2,1); }
+nav.onglets a[aria-current="page"] svg { animation: pop .4s ease; }
+
+.btn { transition: translate .18s ease, scale .12s ease, box-shadow .18s ease, filter .18s ease, background-color .18s ease; }
+.carte, .tuile, .match, .tuile-action, .gazon-ligne div, .segments button, nav.onglets a svg, .tuile-action-icone, .tuile-action-fleche {
+  transition: translate .25s ease, scale .25s ease, rotate .25s ease, box-shadow .25s ease, border-color .25s ease, background-color .25s ease, color .25s ease;
+}
+@media (hover: hover) {
+  .btn:not(:disabled):hover { translate: 0 -2px; filter: brightness(1.07); box-shadow: 0 8px 18px -8px color-mix(in srgb, var(--accent) 70%, transparent); }
+  .btn.secondaire:not(:disabled):hover { background-color: var(--accent-soft); }
+  .carte:hover, .tuile:hover, .match:hover { translate: 0 -2px; box-shadow: 0 14px 28px -18px rgba(10, 20, 45, .45); }
+  .tuile-action:hover { translate: 0 -3px; border-color: var(--accent); box-shadow: 0 14px 28px -16px rgba(10, 20, 45, .45); }
+  .tuile-action:hover .tuile-action-icone { scale: 1.12; rotate: -6deg; }
+  .tuile-action:hover .tuile-action-fleche { translate: 4px 0; color: var(--accent); }
+  .gazon-ligne div:hover { translate: 0 -3px; background-color: rgba(255, 255, 255, .11); }
+  .segments button:not([aria-pressed="true"]):hover { border-color: var(--accent); color: var(--accent); }
+  nav.onglets a:hover svg { translate: 0 -2px; scale: 1.12; }
+  details.repli > summary:hover::before { translate: 3px 0; }
+}
+.btn:not(:disabled):active { scale: .97; }
+.tuile-action:active { scale: .98; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }

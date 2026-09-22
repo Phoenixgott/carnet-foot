@@ -4,6 +4,7 @@
  * « Noter ce pari » depuis le Live et le Freebet.
  */
 import { expect, test, type Page } from "playwright/test";
+import { ouvrirReglagesAvances } from "./outils";
 
 async function ajouterPari(page: Page, p: { match: string; date?: string; methode?: string; cote: string; mise: string; statut?: string; pnl?: string }) {
   await page.getByRole("button", { name: "Ajouter un pari" }).click();
@@ -163,7 +164,7 @@ test("Simulateur : mise fixe et % de la bankroll, comparaison au réel", async (
 });
 
 test("Réglages Mises et objectifs : Kelly fractionné, plafonds, objectif du mois, persistants", async ({ page }) => {
-  await page.goto("/#/reglages");
+  await ouvrirReglagesAvances(page);
   const carte = page.locator('[data-test="reglages-mises"]');
   await carte.getByRole("button", { name: "Kelly fractionné" }).click();
   await expect(page.locator('[data-test="toast"]')).toHaveCount(0); // changement de méthode silencieux, pas de formulaire à valider
@@ -179,6 +180,7 @@ test("Réglages Mises et objectifs : Kelly fractionné, plafonds, objectif du mo
   await expect(page.locator('[data-test="toast"]')).toHaveText("Objectifs enregistrés");
 
   await page.reload();
+  await ouvrirReglagesAvances(page);
   await expect(page.getByRole("button", { name: "Kelly fractionné" })).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator("#mises-fraction")).toHaveValue("0,25");
   await expect(page.locator("#mises-plafond-pari")).toHaveValue("50");

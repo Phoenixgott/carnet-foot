@@ -100,6 +100,12 @@ export function Aide() {
 
       <section className="carte" aria-labelledby="titre-bankroll-aide">
         <h2 id="titre-bankroll-aide">Les chiffres de Mes paris et de la bankroll</h2>
+        <Section titre="Que veut dire « bankroll » ?">
+          <p>
+            L'argent que tu consacres aux paris : ta somme de départ (réglable dans Réglages → Ma bankroll), plus tout ce que tu as gagné, moins
+            tout ce que tu as perdu. La mise conseillée est un petit pourcentage de ta bankroll du moment.
+          </p>
+        </Section>
         <Section titre="Que veut dire « ROI » ?">
           <p>Le retour sur investissement : tes gains, divisés par le total misé (hors freebets). Un ROI de 10 % veut dire 10 € gagnés pour 100 € misés.</p>
         </Section>
@@ -117,7 +123,7 @@ export function Aide() {
         </Section>
         <Section titre="Que veut dire « plafond » et pourquoi ce n'est jamais bloqué ?">
           <p>
-            Un plafond par pari ou par jour, que tu choisis toi-même dans Réglages → Mises et objectifs. Le dépasser affiche juste un
+            Un plafond par pari ou par jour, que tu choisis toi-même dans Réglages → Réglages avancés → Mises et objectifs. Le dépasser affiche juste un
             avertissement : la décision finale reste toujours la tienne.
           </p>
         </Section>

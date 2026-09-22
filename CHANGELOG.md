@@ -2,6 +2,28 @@
 
 Format : chaque version liste ce qui a été ajouté, modifié ou corrigé.
 
+## 0.7.1 — 22 septembre 2026 — Démarrage simple, ta bankroll, plus d'animations
+
+Retour de l'utilisateur : trop compliqué pour un nouvel utilisateur, pas assez « joli », et
+impossible de saisir sa propre bankroll de départ (l'app imposait 200 €).
+
+### Ajouté
+- **Premier démarrage en une question** : « Combien as-tu pour parier ? » (grand champ, montants
+  rapides 20/50/100/200 €), puis trois grandes tuiles « Par où commencer ? » : noter un pari, trouver
+  des matchs, importer un ancien carnet.
+- **Ma bankroll** (en tête des Réglages) : bankroll de départ et mise conseillée (%) modifiables à
+  tout moment, avec l'exemple de mise qui en découle.
+- **Animations** : les écrans et leurs cartes apparaissent en glissant, la carte bankroll arrive en
+  zoom, les boutons, cartes, tuiles et onglets réagissent au survol et à l'appui, les boîtes de
+  dialogue s'ouvrent en zoom. Tout est coupé si le téléphone demande de réduire les animations.
+
+### Modifié
+- Réglages simplifiés : critères d'analyse, Kelly, plafonds et objectifs rangés dans « Réglages
+  avancés » (replié par défaut).
+- Un import du carnet ne remplace plus une bankroll déjà choisie dans l'application (l'aperçu
+  l'indique) ; dans une application neuve, celle du carnet est reprise comme avant.
+- Carte bankroll : « — » au lieu de « ? » tant qu'aucun pari n'est terminé.
+
 ## 0.7.0 — 22 septembre 2026 — Phase 8 : jeu responsable et confort
 
 Dernière phase du cahier des charges (la phase 7, backtest, a été mise de côté par l'utilisateur

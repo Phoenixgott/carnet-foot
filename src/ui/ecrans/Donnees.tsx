@@ -125,6 +125,12 @@ function ImportCarnet() {
               </b>
             </div>
             <div className="fait"><span>Bankroll de départ (carnet)</span><b>{eur(bankrollDe(a.contenu).depart)}</b></div>
+            {apercu.bankrollGardee && (
+              <div className="fait" data-test="bankroll-gardee">
+                <span>Bankroll de départ gardée (celle de l'app)</span>
+                <b>{eur(apercu.bankrollGardee.depart)}</b>
+              </div>
+            )}
             {a.controle && (
               <>
                 <div className="fait"><span>Repère carnet : paris terminés</span><b>{a.controle.nbParisTermines}</b></div>

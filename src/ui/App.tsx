@@ -7,7 +7,7 @@ import { eur } from "../core/format";
 import { bankrollCourante } from "../core/paris";
 import type { Resultat } from "../core/types";
 import { contexteAnalyse } from "../data/analyse";
-import { bankrollDe, contenuVide, estVide, reglage, type Contenu } from "../data/contenu";
+import { bankrollChoisie, bankrollDe, contenuVide, estVide, reglage, type Contenu } from "../data/contenu";
 import { ecrireReglage, lireContenu, lireReglage, lireResultats } from "../data/depot";
 import { offresDe } from "../data/offres";
 import { jourLocal } from "../data/versions";
@@ -176,7 +176,7 @@ export function App() {
             Carnet de <span>Paris</span> Foot
           </p>
           <div className="entete-droite">
-            {!vide && (
+            {(!vide || bankrollChoisie(contenu)) && (
               <p className="bankroll-entete" style={{ margin: 0 }}>
                 Bankroll <b className="num" data-test="bankroll-entete">{eur(bankrollCourante(contenu.paris, bankrollDe(contenu)))}</b>
               </p>

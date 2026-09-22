@@ -46,8 +46,8 @@ export function Paris() {
         ))}
       </div>
       <p className="aide">
-        Bankroll de départ {eur(reglages.depart)} · mise conseillée {eur(mise.montant)} ({fr(reglages.pctMise, 1)} % de la bankroll, réglable dans
-        Réglages → Mises et objectifs). Rentabilité calculée sans les mises Freebet.
+        Bankroll de départ {eur(reglages.depart)} · mise conseillée {eur(mise.montant)} ({fr(reglages.pctMise, 1)} % de la bankroll).{" "}
+        <a href="#/reglages">Changer ma bankroll</a>. Rentabilité calculée sans les mises Freebet.
       </p>
 
       <div className="segments" role="group" aria-label="Section">

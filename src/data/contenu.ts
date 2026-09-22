@@ -32,6 +32,18 @@ export function bankrollDe(c: Contenu): ReglagesBankroll {
   return reglage<ReglagesBankroll>(c, "bankroll") ?? BANKROLL_PAR_DEFAUT;
 }
 
+/** L'utilisateur (ou un import du carnet) a déjà choisi sa bankroll de départ : sinon, l'accueil la lui demande. */
+export function bankrollChoisie(c: Contenu): boolean {
+  return reglage<ReglagesBankroll>(c, "bankroll") !== undefined;
+}
+
+/** Bankroll et mise lues depuis une saisie : départ > 0, mise entre 0,1 et 100 %. Null si invalide. */
+export function reglagesBankrollValides(depart: unknown, pctMise: unknown): ReglagesBankroll | null {
+  if (typeof depart !== "number" || !Number.isFinite(depart) || depart <= 0) return null;
+  if (typeof pctMise !== "number" || !Number.isFinite(pctMise) || pctMise < 0.1 || pctMise > 100) return null;
+  return { depart: Math.round(depart * 100) / 100, pctMise };
+}
+
 /** Contenu sans les réglages propres à l'appareil. */
 export function sansReglagesLocaux(c: Contenu): Contenu {
   return { ...c, reglages: c.reglages.filter((r) => !REGLAGES_LOCAUX.includes(r.cle)) };

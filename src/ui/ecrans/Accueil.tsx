@@ -11,7 +11,8 @@ import { bilanHebdomadaire } from "../../core/bilan-hebdo";
 import { demarrerPause, pauseActive, rappelPause } from "../../core/jeu-responsable";
 import { pauseDe, reglagesJeuResponsableDe } from "../../data/jeu-responsable";
 import { ecrireReglage } from "../../data/depot";
-import { bankrollDe, estVide } from "../../data/contenu";
+import { bankrollChoisie, bankrollDe, estVide } from "../../data/contenu";
+import { ChoixBankroll, PremiersPas } from "../accueil/Bienvenue";
 import { jourLocal } from "../../data/versions";
 import { joursDepuis, RAPPEL_SAUVEGARDE_JOURS, useAppli } from "../contexte";
 import { useCompte, useInclinaison3D } from "../animation";
@@ -74,6 +75,40 @@ export function Accueil() {
   const dureePause = reglagesJeuResponsableDe(contenu).dureePauseHeures;
   const semaine = !vide ? bilanHebdomadaire(contenu.paris, aujourdhui) : null;
 
+  const bandeauOffres =
+    offresBientot.length > 0 ? (
+      <section className="alerte-cote" aria-labelledby="titre-offres-bientot" data-test="offres-bientot">
+        <h2 id="titre-offres-bientot">
+          <span aria-hidden="true">🎁 </span>
+          {offresBientot.length === 1 ? "Un freebet expire bientôt" : `${offresBientot.length} freebets expirent bientôt`}
+        </h2>
+        <ul>
+          {offresBientot.map((o) => (
+            <li key={o.id}>
+              {o.bookmaker}
+              {o.titre ? ` · ${o.titre}` : ""}
+              {o.montant !== null ? ` (${eur(o.montant)})` : ""} : {texteDelai(o.dateLimite!, aujourdhui)}
+            </li>
+          ))}
+        </ul>
+        <a className="btn" href="#/freebet?vue=offres">Voir mes offres</a>
+      </section>
+    ) : null;
+
+  // Tout premier démarrage : une seule question, la bankroll de départ.
+  if (vide && !bankrollChoisie(contenu)) {
+    return (
+      <>
+        <div>
+          <h1 tabIndex={-1}>Accueil</h1>
+          <p className="chapeau">Tes données restent sur ce téléphone : rien n'est envoyé à un serveur.</p>
+        </div>
+        <ChoixBankroll />
+        {bandeauOffres}
+      </>
+    );
+  }
+
   return (
     <>
       <div>
@@ -86,22 +121,7 @@ export function Accueil() {
         )}
       </div>
 
-      {vide ? (
-        <section className="carte carte-bienvenue" aria-labelledby="bienvenue">
-          <div className="bienvenue-entete">
-            <Mascotte humeur="salut" />
-            <h2 id="bienvenue">Récupère tes données du carnet</h2>
-          </div>
-          <ol className="aide" style={{ margin: 0, paddingLeft: 20, display: "grid", gap: 6 }}>
-            <li>Ouvre ton carnet, onglet « Mes paris ».</li>
-            <li>Tout en bas, touche « Tout exporter » : le texte est copié.</li>
-            <li>Reviens ici, onglet « Données », et colle-le.</li>
-          </ol>
-          <a className="btn large" href="#/donnees">Importer depuis le carnet</a>
-          <p className="aide">Ou commence directement : récupère les matchs du jour avec l'autre conversation Claude.</p>
-          <a className="btn secondaire large" href="#/matchs">Récupérer les matchs</a>
-        </section>
-      ) : (
+      {
         <section className="gazon" aria-labelledby="titre-bankroll" ref={ref3d}>
           <div className="gazon-fond" aria-hidden="true">
             <span className="gazon-lueur gazon-lueur-1" />
@@ -117,35 +137,20 @@ export function Accueil() {
               <small><IconeStat nom={b.gains >= 0 ? "hausse" : "baisse"} /> Gagné / perdu</small>
             </div>
             <div>
-              <b>{pc(rentabiliteAnimee)}</b>
+              <b>{Number.isFinite(rentabiliteAnimee) ? pc(rentabiliteAnimee) : "—"}</b>
               <small><IconeStat nom="pourcent" /> Rentabilité</small>
             </div>
             <div>
-              <b>{pc(tauxAnime)}</b>
+              <b>{Number.isFinite(tauxAnime) ? pc(tauxAnime) : "—"}</b>
               <small><IconeStat nom="etoile" /> Paris gagnés</small>
             </div>
           </div>
         </section>
-      )}
+      }
 
-      {offresBientot.length > 0 && (
-        <section className="alerte-cote" aria-labelledby="titre-offres-bientot" data-test="offres-bientot">
-          <h2 id="titre-offres-bientot">
-            <span aria-hidden="true">🎁 </span>
-            {offresBientot.length === 1 ? "Un freebet expire bientôt" : `${offresBientot.length} freebets expirent bientôt`}
-          </h2>
-          <ul>
-            {offresBientot.map((o) => (
-              <li key={o.id}>
-                {o.bookmaker}
-                {o.titre ? ` · ${o.titre}` : ""}
-                {o.montant !== null ? ` (${eur(o.montant)})` : ""} : {texteDelai(o.dateLimite!, aujourdhui)}
-              </li>
-            ))}
-          </ul>
-          <a className="btn" href="#/freebet?vue=offres">Voir mes offres</a>
-        </section>
-      )}
+      {vide && <PremiersPas />}
+
+      {bandeauOffres}
 
       {alertes.length > 0 && (
         <section className="alerte-cote" aria-labelledby="titre-alertes" data-test="alertes-accueil">

@@ -3,6 +3,7 @@
  * poids des absents, tri par intérêt, comparaison, fiche équipe et avantage du terrain des CSV.
  */
 import { expect, test, type Page } from "playwright/test";
+import { ouvrirReglagesAvances } from "./outils";
 
 const DATE = "2030-05-04";
 
@@ -64,7 +65,7 @@ test("Critères réglables : un seuil plus exigeant change le verdict, retour au
   await importer(page, [match("Lens", "Brest")]);
   const m15 = carte(page, "Lens").locator('[data-test="methode-+1.5"]');
   await expect(m15.locator(".verdict")).toContainText("On joue");
-  await page.goto("/#/reglages");
+  await ouvrirReglagesAvances(page);
   await page.fill("#seuil-15-pctPlus15", "95");
   await page.getByRole("button", { name: "Enregistrer les critères" }).click();
   await expect(page.locator('[data-test="toast"]')).toHaveText("Critères enregistrés");
@@ -74,7 +75,7 @@ test("Critères réglables : un seuil plus exigeant change le verdict, retour au
   await m15.getByText("Pourquoi ?").click();
   await expect(m15.locator(".pourquoi")).toContainText("Minimum : 95 %.");
   // Saisie refusée avec un message clair
-  await page.goto("/#/reglages");
+  await ouvrirReglagesAvances(page);
   await page.fill("#seuil-25-scoreOk", "2,5");
   await page.getByRole("button", { name: "Enregistrer les critères" }).click();
   await expect(page.getByRole("alert")).toContainText("tape un nombre entier de 1 à 6");
@@ -88,12 +89,12 @@ test("Poids des absents : les buts attendus suivent le réglage", async ({ page 
   await importer(page, [match("Lens", "Brest", { meilleurButeurAbsent: true, absenceOffensive: true })]);
   const lambda = async () => Number((await carte(page, "Lens").locator('[data-test="lambda"]').textContent())!.split(" ")[0].replace(",", "."));
   const normal = await lambda();
-  await page.goto("/#/reglages");
+  await ouvrirReglagesAvances(page);
   await page.getByRole("button", { name: "Ignorés" }).click();
   await expect(page.locator('[data-test="toast"]')).toHaveText("Poids des absents : ignorés");
   await page.goto("/#/matchs");
   const ignores = await lambda();
-  await page.goto("/#/reglages");
+  await ouvrirReglagesAvances(page);
   await page.getByRole("button", { name: "Très fort" }).click();
   await expect(page.locator('[data-test="toast"]')).toHaveText("Poids des absents : très fort");
   await page.goto("/#/matchs");

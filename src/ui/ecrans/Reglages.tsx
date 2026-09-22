@@ -9,6 +9,7 @@ import { VERSION_APP } from "../../data/services";
 import { demanderNotifications, etatNotifications, installer, notifier, type EtatNotifications } from "../../pwa/pwa";
 import { useAppli } from "../contexte";
 import { ReglagesAnalyse } from "../reglages/ReglagesAnalyse";
+import { ReglagesBankroll } from "../reglages/ReglagesBankroll";
 import { ReglagesJeuResponsable } from "../reglages/ReglagesJeuResponsable";
 import { ReglagesMises } from "../reglages/ReglagesMises";
 import { appliquerTheme, type Theme } from "../theme";
@@ -38,6 +39,8 @@ export function Reglages() {
         <h1 tabIndex={-1}>Réglages</h1>
       </div>
 
+      <ReglagesBankroll />
+
       <section className="carte" aria-labelledby="titre-theme">
         <h2 id="titre-theme">Apparence</h2>
         <div className="segments" role="group" aria-labelledby="titre-theme">
@@ -58,9 +61,16 @@ export function Reglages() {
         </div>
       </section>
 
-      <ReglagesAnalyse />
-      <ReglagesMises />
       <ReglagesJeuResponsable />
+
+      <details className="repli avances" data-test="reglages-avances">
+        <summary>Réglages avancés</summary>
+        <p className="aide">Critères d'analyse des matchs, Kelly, plafonds de mise, objectifs du mois. Pas besoin d'y toucher pour commencer.</p>
+        <div className="section">
+          <ReglagesAnalyse />
+          <ReglagesMises />
+        </div>
+      </details>
 
       <section className="carte" aria-labelledby="titre-installation">
         <h2 id="titre-installation">Installation et hors ligne</h2>

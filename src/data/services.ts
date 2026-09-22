@@ -4,9 +4,9 @@
  * retour automatique à l'état précédent si quelque chose ne correspond pas.
  */
 import { amorcerSuivi, nouvellesAlertes, suivreCotes, type AlerteCote } from "../core/cotes";
-import type { CotesMatch, Marche, Match, Pari, Resultat } from "../core/types";
+import type { CotesMatch, Marche, Match, Pari, ReglagesBankroll, Resultat } from "../core/types";
 import { contexteDepuisBase } from "./analyse";
-import { estVide, jsonCanonique, resumer, type Contenu } from "./contenu";
+import { bankrollChoisie, bankrollDe, estVide, jsonCanonique, resumer, type Contenu } from "./contenu";
 import {
   ajouterVersion,
   ecrireMatchs,
@@ -71,6 +71,8 @@ export interface ApercuImportCarnet {
   analyse: AnalyseImportCarnet;
   matchs: FusionMatchs;
   paris: FusionParisCarnet;
+  /** Bankroll déjà choisie dans l'application : elle est gardée, celle du carnet n'est pas reprise. */
+  bankrollGardee: ReglagesBankroll | null;
 }
 
 /**
@@ -83,7 +85,7 @@ export async function previsualiserImportCarnet(texte: string): Promise<ApercuIm
   const existant = await lireContenu();
   const matchs = fusionnerMatchsAvecExistants(analyse.contenu.matchs, existant.matchs, maintenant.toISOString());
   const paris = fusionnerParisCarnet(analyse.contenu.paris, existant.paris);
-  return { analyse, matchs, paris };
+  return { analyse, matchs, paris, bankrollGardee: bankrollChoisie(existant) ? bankrollDe(existant) : null };
 }
 
 /** Les deux réglages que le carnet connaît et continue d'alimenter à chaque import. */
@@ -107,7 +109,12 @@ export async function importerCarnet(apercu: ApercuImportCarnet): Promise<Result
   if (matchs.aEcrire.length || paris.nouveaux.length) await creerVersion("avant-import");
   const alertesCotes = matchs.aEcrire.length ? await ecrireMatchsVerifies(matchs.aEcrire) : [];
   if (paris.nouveaux.length) await ecrireParisVerifies(paris.nouveaux);
-  for (const r of analyse.contenu.reglages) if (CLES_REGLAGES_CARNET.includes(r.cle)) await ecrireReglage(r.cle, r.valeur);
+  for (const r of analyse.contenu.reglages) {
+    if (!CLES_REGLAGES_CARNET.includes(r.cle)) continue;
+    // La bankroll choisie dans l'application (l'app est désormais le carnet) n'est jamais remplacée.
+    if (r.cle === "bankroll" && apercu.bankrollGardee) continue;
+    await ecrireReglage(r.cle, r.valeur);
+  }
   await demanderStockagePersistant();
   return { nbNouveauxMatchs: matchs.nouveaux.length, nbMatchsCompletes: matchs.misAJour.length, nbNouveauxParis: paris.nouveaux.length, alertesCotes };
 }

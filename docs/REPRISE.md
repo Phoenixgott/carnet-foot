@@ -47,7 +47,8 @@ Il fait foi.
   l'utilisateur, pas supprimée : voir plus bas). Dernière étiquette : `v0.7.0` (phase 8), 22 septembre
   2026. Phases/versions précédentes : `v0.1.0`, `v0.2.0` (+ correctifs `v0.2.1`, `v0.2.2` : écran blanc
   après mise à jour), `v0.3.0`, `v0.4.0`, `v0.5.0`, `v0.6.0` (phase 6), `v0.6.1`/`v0.6.2` (nouveau look,
-  hors plan, voir plus bas). 121 tests unitaires + 62 tests de bout en bout, tous verts. En ligne sur
+  hors plan, voir plus bas), puis `v0.7.1` (démarrage simplifié, bankroll réglable, animations).
+  121 tests unitaires + 65 tests de bout en bout, tous verts. En ligne sur
   https://phoenixgott.github.io/carnet-foot/ (dépôt `Phoenixgott/carnet-foot`, branche `gh-pages`).
 - **Phase 8 (v0.7.0) : jeu responsable et confort.** Rappels doux (défaites d'affilée, plafond du jour),
   pause/auto-exclusion posée et retirée par l'utilisateur (jamais un vrai blocage tant qu'il ne l'a pas
@@ -69,6 +70,16 @@ Il fait foi.
   il a enchaîné sur la question Unibet puis la phase 8 sans redire si le style final lui plaît —
   à vérifier à l'occasion, avant d'étendre ce style aux écrans qui ne l'ont pas encore (seul l'accueil
   et les éléments communs — boutons, liens, onglets — en bénéficient pour l'instant).
+- **`v0.7.1` (retour utilisateur après la phase 8)** : « trop compliqué pour un nouvel utilisateur »,
+  « pas assez joli (transitions, gros plans, animations au survol) », « je ne peux pas mettre ma
+  bankroll, j'ai 33 € et tu mets 200 ». Livré : premier démarrage en une question (bankroll, voir
+  `src/ui/accueil/Bienvenue.tsx`) puis 3 tuiles ; carte « Ma bankroll » en tête des Réglages ;
+  Réglages avancés repliés ; animations d'entrée/survol/appui (fin de `styles.css`, propriétés
+  `translate`/`scale` séparées pour ne pas écraser l'inclinaison 3D). Un import du carnet ne remplace
+  plus une bankroll déjà choisie (`bankrollGardee` dans `services.ts`). `BANKROLL_PAR_DEFAUT` (200 €)
+  ne sert plus qu'aux données d'avant et aux tests qui vont directement sur un écran.
+  Pistes de simplification restantes si l'utilisateur les demande : écran Matchs (récupération en
+  3 étapes via l'autre conversation Claude) et Live, encore denses.
 - **Prochaine étape : demander à l'utilisateur ce qu'il veut ensuite.** Le cahier des charges est
   entièrement couvert sauf la phase 7 (backtest), volontairement mise de côté. Pistes possibles :
   revenir sur la phase 7, étendre le style bleu-et-noir aux autres écrans, ou simplement laisser

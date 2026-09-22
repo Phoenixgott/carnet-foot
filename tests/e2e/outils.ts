@@ -72,3 +72,10 @@ export async function importerDansApp(app: Page, texte: string): Promise<void> {
   await app.locator('[data-test="importer-carnet"]').click();
   await app.locator('[data-test="resultat-import"]').waitFor();
 }
+
+/** Ouvre l'écran Réglages avec les « Réglages avancés » (critères, Kelly, plafonds) dépliés. */
+export async function ouvrirReglagesAvances(app: Page): Promise<void> {
+  await app.goto("/#/reglages");
+  const avances = app.locator('[data-test="reglages-avances"]');
+  if ((await avances.getAttribute("open")) === null) await avances.locator("> summary").click();
+}

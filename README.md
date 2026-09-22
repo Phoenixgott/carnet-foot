@@ -12,6 +12,12 @@ interdit elle-même toute connexion vers un autre site (règle de sécurité `co
 
 ## Utilisation
 
+### 0. Premier démarrage
+
+L'accueil te pose une seule question : **combien as-tu pour parier ?** (ta bankroll de départ,
+33 €, 200 €… c'est toi qui choisis). Ensuite, trois tuiles : noter un pari, trouver des matchs, ou
+importer ton ancien carnet. Tu changes ta bankroll quand tu veux dans **Réglages → Ma bankroll**.
+
 ### 1. Récupérer tes données du carnet
 
 1. Ouvre ton carnet (l'artefact « Carnet de Paris Foot »), onglet **Mes paris**.
