@@ -7,6 +7,10 @@ import { offresDe } from "../../data/offres";
 import { analyserV2 } from "../../core/modele-v2/analyse";
 import { dateCourte, eur, pc } from "../../core/format";
 import { bilan } from "../../core/paris";
+import { bilanHebdomadaire } from "../../core/bilan-hebdo";
+import { demarrerPause, pauseActive, rappelPause } from "../../core/jeu-responsable";
+import { pauseDe, reglagesJeuResponsableDe } from "../../data/jeu-responsable";
+import { ecrireReglage } from "../../data/depot";
 import { bankrollDe, estVide } from "../../data/contenu";
 import { jourLocal } from "../../data/versions";
 import { joursDepuis, RAPPEL_SAUVEGARDE_JOURS, useAppli } from "../contexte";
@@ -49,7 +53,7 @@ function IconeStat({ nom }: { nom: "hausse" | "baisse" | "pourcent" | "etoile" }
 }
 
 export function Accueil() {
-  const { contenu, dernierExport, contexteDe } = useAppli();
+  const { contenu, dernierExport, contexteDe, recharger, message } = useAppli();
   const vide = estVide(contenu);
   const b = bilan(contenu.paris, bankrollDe(contenu));
   const ref3d = useInclinaison3D<HTMLElement>();
@@ -64,12 +68,22 @@ export function Accueil() {
   const aujourdhui = jourLocal(new Date());
   const offresBientot = offresARappeler(offresDe(contenu), aujourdhui);
   const alertes = contenu.matchs.filter((m) => !m.date || m.date >= aujourdhui).flatMap((m) => alertesCote(m, contexteDe));
+  const pause = pauseDe(contenu);
+  const enPause = pauseActive(pause, new Date());
+  const rappel8 = !vide && !enPause ? rappelPause(contenu.paris, reglagesJeuResponsableDe(contenu), aujourdhui) : null;
+  const dureePause = reglagesJeuResponsableDe(contenu).dureePauseHeures;
+  const semaine = !vide ? bilanHebdomadaire(contenu.paris, aujourdhui) : null;
 
   return (
     <>
       <div>
         <h1 tabIndex={-1}>Accueil</h1>
         <p className="chapeau">Tes données restent sur ce téléphone : rien n'est envoyé à un serveur.</p>
+        {!vide && (
+          <p className="aide">
+            <a href="#/recherche">🔍 Rechercher un match, un pari, une offre</a>
+          </p>
+        )}
       </div>
 
       {vide ? (
@@ -148,6 +162,29 @@ export function Accueil() {
         </section>
       )}
 
+      {rappel8 && (
+        <div className="bandeau attention" role="status" data-test="rappel-jeu-responsable">
+          <p>{rappel8.texte}</p>
+          <button
+            type="button"
+            className="btn"
+            onClick={async () => {
+              await ecrireReglage("pause", demarrerPause(dureePause, new Date(), rappel8.texte));
+              await recharger();
+              message("Pause commencée");
+            }}
+          >
+            Faire une pause de {dureePause} h
+          </button>
+        </div>
+      )}
+
+      {enPause && pause && (
+        <div className="bandeau info" role="status" data-test="pause-accueil">
+          <p>Ton journal est en pause. Réglages → Jeu responsable pour voir le temps restant ou l'arrêter.</p>
+        </div>
+      )}
+
       {rappel && (
         <div className="bandeau attention" role="status">
           <p>
@@ -190,6 +227,39 @@ export function Accueil() {
             ))}
           </div>
           <a className="btn secondaire" href="#/paris">Voir le journal</a>
+        </section>
+      )}
+
+      {semaine && (
+        <section className="carte" aria-labelledby="titre-semaine" data-test="bilan-semaine">
+          <h2 id="titre-semaine">Cette semaine</h2>
+          {semaine.cetteSemaine.nb === 0 ? (
+            <p className="aide">Aucun pari terminé cette semaine pour l'instant.</p>
+          ) : (
+            <>
+              <div className="faits">
+                <div className="fait"><span>Paris terminés</span><b>{semaine.cetteSemaine.nb}</b></div>
+                <div className="fait">
+                  <span>Gagné / perdu</span>
+                  <b className={semaine.cetteSemaine.gains >= 0 ? "pos" : "neg"}>{eur(semaine.cetteSemaine.gains)}</b>
+                </div>
+                <div className="fait"><span>Paris gagnés</span><b>{pc(semaine.cetteSemaine.tauxReussite)}</b></div>
+              </div>
+              <p className="aide">
+                {semaine.cetteSemaine.meilleureMethode && (
+                  <>Ce qui a marché : {semaine.cetteSemaine.meilleureMethode.methode} ({eur(semaine.cetteSemaine.meilleureMethode.gains)}). </>
+                )}
+                {semaine.cetteSemaine.pireMethode && (
+                  <>Ce qui a moins marché : {semaine.cetteSemaine.pireMethode.methode} ({eur(semaine.cetteSemaine.pireMethode.gains)}). </>
+                )}
+                {semaine.semainePrecedente.nb > 0 && (
+                  <>La semaine précédente : {eur(semaine.semainePrecedente.gains)} sur {semaine.semainePrecedente.nb} pari
+                    {semaine.semainePrecedente.nb > 1 ? "s" : ""}.</>
+                )}
+              </p>
+            </>
+          )}
+          <a className="btn secondaire" href="#/paris?vue=statistiques">Voir les statistiques</a>
         </section>
       )}
     </>

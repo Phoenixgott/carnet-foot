@@ -37,7 +37,7 @@ export function useAppli(): Appli {
   return a;
 }
 
-export type Route = "accueil" | "matchs" | "live" | "freebet" | "paris" | "donnees" | "reglages" | "equipe";
+export type Route = "accueil" | "matchs" | "live" | "freebet" | "paris" | "donnees" | "reglages" | "equipe" | "aide" | "recherche";
 
 export const ROUTES: ReadonlyArray<{ route: Route; libelle: string; titre: string }> = [
   { route: "accueil", libelle: "Accueil", titre: "Accueil" },
@@ -51,7 +51,7 @@ export const ROUTES: ReadonlyArray<{ route: Route; libelle: string; titre: strin
 
 export function lireRoute(): Route {
   const r = window.location.hash.replace(/^#\/?/, "").split(/[/?]/)[0];
-  if (r === "equipe") return "equipe";
+  if (r === "equipe" || r === "aide" || r === "recherche") return r;
   return (ROUTES.find((x) => x.route === r)?.route ?? "accueil") as Route;
 }
 

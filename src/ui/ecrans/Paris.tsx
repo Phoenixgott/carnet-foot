@@ -8,16 +8,20 @@ import { bilan } from "../../core/paris";
 import { miseConseilleeSelonReglages } from "../../core/mises";
 import { reglagesMisesDe } from "../../data/bankroll";
 import { bankrollDe } from "../../data/contenu";
-import { useAppli } from "../contexte";
+import { parametresRoute, useAppli } from "../contexte";
 import { Journal } from "../paris/Journal";
 import { Simulateur } from "../paris/Simulateur";
 import { Statistiques } from "../paris/Statistiques";
 
 type Vue = "journal" | "statistiques" | "simulateur";
+const VUES: Vue[] = ["journal", "statistiques", "simulateur"];
 
 export function Paris() {
   const { contenu } = useAppli();
-  const [vue, setVue] = useState<Vue>("journal");
+  const [vue, setVue] = useState<Vue>(() => {
+    const v = parametresRoute().get("vue");
+    return (VUES as string[]).includes(v ?? "") ? (v as Vue) : "journal";
+  });
   const reglages = bankrollDe(contenu);
   const b = bilan(contenu.paris, reglages);
   const mise = miseConseilleeSelonReglages({ paris: contenu.paris, reglagesBankroll: reglages, reglagesMises: reglagesMisesDe(contenu) });

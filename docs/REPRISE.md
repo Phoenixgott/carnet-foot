@@ -43,22 +43,36 @@ Il fait foi.
 
 ## État actuel
 
-- **Phase 6 terminée** (étiquette `v0.6.0`, 22 septembre 2026) : voir `CHANGELOG.md`.
-  Phases précédentes : `v0.1.0`, `v0.2.0` (+ correctifs `v0.2.1`, `v0.2.2` : écran blanc après mise à jour),
-  `v0.3.0`, `v0.4.0`, `v0.5.0`. 116 tests unitaires + 57 tests de bout en bout, tous verts. En ligne sur
+- **Les 8 phases du cahier des charges sont closes** (la phase 7 « backtest » a été mise de côté par
+  l'utilisateur, pas supprimée : voir plus bas). Dernière étiquette : `v0.7.0` (phase 8), 22 septembre
+  2026. Phases/versions précédentes : `v0.1.0`, `v0.2.0` (+ correctifs `v0.2.1`, `v0.2.2` : écran blanc
+  après mise à jour), `v0.3.0`, `v0.4.0`, `v0.5.0`, `v0.6.0` (phase 6), `v0.6.1`/`v0.6.2` (nouveau look,
+  hors plan, voir plus bas). 121 tests unitaires + 62 tests de bout en bout, tous verts. En ligne sur
   https://phoenixgott.github.io/carnet-foot/ (dépôt `Phoenixgott/carnet-foot`, branche `gh-pages`).
-- **`v0.6.1` → `v0.6.2`, hors plan** : l'utilisateur a demandé d'abandonner la phase 7 pour l'instant et
-  de refaire le look de l'app « énorme et jolie », « un peu 3D et gadget ». Choix recueillis
-  (AskUserQuestion) : style **spectaculaire**, gadget **mascotte animée** (un ballon, réagit au bilan,
-  jamais triste sur une perte), en commençant par l'**Accueil** avant les autres écrans. La 0.6.1 (vert,
-  fond façon gazon) a été jugée « moche » par l'utilisateur ; la 0.6.2 corrige avec une palette
-  **bleu et noir façon tableau de bord**, plus de couleur (bleu/cyan/or, vert/rouge gardés pour leur
-  sens), icônes sur chaque chiffre de la carte bankroll. Tout en CSS/SVG maison (pas de bibliothèque
-  3D, hors ligne, respecte `prefers-reduced-motion` déjà coupé globalement dans `styles.css`).
-  Voir `src/ui/animation.ts`, `src/ui/mascotte.tsx`, et les jetons de couleur en tête de `styles.css`.
-- **Prochaine étape : demander à l'utilisateur si ce nouveau look lui plaît, puis, si oui, l'étendre
-  aux autres écrans (Matchs, Live, Freebet, Paris, Données) — plus tard, la phase 7 (backtest) reste
-  dans le plan si l'utilisateur veut y revenir.**
+- **Phase 8 (v0.7.0) : jeu responsable et confort.** Rappels doux (défaites d'affilée, plafond du jour),
+  pause/auto-exclusion posée et retirée par l'utilisateur (jamais un vrai blocage tant qu'il ne l'a pas
+  posée lui-même), bilan hebdomadaire sur l'accueil, recherche globale, tutoriel intégré. Recherche
+  Unibet infructueuse au préalable (pas d'export d'historique public ; scraping avec identifiants du
+  compte refusé). Voir `src/core/jeu-responsable.ts`, `bilan-hebdo.ts`, `recherche.ts`,
+  `src/ui/ecrans/Aide.tsx`, `Recherche.tsx`, `src/ui/jeu-responsable/PauseActive.tsx`.
+  **Bug préexistant corrigé au passage** : dans le journal, passer de « Ajouter » à « Modifier » un
+  pari sans fermer le formulaire gardait l'ancienne saisie React (même instance de composant) —
+  corrigé avec une `key` par pari dans `src/ui/paris/Journal.tsx`.
+- **`v0.6.1` → `v0.6.2`, hors plan (avant la phase 8)** : l'utilisateur a demandé d'abandonner la
+  phase 7 pour l'instant et de refaire le look de l'app « énorme et jolie », « un peu 3D et gadget »,
+  puis (retour sur la 0.6.1, jugée « moche ») « plus de couleur… bleu et noir… compréhensible de
+  n'importe qui ». Livré : carte bankroll en relief (inclinaison 3D, lueurs, chiffres qui comptent),
+  mascotte animée (ballon, jamais triste sur une perte), palette bleu-et-noir façon tableau de bord
+  (le bleu remplace le vert comme couleur de marque ; vert/ambre/rouge gardent leur sens). Tout en
+  CSS/SVG maison (pas de bibliothèque 3D). Voir `src/ui/animation.ts`, `src/ui/mascotte.tsx`, et les
+  jetons de couleur en tête de `styles.css`. **Non confirmé explicitement par l'utilisateur depuis** :
+  il a enchaîné sur la question Unibet puis la phase 8 sans redire si le style final lui plaît —
+  à vérifier à l'occasion, avant d'étendre ce style aux écrans qui ne l'ont pas encore (seul l'accueil
+  et les éléments communs — boutons, liens, onglets — en bénéficient pour l'instant).
+- **Prochaine étape : demander à l'utilisateur ce qu'il veut ensuite.** Le cahier des charges est
+  entièrement couvert sauf la phase 7 (backtest), volontairement mise de côté. Pistes possibles :
+  revenir sur la phase 7, étendre le style bleu-et-noir aux autres écrans, ou simplement laisser
+  l'utilisateur se servir de l'app telle quelle.
 - **Décision prise en phase 6** (question posée à l'utilisateur, réponse « L'app devient le carnet ») :
   l'application est désormais le carnet de paris principal. Le journal se modifie dans l'app (ajout,
   modification, suppression, Live et Freebet y notent directement) ; réimporter le carnet original reste
@@ -66,12 +80,13 @@ Il fait foi.
   jamais un pari. Les bénéfices réels des offres de freebet (`beneficeReel`) alimentent le journal via
   une proposition à l'enregistrement de l'offre (pas d'automatisme silencieux).
 - Navigation : 6 onglets (Accueil, Matchs, Live, Freebet, Paris, Données) ; Réglages est l'engrenage de
-  l'en-tête. Prévoir où mettre un éventuel 7ᵉ écran sans surcharger la barre.
+  l'en-tête. Recherche et Aide sont des écrans à part (`#/recherche`, `#/aide`), atteints par un lien
+  (accueil, réglages), pas par la barre du bas ni l'en-tête : un icône recherche dans l'en-tête a été
+  essayé puis retiré, il faisait déborder l'écran à 360 px de large (en-tête déjà serré à cette largeur).
 - Ressenti de l'utilisateur après la phase 1 : l'app « ne ressemble en rien » à son carnet et ne lui
-  sert à rien pour l'instant. Il a choisi de continuer le plan. Garder en tête : lui rendre vite un
-  usage quotidien (récupérer les matchs, analyser, noter ses paris) et rester proche du carnet.
-  Depuis la phase 6, l'app couvre tout le cycle (analyse → live/freebet → journal → statistiques) :
-  vérifier au prochain échange que ce ressenti s'est amélioré.
+  sert à rien pour l'instant. Il a choisi de continuer le plan. Depuis la phase 6, l'app couvre tout le
+  cycle (analyse → live/freebet → journal → statistiques → jeu responsable) : vérifier au prochain
+  échange que ce ressenti s'est amélioré.
 - Poste de travail (Windows) : dépôt dans `C:\Users\larri\Desktop\CLAUDE`. Git portable dans
   `%LOCALAPPDATA%\Programs\PortableGit` (pas dans le PATH ; `bin\bash.exe` pour publier-pages.sh).
   Le Chromium de Playwright ne démarre pas sur ce PC : `PW_CANAL=chrome npm run e2e`.

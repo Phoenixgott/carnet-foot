@@ -9,6 +9,7 @@ import { VERSION_APP } from "../../data/services";
 import { demanderNotifications, etatNotifications, installer, notifier, type EtatNotifications } from "../../pwa/pwa";
 import { useAppli } from "../contexte";
 import { ReglagesAnalyse } from "../reglages/ReglagesAnalyse";
+import { ReglagesJeuResponsable } from "../reglages/ReglagesJeuResponsable";
 import { ReglagesMises } from "../reglages/ReglagesMises";
 import { appliquerTheme, type Theme } from "../theme";
 
@@ -59,6 +60,7 @@ export function Reglages() {
 
       <ReglagesAnalyse />
       <ReglagesMises />
+      <ReglagesJeuResponsable />
 
       <section className="carte" aria-labelledby="titre-installation">
         <h2 id="titre-installation">Installation et hors ligne</h2>
@@ -131,6 +133,13 @@ export function Reglages() {
           Seule la méthode Freebet est garantie mathématiquement, à condition que les deux paris soient acceptés aux cotes saisies. Pour +1.5 et +2.5,
           les chances affichées sont des estimations : elles peuvent se tromper.
         </p>
+        <a className="btn secondaire" href="#/aide">Comment ça marche ? (tutoriel complet)</a>
+      </section>
+
+      <section className="carte" aria-labelledby="titre-recherche">
+        <h2 id="titre-recherche">Recherche</h2>
+        <p className="aide">Retrouve un match, un pari ou une offre par un mot.</p>
+        <a className="btn secondaire" href="#/recherche">Rechercher</a>
       </section>
 
       <section className="carte" aria-labelledby="titre-apropos">

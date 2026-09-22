@@ -83,6 +83,9 @@ export function Journal() {
       )}
       {edition && (
         <FormulairePari
+          // Une clé par pari (et une pour l'ajout) : passer d'un pari à un autre, ou de l'ajout à
+          // une modification, sans fermer le formulaire, réinitialise bien sa saisie.
+          key={edition.id ?? "nouveau"}
           existant={enEdition}
           brouillon={brouillon}
           annuler={() => {

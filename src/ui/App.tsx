@@ -17,12 +17,14 @@ import { appliquerMiseAJour, ecouterPwa, etatNotifications, notifier, type EtatP
 import { Confirmation, Icone } from "./composants";
 import { ContexteAppli, lireRoute, ROUTES, type Appli, type OptionsConfirmation, type Route } from "./contexte";
 import { Accueil } from "./ecrans/Accueil";
+import { Aide } from "./ecrans/Aide";
 import { Donnees } from "./ecrans/Donnees";
 import { Equipe } from "./ecrans/Equipe";
 import { Freebet } from "./ecrans/Freebet";
 import { Live } from "./ecrans/Live";
 import { Matchs } from "./ecrans/Matchs";
 import { Paris } from "./ecrans/Paris";
+import { Recherche } from "./ecrans/Recherche";
 import { Reglages } from "./ecrans/Reglages";
 import { appliquerTheme, type Theme } from "./theme";
 
@@ -35,6 +37,8 @@ const ECRANS: Record<Route, () => any> = {
   donnees: Donnees,
   reglages: Reglages,
   equipe: Equipe,
+  aide: Aide,
+  recherche: Recherche,
 };
 
 export function App() {

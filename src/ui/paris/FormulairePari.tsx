@@ -6,14 +6,17 @@
 import { useEffect, useRef, useState } from "react";
 import { METHODES } from "../../core/methodes";
 import { alerteMise } from "../../core/mises";
+import { pauseActive } from "../../core/jeu-responsable";
 import { LIBELLE_STATUT } from "../../core/paris";
 import { eur, lireSaisie, lireSaisieSignee } from "../../core/format";
 import type { BrouillonPari } from "../../data/brouillon-pari";
 import { reglagesMisesDe } from "../../data/bankroll";
+import { pauseDe } from "../../data/jeu-responsable";
 import { ErreurImport } from "../../data/import-carnet";
 import { ajouterPari, enregistrerPhotoTicket, lirePhotoDuTicket, modifierPari, retirerPhotoTicket, type SaisiePari } from "../../data/services";
 import type { Match, Pari, StatutPari } from "../../core/types";
 import { redimensionnerImage, tailleLisible } from "../photo";
+import { PauseActive } from "../jeu-responsable/PauseActive";
 import { useAppli } from "../contexte";
 
 const STATUTS: StatutPari[] = ["attente", "gagne", "perdu", "manuel", "rembourse"];
@@ -184,6 +187,10 @@ export function FormulairePari({
       setEnCours(false);
     }
   };
+
+  // Pause active : seul l'ajout d'un nouveau pari est concerné, pas la modification d'un pari existant.
+  const pause = pauseDe(contenu);
+  if (!existant && pauseActive(pause, new Date())) return <PauseActive pause={pause} />;
 
   return (
     <form className="carte" onSubmit={valider} aria-labelledby="titre-form-pari" data-test="form-pari">

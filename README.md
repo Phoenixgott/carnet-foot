@@ -108,7 +108,19 @@ Onglet **Freebet**, trois sections :
 
 Le gain n'est garanti que si les deux paris sont acceptés aux cotes saisies.
 
-### 7. Sauvegarder
+### 7. Jeu responsable, recherche et aide
+
+- **Réglages → Jeu responsable** : un rappel peut s'afficher sur l'accueil après un nombre de
+  défaites d'affilée ou un plafond du jour dépassé (à toi de les régler, désactivés par défaut).
+  Tu peux aussi te mettre en pause toi-même (24 h, 3 jours, 7 jours ou une durée choisie) : pendant
+  une pause, tu ne peux plus ajouter de nouveau pari (modifier ou supprimer ceux déjà notés reste
+  possible), et tu l'arrêtes quand tu veux, avec une confirmation.
+- **Recherche** (lien sur l'accueil, ou dans Réglages) : retrouve un match, un pari ou une offre en
+  tapant un mot.
+- **Comment ça marche ?** (Réglages) : chaque méthode et chaque chiffre affiché dans l'app, expliqué
+  en une phrase.
+
+### 8. Sauvegarder
 
 - **Données → Sauvegarde en un fichier** : « Enregistrer le fichier », « Partager (Drive, mail…) »
   ou « Copier le texte ». Garde ce fichier hors du téléphone : si le navigateur efface ses
@@ -118,7 +130,7 @@ Le gain n'est garanti que si les deux paris sont acceptés aux cotes saisies.
 - **Restaurer** : choisis le fichier ou colle son texte. Une empreinte vérifie que le fichier
   n'a pas été abîmé ou modifié ; sinon il est refusé.
 
-### 8. Installer sur Android (version hébergée)
+### 9. Installer sur Android (version hébergée)
 
 L'application est hébergée sur GitHub Pages : https://phoenixgott.github.io/carnet-foot/
 Ouvre cette adresse dans Chrome, puis **Réglages → Installer l'application**
@@ -170,6 +182,10 @@ src/
                    un blocage)
     objectifs.ts   objectif de gain et budget du mois
     simulateur.ts  rejoue les paris notés avec une autre mise, sans toucher aux vraies données
+    jeu-responsable.ts  rappels (défaites d'affilée, plafond du jour), pause/auto-exclusion posée
+                   et retirée par l'utilisateur
+    bilan-hebdo.ts bilan de la semaine en cours et de la précédente
+    recherche.ts   recherche globale (matchs, paris, offres), insensible aux accents
     methodes.ts    noms exacts des méthodes et codes du carnet (m1 = +1.5, m3 = +2.5, m2 = Freebet)
     demande.ts     demande à l'autre conversation Claude (jour, compléments, cotes du jour J)
     cotes.ts       suivi des cotes, cote minimale, alertes ; marge.ts : marge du bookmaker
@@ -184,7 +200,7 @@ src/
                    sauvegarde)
   pwa/             service worker (hors ligne), installation, notifications
   ui/              interface (React), écrans, styles (dont ui/paris/ : journal, statistiques,
-                   simulateur)
+                   simulateur ; ui/jeu-responsable/ : pause active)
 tests/
   unit/            tests unitaires, dont la non-régression contre le code original du carnet
   e2e/             tests dans Chromium : migration réelle, sauvegarde, hors ligne, accessibilité
@@ -243,6 +259,9 @@ téléchargements : pas de hors ligne, pas d'installation, sauvegarde par copie 
   préparé depuis le Live ou le Freebet, en attente d'être confirmé dans le journal) hors sauvegarde.
 - **Photo du ticket** : magasin IndexedDB `tickets` à part (JPEG redimensionné), hors sauvegarde
   fichier et hors historique des versions — elle ne quitte jamais le téléphone.
+- **Jeu responsable** : réglage `jeuResponsable` (seuils de rappel, durée de pause proposée) et
+  réglage `pause` (`{ debut, fin, raison }` ou `null`), tous deux dans la sauvegarde — une pause
+  posée reste posée même après une restauration. Voir `src/core/jeu-responsable.ts`.
 - **Sauvegarde** : `{ app: "carnet-foot", type: "sauvegarde", schema: 1, creeLe, versionApp,
   contenu: { matchs, paris, reglages }, controle: { nbMatchs, nbParis, bankroll, gainsTotal, empreinte } }`.
   L'empreinte est un SHA-256 du contenu trié.

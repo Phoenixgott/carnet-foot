@@ -2,6 +2,40 @@
 
 Format : chaque version liste ce qui a été ajouté, modifié ou corrigé.
 
+## 0.7.0 — 22 septembre 2026 — Phase 8 : jeu responsable et confort
+
+Dernière phase du cahier des charges (la phase 7, backtest, a été mise de côté par l'utilisateur
+pour l'instant). Il n'a pas été possible de lier l'application à un compte de bookmaker (Unibet) :
+aucun export d'historique n'est proposé publiquement, et la seule solution (identifiants du compte
+stockés dans l'app, connexion automatisée) est refusée — contraire à la promesse « zéro connexion
+externe » et aux conditions d'utilisation des bookmakers.
+
+### Ajouté
+- **Jeu responsable** (Réglages → Jeu responsable) : rappel doux sur l'accueil après un nombre de
+  défaites d'affilée ou un plafond du jour dépassé (réglables, désactivés par défaut) ; pause
+  (auto-exclusion) que l'utilisateur pose lui-même (durée rapide ou personnalisée) et retire
+  lui-même (avec une confirmation, pour éviter un arrêt sur un geste distrait). Pendant une pause,
+  seul l'ajout d'un **nouveau** pari est concerné : modifier ou supprimer un pari déjà noté reste
+  toujours possible. Jamais de mine triste ni de discours culpabilisant : un rappel factuel, une
+  pause que l'utilisateur choisit.
+- **Bilan hebdomadaire** (accueil) : paris terminés, gagné/perdu, taux de réussite, méthode qui a le
+  mieux et le moins bien marché cette semaine, comparaison à la semaine précédente.
+- **Recherche globale** (Réglages, ou lien sur l'accueil) : retrouve un match, un pari ou une offre
+  freebet par un mot (insensible aux accents et à la casse).
+- **Tutoriel intégré** (Réglages → « Comment ça marche ? ») : chaque méthode (+1.5, +2.5, Freebet) et
+  chaque chiffre affiché dans l'app (chances, cote juste, cote minimale, value, risque, fiabilité,
+  ROI, drawdown, séries, Kelly, plafonds…) expliqué en une phrase, dans des sections repliables.
+
+### Corrigé
+- Dans le journal des paris, passer directement de « Ajouter un pari » à « Modifier » un pari
+  existant (sans fermer le formulaire entre les deux) affichait un formulaire de modification vide
+  au lieu des valeurs du pari : le formulaire garde maintenant une identité propre par pari (et par
+  l'ajout), pour toujours repartir de la bonne saisie.
+
+### Choix
+- Rien n'est un vrai blocage technique tant que l'utilisateur ne l'a pas posé lui-même (la pause) :
+  cohérent avec les plafonds de mise de la phase 6, jamais un blocage forcé sans son accord.
+
 ## 0.6.2 — 22 septembre 2026 — Palette « tableau de bord » bleu et noir
 
 Retour de l'utilisateur sur la 0.6.1 (« c'est moche ») : plus de couleur, plus lisible, esprit
