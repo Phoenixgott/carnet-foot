@@ -2,6 +2,20 @@
 
 Format : chaque version liste ce qui a été ajouté, modifié ou corrigé.
 
+## 0.6.2 — 22 septembre 2026 — Palette « tableau de bord » bleu et noir
+
+Retour de l'utilisateur sur la 0.6.1 (« c'est moche ») : plus de couleur, plus lisible, esprit
+tableau de bord bleu et noir plutôt que vert gazon.
+
+### Modifié
+- **Nouvelle palette** dans les deux thèmes : le bleu remplace le vert comme couleur de marque et
+  d'action (boutons, liens, onglet actif, courbe de bankroll…). Le vert/l'ambre/le rouge restent
+  réservés à leur sens habituel (gagné/attention/perdu) : rien ne change dans ce qu'ils signifient.
+- **Carte bankroll** : fond bleu-noir avec une grille fine façon tableau de bord (au lieu des rayures
+  d'un terrain), toujours sombre quel que soit le thème choisi. Les trois chiffres ont chacun leur
+  couleur et leur icône (flèche verte/rouge pour gagné/perdu, % bleu-cyan pour la rentabilité, étoile
+  or pour le taux de réussite) pour se lire d'un coup d'œil.
+
 ## 0.6.1 — 22 septembre 2026 — Nouveau look de l'accueil (3D, animations, mascotte)
 
 Hors plan des 8 phases, à la demande de l'utilisateur : un style plus spectaculaire, en commençant

@@ -1,14 +1,17 @@
 /*
  * Carnet de Paris Foot — styles.
- * Palette reprise du carnet d'origine (vert gazon), en jetons clair/sombre.
+ * Palette « tableau de bord » bleu et noir, en jetons clair/sombre. Le vert/l'ambre/le rouge restent
+ * réservés au sens (gagné/attention/perdu) : c'est le bleu qui porte la marque et les actions.
  * Mobile d'abord : une colonne, barre d'onglets en bas à portée de pouce.
  */
 :root {
-  --bg: #EEF2EF; --surface: #FFFFFF; --surface2: #F4F7F5; --line: #D3DCD6; --ink: #122019; --muted: #4F5F56;
-  --accent: #17663F; --accent-ink: #FFFFFF; --accent-soft: #DDEEE4;
+  --bg: #EEF1F8; --surface: #FFFFFF; --surface2: #F2F5FB; --line: #D8DFEC; --ink: #0E1626; --muted: #54607A;
+  --accent: #2557D6; --accent-ink: #FFFFFF; --accent-soft: #E3EBFC;
   --good: #17663F; --good-soft: #DDF1E4; --warn: #8A5A0B; --warn-soft: #FBEED6; --bad: #A3321F; --bad-soft: #F8E1DC;
-  --turf1: #17663F; --turf2: #1C7249; --onturf: #FFFFFF;
-  --focus: #17663F;
+  /* Carte bankroll : toujours sombre (bleu-noir « tableau de bord »), dans les deux thèmes.
+     Vert/rouge propres à la carte (celle-ci ne s'éclaircit jamais, contrairement à --good/--bad). */
+  --turf1: #101A30; --turf2: #0A1120; --onturf: #EAF0FF; --turf-bon: #62C891; --turf-mauvais: #EC8472;
+  --focus: #2557D6;
   --font: system-ui, -apple-system, "Roboto", "Segoe UI", "Noto Sans", sans-serif;
   --mono: ui-monospace, "Roboto Mono", "Droid Sans Mono", "SFMono-Regular", Menlo, Consolas, monospace;
   --r: 14px;
@@ -17,18 +20,22 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0F1512; --surface: #18211C; --surface2: #1E2923; --line: #2D3A33; --ink: #E6EDE8; --muted: #A3B2A8;
-    --accent: #55BA88; --accent-ink: #0B130F; --accent-soft: #1D3529;
+    --bg: #0A0E18; --surface: #121A2B; --surface2: #182136; --line: #26314A; --ink: #E8ECF7; --muted: #93A0BF;
+    --accent: #6C9BFF; --accent-ink: #0B1626; --accent-soft: #1B2A4D;
     --good: #62C891; --good-soft: #1A3326; --warn: #E6AE52; --warn-soft: #382B15; --bad: #EC8472; --bad-soft: #3D201B;
-    --turf1: #123D2A; --turf2: #16452F; --onturf: #EAF4EE; --focus: #7FD3A8;
+    /* Jetons de la carte bankroll : mêmes valeurs qu'en clair (elle ne change jamais de thème),
+       redéclarés ici pour rester explicites et couverts par le test de contrastes par thème. */
+    --turf1: #101A30; --turf2: #0A1120; --onturf: #EAF0FF; --turf-bon: #62C891; --turf-mauvais: #EC8472;
+    --focus: #8FB2FF;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0F1512; --surface: #18211C; --surface2: #1E2923; --line: #2D3A33; --ink: #E6EDE8; --muted: #A3B2A8;
-  --accent: #55BA88; --accent-ink: #0B130F; --accent-soft: #1D3529;
+  --bg: #0A0E18; --surface: #121A2B; --surface2: #182136; --line: #26314A; --ink: #E8ECF7; --muted: #93A0BF;
+  --accent: #6C9BFF; --accent-ink: #0B1626; --accent-soft: #1B2A4D;
   --good: #62C891; --good-soft: #1A3326; --warn: #E6AE52; --warn-soft: #382B15; --bad: #EC8472; --bad-soft: #3D201B;
-  --turf1: #123D2A; --turf2: #16452F; --onturf: #EAF4EE; --focus: #7FD3A8;
+  --turf1: #101A30; --turf2: #0A1120; --onturf: #EAF0FF; --turf-bon: #62C891; --turf-mauvais: #EC8472;
+  --focus: #8FB2FF;
   color-scheme: dark;
 }
 
@@ -78,32 +85,44 @@ h3 { font-size: 17px; margin: 0; }
 
 /* ---------- Tableau de bord (gazon) ---------- */
 .gazon {
-  background: repeating-linear-gradient(90deg, var(--turf1) 0 56px, var(--turf2) 56px 112px);
+  background:
+    linear-gradient(rgba(124,160,255,.08) 1px, transparent 1px) 0 0 / 28px 28px,
+    linear-gradient(90deg, rgba(124,160,255,.08) 1px, transparent 1px) 0 0 / 28px 28px,
+    linear-gradient(155deg, var(--turf1) 0%, var(--turf2) 100%);
   color: var(--onturf); border-radius: 18px; padding: 20px 18px; display: grid; gap: 14px; position: relative; overflow: hidden;
   transform: perspective(900px) rotateX(var(--incl-x, 0deg)) rotateY(var(--incl-y, 0deg));
   transition: transform .4s cubic-bezier(.2,.8,.2,1); will-change: transform;
-  box-shadow: 0 14px 30px -12px rgba(10,30,20,.45);
+  box-shadow: 0 14px 34px -12px rgba(5,10,25,.55);
 }
 .gazon::after {
   content: ""; position: absolute; right: -60px; top: 50%; width: 160px; height: 160px;
-  border: 2px solid rgba(255,255,255,.2); border-radius: 50%; transform: translateY(-50%); pointer-events: none;
+  border: 2px solid rgba(140,175,255,.22); border-radius: 50%; transform: translateY(-50%); pointer-events: none;
 }
 .gazon > * { position: relative; z-index: 1; }
 .gazon .etiquette { color: var(--onturf); opacity: .85; }
 .gazon-chiffre { font-size: 42px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
 .gazon-ligne { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.gazon-ligne div { background: rgba(255,255,255,.14); border-radius: 12px; padding: 10px 8px; text-align: center; }
+.gazon-ligne div {
+  background: rgba(255,255,255,.06); border: 1px solid rgba(140,175,255,.16); border-radius: 12px;
+  padding: 10px 8px 9px; text-align: center; border-top: 2.5px solid var(--stat-couleur, #6C9BFF);
+}
 .gazon-ligne b { display: block; font-size: 19px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.gazon-ligne small { font-size: 13px; opacity: .92; }
+.gazon-ligne small { display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 13px; opacity: .92; }
+.gazon-ligne small svg { width: 14px; height: 14px; flex: none; color: var(--stat-couleur, #6C9BFF); }
+.gazon-ligne div:nth-child(1) { --stat-couleur: #6C9BFF; }
+.gazon-ligne div:nth-child(1).gazon-pos { --stat-couleur: var(--turf-bon); color: var(--turf-bon); }
+.gazon-ligne div:nth-child(1).gazon-neg { --stat-couleur: var(--turf-mauvais); color: var(--turf-mauvais); }
+.gazon-ligne div:nth-child(2) { --stat-couleur: #4DD9E8; }
+.gazon-ligne div:nth-child(3) { --stat-couleur: #F0B93D; }
 
-/* Fond animé : deux lueurs qui dérivent doucement + un reflet qui balaie la carte. */
+/* Fond animé : deux lueurs bleu/cyan qui dérivent doucement + un reflet qui balaie la carte. */
 .gazon > .gazon-fond { position: absolute; inset: 0; z-index: 0; overflow: hidden; border-radius: inherit; pointer-events: none; }
-.gazon-lueur { position: absolute; border-radius: 50%; filter: blur(26px); opacity: .5; }
-.gazon-lueur-1 { width: 150px; height: 150px; background: #E9B949; top: -46px; left: -36px; animation: gazon-derive 9s ease-in-out infinite; }
-.gazon-lueur-2 { width: 190px; height: 190px; background: #3FDE8B; bottom: -70px; right: -46px; animation: gazon-derive 11s ease-in-out infinite reverse; }
+.gazon-lueur { position: absolute; border-radius: 50%; filter: blur(26px); opacity: .45; }
+.gazon-lueur-1 { width: 160px; height: 160px; background: #3B6BFF; top: -46px; left: -36px; animation: gazon-derive 9s ease-in-out infinite; }
+.gazon-lueur-2 { width: 190px; height: 190px; background: #22D3EE; bottom: -70px; right: -46px; animation: gazon-derive 11s ease-in-out infinite reverse; }
 .gazon-reflet {
   position: absolute; inset: -20% -50%;
-  background: linear-gradient(75deg, transparent 42%, rgba(255,255,255,.2) 50%, transparent 58%);
+  background: linear-gradient(75deg, transparent 42%, rgba(180,205,255,.16) 50%, transparent 58%);
   animation: gazon-reflet 6s ease-in-out infinite;
 }
 @keyframes gazon-derive { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(16px,-12px); } }

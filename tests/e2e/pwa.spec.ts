@@ -56,11 +56,11 @@ test("Thème sombre : appliqué, gardé après rechargement, retour à l'automat
   await page.goto("/#/reglages");
   await page.getByRole("button", { name: "Sombre" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-  expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe("rgb(15, 21, 18)");
+  expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe("rgb(10, 14, 24)");
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await page.getByRole("button", { name: "Clair" }).click();
-  expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe("rgb(238, 242, 239)");
+  expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe("rgb(238, 241, 248)");
   await page.getByRole("button", { name: "Automatique" }).click();
   await expect(page.locator("html")).not.toHaveAttribute("data-theme", /.+/);
 });
@@ -70,7 +70,7 @@ test("Thème automatique : suit le mode sombre du téléphone", async ({ browser
   const p = await ctx.newPage();
   await p.goto("http://localhost:4173/");
   await expect(p.getByRole("heading", { level: 1 })).toBeVisible();
-  expect(await p.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe("rgb(15, 21, 18)");
+  expect(await p.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe("rgb(10, 14, 24)");
   await ctx.close();
 });
 

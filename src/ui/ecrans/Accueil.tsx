@@ -13,6 +13,41 @@ import { joursDepuis, RAPPEL_SAUVEGARDE_JOURS, useAppli } from "../contexte";
 import { useCompte, useInclinaison3D } from "../animation";
 import { Mascotte } from "../mascotte";
 
+/** Petites icônes des cartes de la bankroll (décoratives, la valeur et l'étiquette suffisent à comprendre). */
+function IconeStat({ nom }: { nom: "hausse" | "baisse" | "pourcent" | "etoile" }) {
+  const commun = { viewBox: "0 0 16 16", "aria-hidden": "true", focusable: "false" };
+  switch (nom) {
+    case "hausse":
+      return (
+        <svg {...commun} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M2 11 6 7 9 10 14 3" />
+          <path d="M10 3h4v4" />
+        </svg>
+      );
+    case "baisse":
+      return (
+        <svg {...commun} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M2 5 6 9 9 6 14 13" />
+          <path d="M10 13h4v-4" />
+        </svg>
+      );
+    case "pourcent":
+      return (
+        <svg {...commun} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="5" cy="5" r="1.6" />
+          <circle cx="11" cy="11" r="1.6" />
+          <path d="M12 4 4 12" />
+        </svg>
+      );
+    case "etoile":
+      return (
+        <svg {...commun} fill="currentColor" stroke="none">
+          <path d="M8 1.3 9.8 5.4 14 6 11 9 11.7 13.3 8 11.3 4.3 13.3 5 9 2 6 6.2 5.4 Z" />
+        </svg>
+      );
+  }
+}
+
 export function Accueil() {
   const { contenu, dernierExport, contexteDe } = useAppli();
   const vide = estVide(contenu);
@@ -63,17 +98,17 @@ export function Accueil() {
           <span className="etiquette" id="titre-bankroll">Bankroll</span>
           <span className="gazon-chiffre" data-test="bankroll">{eur(bankrollAnime)}</span>
           <div className="gazon-ligne">
-            <div>
+            <div className={b.gains >= 0 ? "gazon-pos" : "gazon-neg"}>
               <b>{eur(gainsAnime)}</b>
-              <small>Gagné / perdu</small>
+              <small><IconeStat nom={b.gains >= 0 ? "hausse" : "baisse"} /> Gagné / perdu</small>
             </div>
             <div>
               <b>{pc(rentabiliteAnimee)}</b>
-              <small>Rentabilité</small>
+              <small><IconeStat nom="pourcent" /> Rentabilité</small>
             </div>
             <div>
               <b>{pc(tauxAnime)}</b>
-              <small>Paris gagnés</small>
+              <small><IconeStat nom="etoile" /> Paris gagnés</small>
             </div>
           </div>
         </section>

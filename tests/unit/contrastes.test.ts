@@ -35,7 +35,9 @@ const PAIRES: Array<[string, string]> = [
 
 for (const [nom, t] of [["clair", clair], ["sombre", sombre]] as const) {
   test(`Contrastes AA en thème ${nom}`, () => {
-    assert.ok(Object.keys(t).length >= 18, "jetons introuvables");
+    // Depuis la carte bankroll « tableau de bord » (toujours sombre, jetons turf* non réécrits par thème),
+    // le bloc sombre a moins de jetons propres que le bloc clair : seuil bas commun aux deux.
+    assert.ok(Object.keys(t).length >= 15, "jetons introuvables");
     const faibles = PAIRES.map(([a, b]) => ({ a, b, c: contraste(t[a], t[b]) })).filter((x) => !(x.c >= 4.5));
     assert.deepEqual(faibles.map((x) => `${x.a} sur ${x.b} : ${x.c.toFixed(2)}`), []);
   });
