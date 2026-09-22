@@ -70,8 +70,9 @@ Onglet **Live** (ou « Suivre en live » sur un match) :
 1. **Coup d'envoi** au début du match ; cale le chronomètre si besoin (−1 / +1 min, ou « Caler »).
    La fenêtre **15ᵉ-20ᵉ minute** est annoncée par un bandeau, une vibration et une notification.
 2. **J'entre ?** : tape la cote « plus de 1,5 but », choisis 0-0 et « Animé » ou « Fermé ». Tu vois le
-   verdict, la cote juste et la cote minimale à cette minute, la value, et le tableau jusqu'à la 40ᵉ.
-   Touche **J'ai parié** (mise conseillée par défaut).
+   verdict, et un **graphique « Maintenant, ou plus tard ? »** qui montre comment tes chances de
+   gagner évoluent de la 15ᵉ à la 40ᵉ minute (effleure la courbe pour le détail à une minute). Touche
+   **J'ai parié** (mise conseillée par défaut).
 3. **BUT !** dès qu'un but est marqué : choisis pari contraire, exchange ou cash-out, tape la cote
    proposée. L'écran donne la mise à placer, le gain garanti et le résultat de chaque scénario, avec et
    sans couverture.
@@ -187,7 +188,8 @@ src/
                    sauvegarde)
   pwa/             service worker (hors ligne), installation, notifications
   ui/              interface (React), écrans, styles (dont ui/paris/ : journal, statistiques,
-                   simulateur ; ui/jeu-responsable/ : pause active)
+                   simulateur ; ui/jeu-responsable/ : pause active ; ui/live/ : graphique des
+                   chances selon la minute)
 tests/
   unit/            tests unitaires, dont la non-régression contre le code original du carnet
   e2e/             tests dans Chromium : migration réelle, sauvegarde, hors ligne, accessibilité

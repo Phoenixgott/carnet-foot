@@ -149,11 +149,16 @@ test("J'entre ? : verdicts selon la cote, le score, le match animé et la minute
   await page.getByRole("button", { name: "Fermé" }).click();
   await expect(decision).toContainText("Patience");
 
-  // Le tableau : la cote minimale monte avec la minute, la ligne de la minute actuelle est marquée
+  // Le graphique « maintenant ou plus tard ? » : chances à la minute actuelle dans l'infobulle
+  await expect(page.locator('[data-test="graphique-chances"]')).toBeVisible();
+  await expect(page.locator('[data-test="gc-infobulle"]')).toContainText("Effleure la courbe");
+
+  // Le tableau replié : la cote minimale monte avec la minute, la ligne actuelle est marquée
+  await page.locator('[data-test="graphique-chances"] details.repli > summary').click();
   const lignes = page.locator('[data-test="tableau-live"] tbody tr');
   await expect(lignes).toHaveCount(6);
   const minis: number[] = [];
-  for (let i = 0; i < 6; i++) minis.push(Number((await lignes.nth(i).locator("td").nth(1).textContent())!.replace(",", ".")));
+  for (let i = 0; i < 6; i++) minis.push(Number((await lignes.nth(i).locator('[data-test="tab-cote-mini"]').textContent())!.replace(",", ".")));
   expect([...minis].sort((a, b) => a - b)).toEqual(minis);
   await expect(page.locator('[data-test="tableau-live"] tr.actuelle')).toHaveCount(1);
   await expect(page.locator('[data-test="tableau-live"] tr.actuelle th')).toHaveText("15ᵉ");
@@ -308,6 +313,8 @@ test("Sans match : buts attendus saisis à la main, cote minimale calculée", as
   await page.getByRole("button", { name: "Animé" }).click();
   await page.fill("#live-cote", "3,00");
   await expect(page.locator('[data-test="decision-live"]')).toHaveAttribute("data-verdict", "ok");
+  await expect(page.locator('[data-test="graphique-chances"]')).toBeVisible();
+  await page.locator('[data-test="graphique-chances"] details.repli > summary').click();
   await expect(page.locator('[data-test="tableau-live"] tbody tr')).toHaveCount(6);
   await expect(page.locator('[data-test="live-lambda"]')).toHaveCount(0);
 });

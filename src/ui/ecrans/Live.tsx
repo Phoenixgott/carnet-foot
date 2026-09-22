@@ -18,10 +18,10 @@ import {
   couvrir,
   decisionLive,
   fenetre,
-  tableauLive,
   type EtatFenetre,
   type ModeCouverture,
 } from "../../core/modele-v2/live";
+import { GraphiqueChances } from "../live/GraphiqueChances";
 import { repartition } from "../../core/modele-v2/temps";
 import type { Match } from "../../core/types";
 import { reglagesMisesDe } from "../../data/bankroll";
@@ -175,7 +175,6 @@ export function Live() {
     evaluation: analyse?.ev ?? null,
     miseBase,
   });
-  const tableau = Number.isFinite(lambda) ? tableauLive(lambda, sigma, rep) : [];
 
   const matchsTries = [...contenu.matchs].sort(
     (x, y) => String(x.date).localeCompare(String(y.date)) || String(x.heure).localeCompare(String(y.heure)),
@@ -448,6 +447,12 @@ export function Live() {
               La décision reste la tienne.
             </p>
           )}
+          {Number.isFinite(lambda) && (
+            <>
+              <h3>Maintenant, ou plus tard ?</h3>
+              <GraphiqueChances lambda={lambda} sigma={sigma} rep={rep} minute={minute} />
+            </>
+          )}
           <label className="champ" htmlFor="live-mise">
             Combien tu mises (vide : la mise conseillée)
             <input
@@ -477,35 +482,6 @@ export function Live() {
                 </b>
               </div>
             </div>
-          )}
-          {tableau.length > 0 && (
-            <>
-              <h3>Cote minimale selon la minute (si toujours 0-0)</h3>
-              <div className="tableau-defilant">
-                <table className="tableau-live" data-test="tableau-live">
-                  <thead>
-                    <tr>
-                      <th scope="col">Minute</th>
-                      <th scope="col">Cote juste</th>
-                      <th scope="col">Cote minimale</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {tableau.map((r) => (
-                      <tr key={r.minute} className={Math.abs(r.minute - minute) < 3 ? "actuelle" : ""}>
-                        <th scope="row">{r.minute}ᵉ</th>
-                        <td>{fr(r.coteJuste)}</td>
-                        <td><b>{fr(r.coteMinimale)}</b></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <p className="aide">
-                La cote minimale est celle à exiger pour rester gagnant même si l'estimation est un peu trop optimiste. Ce sont des estimations :
-                elles peuvent se tromper.
-              </p>
-            </>
           )}
             </div>
           </details>

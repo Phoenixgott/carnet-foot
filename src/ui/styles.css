@@ -40,6 +40,11 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; }
+/* Toute mise en page ici empile en display:grid (à la place de flex-direction:column). Sans ça,
+   un descendant large (ex. un tableau à ne pas couper mot à mot) gonfle toute la grille qui le
+   contient, même protégé par overflow-x:auto plus bas : piège classique de CSS Grid/Flexbox.
+   min-width:0 autorise chaque élément à se tasser ; les tracks à taille fixe (ex. 60px) ne bougent pas. */
+* { min-width: 0; }
 [hidden] { display: none !important; }
 /* La barre d'onglets (et les messages) flottent en bas : un élément amené à l'écran s'arrête au-dessus. */
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; scroll-padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 96px); }
@@ -291,6 +296,10 @@ p.forme .pastille-ico { width: 32px; height: 32px; font-size: 15px; }
 table.scenarios, table.tableau-live { border-collapse: collapse; width: 100%; font-size: 15px; }
 table.scenarios th, table.scenarios td, table.tableau-live th, table.tableau-live td { text-align: left; padding: 8px 4px; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
 table.scenarios tbody th, table.tableau-live tbody th { color: var(--muted); font-weight: 700; }
+/* 5 colonnes (minute, chances, fourchette, 2 cotes) : trop pour tenir à 100 % sur un téléphone
+   sans couper les mots. Largeur naturelle, sans retour à la ligne ; défile dans .tableau-defilant. */
+table.tableau-live { width: auto; min-width: 100%; }
+table.tableau-live th, table.tableau-live td { white-space: nowrap; overflow-wrap: normal; }
 table.scenarios td { font-variant-numeric: tabular-nums; font-weight: 700; }
 table.tableau-live tr.actuelle { background: var(--accent-soft); }
 
@@ -315,6 +324,24 @@ table.tableau-live tr.actuelle { background: var(--accent-soft); }
 .gb-texte-muet { fill: var(--muted); font-weight: 400; }
 .gb-infobulle { min-height: 22px; font-size: 15px; margin-top: 4px; }
 .gb-infobulle .aide { font-size: 14px; }
+
+/* ---------- Graphique des chances (Live, « maintenant ou plus tard ? ») ---------- */
+.graphique-chances svg { width: 100%; height: auto; display: block; touch-action: pan-y; }
+.gc-legende { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+.gc-puce-ligne, .gc-puce-bande { display: inline-block; width: 14px; height: 3px; border-radius: 2px; margin-right: -4px; }
+.gc-puce-ligne { background: var(--accent); }
+.gc-puce-bande { background: var(--accent); opacity: .22; height: 10px; }
+.gc-grille { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 4; }
+.gc-bande { fill: var(--accent); opacity: 0.14; }
+.gc-ligne { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.gc-maintenant { stroke: var(--warn); stroke-width: 2; stroke-dasharray: 4 3; }
+.gc-maintenant-texte { fill: var(--warn); font-weight: 700; }
+.gc-curseur { stroke: var(--muted); stroke-width: 1; }
+.gc-point { fill: var(--accent); stroke: var(--surface); stroke-width: 2; }
+.gc-texte { font-size: 12px; fill: var(--ink); font-weight: 700; }
+.gc-texte-muet { fill: var(--muted); font-weight: 400; }
+.gc-infobulle { min-height: 40px; font-size: 15px; margin-top: 6px; }
+.gc-infobulle .aide { font-size: 14px; }
 
 .ventilation { display: grid; gap: 14px; }
 .vent-ligne { display: grid; gap: 4px; }

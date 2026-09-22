@@ -2,6 +2,25 @@
 
 Format : chaque version liste ce qui a été ajouté, modifié ou corrigé.
 
+## 0.8.2 — 22 septembre 2026 — Graphique « maintenant, ou plus tard ? » (Live)
+
+Demande de l'utilisateur : un graphique pour visualiser ses chances de gagner selon qu'il parie
+maintenant ou qu'il attend.
+
+### Ajouté
+- **Graphique des chances** (Live, écran « J'entre ? ») : une courbe qui montre comment tes chances
+  de gagner évoluent de la 15ᵉ à la 40ᵉ minute, avec la fourchette d'incertitude du modèle ombrée
+  autour, et un repère « Maintenant » sur la minute en cours. Effleure ou survole la courbe pour
+  voir le détail (chances, fourchette, cote juste, cote minimale) à n'importe quelle minute ; le
+  tableau complet reste disponible replié en dessous. Remplace l'ancien tableau (toujours présent,
+  avec en plus la colonne des chances).
+
+### Corrigé
+- Un tableau qui ne doit pas couper ses mots (comme celui du graphique ci-dessus) pouvait faire
+  déborder toute la page horizontalement, même protégé par un cadre à défilement : piège classique
+  de CSS Grid où un descendant large gonfle toute la mise en page qui le contient. Corrigé à la
+  racine (`min-width: 0` sur tous les éléments) plutôt que rustine par rustine.
+
 ## 0.8.1 — 22 septembre 2026 — Boutons énormes, guide numéroté, remise à zéro sur l'accueil
 
 Retour de l'utilisateur : encore plus simple, des gros boutons, guider comme si l'utilisateur ne

@@ -98,6 +98,19 @@ Il fait foi.
   `src/ui/accueil/Bienvenue.tsx`) pour guider pas à pas ; `ReglagesRemiseAZero` (déjà créé en
   v0.8.0) réutilisé tel quel sur l'accueil en plus de Réglages, pour que le bouton rouge soit
   impossible à manquer. `nav.onglets` passé à `repeat(5, 1fr)` (oubli depuis le retrait du Freebet).
+- **`v0.8.2` (retour utilisateur)** : « des graphiques ajoutés aux paris, le pourcentage de chance si
+  tu le fais maintenant ou plus tard, joli, pour la visualisation ». Interprété comme le Live +1.5
+  (`tableauLive`/`MINUTES_TABLEAU` dans `core/modele-v2/live.ts` calculaient déjà `p`/`pBas`/`pHaut`
+  par minute, jamais affichés). Livré : `src/ui/live/GraphiqueChances.tsx` (courbe + bande
+  d'incertitude, repère « Maintenant », survol/glissé avec infobulle, tableau détaillé replié),
+  inline SVG sur le modèle de `GraphiqueBankroll.tsx` (mêmes conventions : `gc-*` au lieu de `gb-*`).
+  Remplace l'ancien tableau statique dans Live.tsx.
+  **Bug trouvé et corrigé au passage, pas anodin** : un tableau à ne pas couper mot à mot (5
+  colonnes, `white-space:nowrap`) faisait déborder toute la page horizontalement malgré son cadre
+  `overflow-x:auto` — piège classique de CSS Grid (tout ce projet empile en `display:grid`, un
+  descendant large gonfle toute la grille qui le contient). Corrigé une fois pour toutes avec
+  `* { min-width: 0; }` dans `styles.css`, plutôt que healed au cas par cas : si un futur tableau
+  large refait le coup, il n'y aura rien à corriger.
 - **Prochaine étape : demander à l'utilisateur ce qu'il veut ensuite.** Le cahier des charges est
   entièrement couvert sauf la phase 7 (backtest), volontairement mise de côté. Pistes possibles :
   revenir sur la phase 7, étendre le style bleu-et-noir aux autres écrans, ou simplement laisser

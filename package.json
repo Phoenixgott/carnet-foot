@@ -1,6 +1,6 @@
 {
   "name": "carnet-paris-foot",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "Carnet de Paris Foot : application privée et hors ligne d'aide aux méthodes +1.5, +2.5 et Freebet.",
   "private": true,
   "type": "module",
