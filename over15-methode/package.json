@@ -1,6 +1,6 @@
 {
   "name": "over15-methode",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Over 1.5 – Méthode : assistant d'analyse +1.5 buts en 6 étapes (méthode Team Soccer Bet), suivi de bankroll. Application Android (Capacitor).",
   "private": true,
   "type": "module",
@@ -16,6 +16,7 @@
     "@capacitor/android": "8.6.0",
     "@capacitor/app": "8.1.2",
     "@capacitor/browser": "8.0.5",
+    "@capacitor/clipboard": "8.0.1",
     "@capacitor/core": "8.6.0",
     "@capacitor/filesystem": "8.1.5",
     "@capacitor/haptics": "8.0.2",

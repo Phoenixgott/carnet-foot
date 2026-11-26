@@ -1,69 +1,60 @@
-import type { Form, Verdict } from '../lib/types';
-import { odds as fmtOdds, timeShort } from '../lib/format';
-import { Crest, FormPills } from './ui';
-
-export const VERDICT_COLOR: Record<Verdict, string> = {
-  GREEN: 'var(--green)',
-  ORANGE: 'var(--orange)',
-  RED: 'var(--red)',
-};
+import type { Verdict } from '../lib/types';
+import { odds as fmtOdds } from '../lib/format';
+import { VERDICT_COLOR } from '../lib/method';
+import { Crest } from './ui';
 
 export interface MatchCardProps {
-  league: string;
-  flag?: string;
-  outOfMethod?: boolean;
-  kickoff?: string;
-  home: { name: string; logo?: string; form?: Form[] };
-  away: { name: string; logo?: string; form?: Form[] };
-  odds?: number | null;
-  pct?: number | null;
-  pctLabel?: string;
+  competition: string;
+  time?: string;
+  home: string;
+  away: string;
   verdict?: Verdict | null;
+  okCount?: number;
+  reason?: string;
+  odds?: number | null;
   right?: React.ReactNode;
   onClick?: () => void;
 }
 
-/** Carte de match façon « miniature de stats foot » : ligue, équipes, forme V/N/D, cote, %. */
+const WORD: Record<Verdict, string> = { GREEN: 'On peut jouer', ORANGE: 'Prudence', RED: 'On ne joue pas' };
+
+/** Carte de match façon « miniature de stats foot » : compétition, équipes, feu, critères. */
 export function MatchCard(p: MatchCardProps) {
   return (
     <div
       className={`card match-card ${p.onClick ? 'press' : ''}`}
-      style={{ ['--stripe' as string]: p.verdict ? VERDICT_COLOR[p.verdict] : p.outOfMethod ? 'var(--faint)' : 'var(--pitch)' }}
+      style={{ ['--stripe' as string]: p.verdict ? VERDICT_COLOR[p.verdict] : 'var(--pitch)' }}
       onClick={p.onClick}
       role={p.onClick ? 'button' : undefined}
     >
       <div className="league">
-        {p.flag && <span style={{ fontSize: 14 }}>{p.flag}</span>}
-        <span className="ellipsis grow">{p.league}</span>
-        {p.outOfMethod && <span className="chip">Hors méthode</span>}
-        {p.kickoff && <span>{timeShort(p.kickoff)}</span>}
+        <span className="ellipsis grow">{p.competition}</span>
+        {p.time && <span>{p.time}</span>}
       </div>
-      <div className="row" style={{ alignItems: 'stretch' }}>
-        <div className="grow">
+      <div className="row" style={{ alignItems: 'center' }}>
+        <div className="grow" style={{ minWidth: 0 }}>
           <div className="team-line">
-            <Crest name={p.home.name} logo={p.home.logo} />
-            <span className="name">{p.home.name}</span>
-            {p.home.form && p.home.form.length > 0 && <FormPills form={p.home.form} size={17} />}
+            <Crest name={p.home} />
+            <span className="name">{p.home}</span>
           </div>
           <div className="team-line">
-            <Crest name={p.away.name} logo={p.away.logo} />
-            <span className="name">{p.away.name}</span>
-            {p.away.form && p.away.form.length > 0 && <FormPills form={p.away.form} size={17} />}
+            <Crest name={p.away} />
+            <span className="name">{p.away}</span>
           </div>
         </div>
-        {(p.pct !== undefined || p.odds !== undefined || p.right) && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'space-between', gap: 6, paddingLeft: 6 }}>
-            {p.right}
-            {p.pct !== undefined && p.pct !== null && (
-              <div className="pct-badge">
-                <div className="v" style={{ color: p.pct >= 80 ? 'var(--green)' : p.pct >= 70 ? 'var(--orange)' : 'var(--red)' }}>{Math.round(p.pct)}%</div>
-                <div className="l">{p.pctLabel ?? '+1.5'}</div>
-              </div>
-            )}
-            {p.odds !== undefined && p.odds !== null && <span className="odds-tag">{fmtOdds(p.odds)}</span>}
-          </div>
-        )}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, paddingLeft: 6 }}>
+          {p.right}
+          {p.verdict && (
+            <span className="row" style={{ gap: 6 }}>
+              <span className={`dot ${p.verdict}`} />
+              <b style={{ color: VERDICT_COLOR[p.verdict], fontSize: 13 }}>{WORD[p.verdict]}</b>
+            </span>
+          )}
+          {p.okCount !== undefined && <span className="tiny muted">{p.okCount}/4 critères ✓</span>}
+          {p.odds !== undefined && p.odds !== null && <span className="odds-tag">{fmtOdds(p.odds)}</span>}
+        </div>
       </div>
+      {p.reason && <div className="small muted" style={{ marginTop: 8 }}>{p.reason}</div>}
     </div>
   );
 }

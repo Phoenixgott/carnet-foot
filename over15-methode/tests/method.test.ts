@@ -1,82 +1,83 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { evaluate, parseScore, poissonOver15, stepComplete } from '../src/lib/method';
-import { DEFAULT_LEAGUES, DEFAULT_SETTINGS, newAnalysis, OTHER_LEAGUE } from '../src/lib/defaults';
-import type { AnalysisInput } from '../src/lib/types';
+import { analyze, chanceOver15, hedgedPnl, hedgePlan, minOddsAt, remainingShare } from '../src/lib/method';
+import { DEFAULT_SETTINGS } from '../src/lib/defaults';
+import type { MatchData, TeamData } from '../src/lib/types';
 
 const S = structuredClone(DEFAULT_SETTINGS);
-const L = structuredClone(DEFAULT_LEAGUES);
-
-function good(): AnalysisInput {
-  const a = newAnalysis();
-  return {
-    ...a,
-    leagueId: 'ligue1',
-    leaguePct: 89,
-    home: { name: 'PSG', played: 12, scored: 30, conceded: 12, form: ['V', 'V', 'N'] },
-    away: { name: 'Lens', played: 12, scored: 20, conceded: 14, form: [] },
-    homePct: 90,
-    awayPct: 85,
-    homeScorerOk: true,
-    awayScorerOk: true,
-    h2h: ['2-1', '3-0', '1-1', '2-2', '4-1'],
-    odds: 1.35,
-  };
-}
-
-test('parseScore accepte plusieurs formats', () => {
-  assert.deepEqual(parseScore('2-1'), [2, 1]);
-  assert.deepEqual(parseScore('3:0'), [3, 0]);
-  assert.deepEqual(parseScore(' 1 – 1 '), [1, 1]);
-  assert.equal(parseScore('2'), null);
-  assert.equal(parseScore('a-b'), null);
+const team = (p: Partial<TeamData>): TeamData => ({ name: 'A', played: 16, scored: 19, conceded: 17, over15: 13, scorers: [{ name: 'Buteur', goals: 8, available: true }], absents: [], ...p });
+const match = (p: Partial<MatchData> = {}): MatchData => ({
+  id: 'm',
+  date: '2026-11-26',
+  time: '21:00',
+  competition: 'Série A',
+  home: team({ name: 'Bragantino' }),
+  away: team({ name: 'Fluminense', played: 16, scored: 22, conceded: 18, over15: 13 }),
+  h2h: ['2-1', '1-1', '3-0'],
+  context: 'normal',
+  contextDetail: '',
+  preOdds: 1.25,
+  sources: [],
+  importedAt: '',
+  ...p,
 });
 
-test('un match idéal donne FEUX OUVERTS', () => {
-  const e = evaluate(good(), L, S);
-  assert.equal(e.verdict, 'GREEN');
-  assert.ok(e.score >= 75, `score ${e.score}`);
-  assert.equal(e.blockers.length, 0);
+test('les 4 critères bons = vert', () => {
+  const a = analyze(match(), S);
+  assert.equal(a.verdict, 'GREEN');
+  assert.equal(a.okCount, 4);
 });
 
-test('buteur clé absent = rouge forcé', () => {
-  const e = evaluate({ ...good(), awayScorerOk: false }, L, S);
-  assert.equal(e.verdict, 'RED');
-  assert.ok(e.blockers.length >= 1);
+test('exemple de la vidéo : 27 marqués / 9 encaissés en 16 matchs = écarté', () => {
+  const a = analyze(match({ home: team({ name: 'Palmeiras', played: 16, scored: 27, conceded: 9 }) }), S);
+  assert.equal(a.criteria[0].status, 'fail');
+  assert.equal(a.verdict, 'RED');
 });
 
-test('ligue exotique hors méthode = rouge (par défaut)', () => {
-  const e = evaluate({ ...good(), leagueId: OTHER_LEAGUE, otherLeagueName: 'Ligue exotique', leaguePct: 92 }, L, S);
-  assert.equal(e.verdict, 'RED');
+test('buteur absent = rouge', () => {
+  const a = analyze(match({ away: team({ scorers: [{ name: 'Cano', goals: 10, available: false }] }) }), S);
+  assert.equal(a.criteria[1].status, 'fail');
+  assert.equal(a.verdict, 'RED');
 });
 
-test('équipe qui n\'encaisse pas = bloquant', () => {
-  const e = evaluate({ ...good(), home: { name: 'Mur', played: 12, scored: 20, conceded: 4, form: [] } }, L, S);
-  assert.equal(e.verdict, 'RED');
+test('derby, finale, sans enjeu = rouge ; contexte inconnu = orange', () => {
+  for (const c of ['derby', 'finale', 'maintien', 'montee', 'sans_enjeu'] as const) assert.equal(analyze(match({ context: c }), S).verdict, 'RED');
+  assert.equal(analyze(match({ context: 'inconnu' }), S).verdict, 'ORANGE');
 });
 
-test('confrontations aux petits scores : alerte', () => {
-  const e = evaluate({ ...good(), h2h: ['0-0', '1-0', '0-1', '1-0', '2-1'] }, L, S);
-  assert.ok(e.alerts.some((a) => a.includes('petits scores')));
-  assert.notEqual(e.verdict, 'GREEN');
+test('info manquante = orange (on vérifie)', () => {
+  const a = analyze(match({ home: team({ over15: null }) }), S);
+  assert.equal(a.criteria[2].status, 'unknown');
+  assert.equal(a.verdict, 'ORANGE');
 });
 
-test('les étapes sont obligatoires', () => {
-  const a = newAnalysis();
-  assert.equal(stepComplete('league', a), false);
-  assert.equal(stepComplete('injuries', a), false);
-  assert.equal(stepComplete('h2h', { ...a, h2hNone: true }), true);
-  assert.equal(stepComplete('h2h', { ...a, h2h: ['2-x', '', '', '', ''] }), false);
-  const e = evaluate(a, L, S);
-  assert.equal(e.verdict, 'RED');
+test('temps restant : presque tout au début, rien à la fin', () => {
+  assert.equal(remainingShare(0), 1);
+  assert.ok(Math.abs(remainingShare(15) - 0.885) < 1e-9);
+  assert.ok(remainingShare(90) < 1e-9);
 });
 
-test('pondérations modifiables : le score change', () => {
-  const base = evaluate({ ...good(), odds: 1.6 }, L, S).score;
-  const heavyOdds = evaluate({ ...good(), odds: 1.6 }, L, { ...S, weights: { ...S.weights, odds: 40 } }).score;
-  assert.ok(heavyOdds < base);
+test('les chances baissent avec le temps à 0-0', () => {
+  const c0 = chanceOver15(2.8, 0);
+  const c20 = chanceOver15(2.8, 20);
+  const c60 = chanceOver15(2.8, 60);
+  assert.ok(c0 > c20 && c20 > c60);
+  assert.ok(chanceOver15(2.8, 30, 1) > chanceOver15(2.8, 30, 0));
 });
 
-test('poisson', () => {
-  assert.ok(Math.abs(poissonOver15(2.7) - 0.7513) < 0.001);
+test('cote minimum : au moins la règle de la méthode', () => {
+  const r = minOddsAt(3, 18, S);
+  assert.ok(r.min >= S.minLiveOdds);
+  const weak = minOddsAt(1.6, 25, S);
+  assert.ok(weak.min > S.minLiveOdds);
+});
+
+test('pari contraire : gain garanti identique dans les deux cas', () => {
+  const p = hedgePlan(4, 1.8, 4);
+  assert.equal(p.stake, 1.8);
+  assert.equal(p.gain, 1.4);
+  assert.ok(p.worth);
+  assert.equal(hedgedPnl(4, 1.8, p.stake, 4, true), 1.4);
+  assert.equal(hedgedPnl(4, 1.8, p.stake, 4, false), 1.4);
+  assert.equal(hedgePlan(4, 1.8, 2).worth, false);
 });

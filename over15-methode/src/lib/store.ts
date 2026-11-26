@@ -1,9 +1,10 @@
 // Stockage local (100 % hors ligne) avec abonnement React.
 import { useSyncExternalStore } from 'react';
-import { DEFAULT_LEAGUES, DEFAULT_SETTINGS, defaultData } from './defaults';
-import type { AppData, Bet, League, Settings } from './types';
+import { DEFAULT_SETTINGS, defaultData } from './defaults';
+import type { AppData, Bet, LiveSession, MatchData, Settings } from './types';
 
-const KEY = 'over15:data:v1';
+const KEY = 'over15:data:v2';
+const OLD_KEY = 'over15:data:v1';
 const BACKUP_KEY = 'over15:data:avant-import';
 
 function safeParse(raw: string | null): unknown {
@@ -27,29 +28,31 @@ const BET_DEFAULTS: Pick<Bet, 'kind' | 'live' | 'test' | 'verdict' | 'score' | '
   away: '',
 };
 
-/** Complète des données (anciennes ou importées) avec les valeurs par défaut. */
+/** Complète des données (version 1, version 2 ou importées) avec les valeurs par défaut. */
 export function normalize(input: unknown): AppData {
   const base = defaultData();
   if (!input || typeof input !== 'object') return base;
-  const d = input as Partial<AppData>;
-  const settings: Settings = {
-    ...DEFAULT_SETTINGS,
-    ...(d.settings ?? {}),
-    weights: { ...DEFAULT_SETTINGS.weights, ...(d.settings?.weights ?? {}) },
-    blocking: { ...DEFAULT_SETTINGS.blocking, ...(d.settings?.blocking ?? {}) },
-  };
-  const leagues: League[] = Array.isArray(d.leagues) && d.leagues.length ? d.leagues.filter((l) => l && typeof l.id === 'string') : structuredClone(DEFAULT_LEAGUES);
+  const d = input as Partial<AppData> & { settings?: Partial<Settings> };
+  const settings: Settings = { ...DEFAULT_SETTINGS };
+  for (const k of Object.keys(DEFAULT_SETTINGS) as (keyof Settings)[]) {
+    const v = d.settings?.[k];
+    if (v !== undefined && typeof v === typeof DEFAULT_SETTINGS[k]) (settings as unknown as Record<string, unknown>)[k] = v;
+  }
   const bets: Bet[] = Array.isArray(d.bets)
-    ? d.bets
-        .filter((b) => b && typeof b.id === 'string' && typeof b.odds === 'number' && typeof b.stake === 'number')
-        .map((b) => ({ ...BET_DEFAULTS, ...b }))
+    ? d.bets.filter((b) => b && typeof b.id === 'string' && typeof b.odds === 'number' && typeof b.stake === 'number').map((b) => ({ ...BET_DEFAULTS, ...b }))
     : [];
-  return { version: 1, settings, leagues, bets, draft: d.draft ?? null };
+  const matches: MatchData[] = Array.isArray(d.matches) ? d.matches.filter((m) => m && typeof m.id === 'string' && m.home && m.away) : [];
+  const live: LiveSession | null = d.live && typeof d.live === 'object' && 'stage' in d.live ? (d.live as LiveSession) : null;
+  return { version: 2, settings, matches, matchesDate: typeof d.matchesDate === 'string' ? d.matchesDate : null, bets, live };
 }
 
 function load(): AppData {
   try {
-    return normalize(safeParse(localStorage.getItem(KEY)));
+    const cur = safeParse(localStorage.getItem(KEY));
+    if (cur) return normalize(cur);
+    // Reprise des données de la version 1 (bankroll, réglages communs, paris).
+    const old = safeParse(localStorage.getItem(OLD_KEY));
+    return normalize(old);
   } catch {
     return defaultData();
   }
@@ -98,17 +101,31 @@ export function useStore<T>(selector: (s: AppData) => T): T {
   return useSyncExternalStore(subscribe, () => selector(state), () => selector(state));
 }
 
+function backupNow() {
+  try {
+    localStorage.setItem(BACKUP_KEY, JSON.stringify(state));
+  } catch {
+    /* ignore */
+  }
+}
+
 // Actions ---------------------------------------------------------------
 
 export const actions = {
   updateSettings(patch: Partial<Settings>) {
     setState((s) => ({ ...s, settings: { ...s.settings, ...patch } }));
   },
-  setLeagues(leagues: League[]) {
-    setState((s) => ({ ...s, leagues }));
+  setMatches(matches: MatchData[], date: string) {
+    setState((s) => ({ ...s, matches, matchesDate: date }));
   },
-  updateLeague(id: string, patch: Partial<League>) {
-    setState((s) => ({ ...s, leagues: s.leagues.map((l) => (l.id === id ? { ...l, ...patch } : l)) }));
+  addMatches(matches: MatchData[]) {
+    setState((s) => ({ ...s, matches: [...matches, ...s.matches] }));
+  },
+  updateMatch(id: string, patch: Partial<MatchData>) {
+    setState((s) => ({ ...s, matches: s.matches.map((m) => (m.id === id ? { ...m, ...patch } : m)) }));
+  },
+  deleteMatch(id: string) {
+    setState((s) => ({ ...s, matches: s.matches.filter((m) => m.id !== id) }));
   },
   addBet(bet: Bet) {
     setState((s) => ({ ...s, bets: [bet, ...s.bets] }));
@@ -119,25 +136,20 @@ export const actions = {
   deleteBet(id: string) {
     setState((s) => ({ ...s, bets: s.bets.filter((b) => b.id !== id) }));
   },
-  setDraft(draft: AppData['draft']) {
-    setState((s) => ({ ...s, draft }));
+  setLive(live: LiveSession | null) {
+    setState((s) => ({ ...s, live }));
+  },
+  updateLive(patch: Partial<LiveSession>) {
+    setState((s) => (s.live ? { ...s, live: { ...s.live, ...patch } } : s));
   },
   replaceAll(data: AppData) {
-    try {
-      localStorage.setItem(BACKUP_KEY, JSON.stringify(state));
-    } catch {
-      /* ignore */
-    }
+    backupNow();
     state = normalize(data);
     persistNow();
     listeners.forEach((l) => l());
   },
   resetAll() {
-    try {
-      localStorage.setItem(BACKUP_KEY, JSON.stringify(state));
-    } catch {
-      /* ignore */
-    }
+    backupNow();
     const keep = state.settings.ageConfirmed;
     state = defaultData();
     state.settings.ageConfirmed = keep;

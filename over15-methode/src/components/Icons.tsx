@@ -178,3 +178,37 @@ export const IconCloud = ({ size = 18, ...p }: P) => (
     <path d="M7 18a4.5 4.5 0 0 1-.6-9 6 6 0 0 1 11.4 1.6A3.8 3.8 0 0 1 17.5 18H7Z" />
   </svg>
 );
+
+export const IconCopy = ({ size = 20, ...p }: P) => (
+  <svg {...base(size, p)}>
+    <rect x="8" y="8" width="12" height="13" rx="2" />
+    <path d="M16 8V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h2" />
+  </svg>
+);
+
+export const IconPaste = ({ size = 20, ...p }: P) => (
+  <svg {...base(size, p)}>
+    <rect x="5" y="4" width="14" height="17" rx="2" />
+    <path d="M9 4V3h6v1M9 11h6M9 15h4" />
+  </svg>
+);
+
+export const IconPlay = ({ size = 20, ...p }: P) => (
+  <svg {...base(size, p)}>
+    <path d="M7 4.5v15l12.5-7.5L7 4.5Z" fill="currentColor" stroke="none" />
+  </svg>
+);
+
+export const IconBook = ({ size = 22, ...p }: P) => (
+  <svg {...base(size, p)}>
+    <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5v-15Z" />
+    <path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5" />
+  </svg>
+);
+
+export const IconSpark = ({ size = 20, ...p }: P) => (
+  <svg {...base(size, p)}>
+    <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z" />
+    <path d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8L19 16Z" />
+  </svg>
+);

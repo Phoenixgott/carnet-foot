@@ -2,6 +2,8 @@
 import type { Bet, Settings, Verdict } from './types';
 
 export function profit(b: Bet): number {
+  if (b.result === 'pending') return 0;
+  if (typeof b.pnl === 'number' && Number.isFinite(b.pnl)) return b.pnl;
   if (b.result === 'won') return b.stake * (b.odds - 1);
   if (b.result === 'lost') return -b.stake;
   return 0;

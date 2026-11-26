@@ -26,7 +26,7 @@ jobs:
         working-directory: over15-methode
     env:
       VERSION_CODE: ${{ github.run_number }}
-      VERSION_NAME: 1.0.${{ github.run_number }}
+      VERSION_NAME: 2.0.${{ github.run_number }}
     steps:
       - name: Récupération du code
         uses: actions/checkout@v5

@@ -8,13 +8,13 @@ import type { AppData } from './types';
 
 export interface BackupFile {
   app: 'over15-methode';
-  format: 1;
+  format: 2;
   exportedAt: string;
   data: AppData;
 }
 
 export function buildBackup(data: AppData): string {
-  const file: BackupFile = { app: 'over15-methode', format: 1, exportedAt: new Date().toISOString(), data: { ...data, settings: { ...data.settings } } };
+  const file: BackupFile = { app: 'over15-methode', format: 2, exportedAt: new Date().toISOString(), data: { ...data, settings: { ...data.settings } } };
   return JSON.stringify(file, null, 2);
 }
 

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Form } from '../lib/types';
-import type { Status } from '../lib/method';
+import type { Check } from '../lib/types';
+
+type Status = Check | 'block' | 'todo';
 import { fmtInput, parseNum } from '../lib/format';
 import { haptic, pushBack } from '../lib/native';
 import { IconAlert, IconCheck, IconInfo, IconStop, IconX } from './Icons';
@@ -201,6 +203,7 @@ export function StatusIcon({ status, size = 28 }: { status: Status; size?: numbe
       {status === 'fail' && <IconX size={16} />}
       {status === 'block' && <IconStop size={16} />}
       {status === 'todo' && <span style={{ fontWeight: 800 }}>…</span>}
+      {status === 'unknown' && <span style={{ fontWeight: 800 }}>?</span>}
     </span>
   );
 }
@@ -338,5 +341,50 @@ export function AskHost() {
         </button>
       </div>
     </Sheet>
+  );
+}
+
+// Guide pas à pas -------------------------------------------------------------
+
+/** Encadré « Ce que tu fais maintenant » : étapes numérotées, très simples. */
+export function Guide({ title = 'Ce que tu fais maintenant', steps, tone = 'green' }: { title?: string; steps: ReactNode[]; tone?: 'green' | 'orange' | 'red' | 'blue' }) {
+  return (
+    <div className={`guide ${tone}`}>
+      <div className="guide-title">👉 {title}</div>
+      <ol className="guide-steps">
+        {steps.map((s, i) => (
+          <li key={i}>
+            <span className="guide-num">{i + 1}</span>
+            <div className="grow">{s}</div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+/** Petite question dépliable : « C'est quoi … ? ». */
+export function Explain({ q, children }: { q: string; children: ReactNode }) {
+  return (
+    <details className="explain">
+      <summary>
+        <span className="explain-q">?</span>
+        {q}
+      </summary>
+      <div className="explain-a">{children}</div>
+    </details>
+  );
+}
+
+/** Gros bouton d'action avec sous-titre. */
+export function BigButton({ icon, title, sub, onClick, tone = 'primary', disabled }: { icon?: ReactNode; title: string; sub?: string; onClick: () => void; tone?: 'primary' | 'plain' | 'danger'; disabled?: boolean }) {
+  return (
+    <button className={`big-btn ${tone}`} onClick={onClick} disabled={disabled}>
+      {icon && <span className="big-btn-ico">{icon}</span>}
+      <span className="grow" style={{ textAlign: 'left' }}>
+        <span className="big-btn-title">{title}</span>
+        {sub && <span className="big-btn-sub">{sub}</span>}
+      </span>
+    </button>
   );
 }

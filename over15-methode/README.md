@@ -1,8 +1,8 @@
 # Over 1.5 – Méthode
 
-Application Android d'aide à l'analyse des paris **« plus de 1,5 but »**, construite autour de la
-méthode de Steven (Team Soccer Bet). Thème sombre, plein écran, 100 % hors ligne, avec un mode automatique
-optionnel via une API football gratuite. **Réservée aux plus de 18 ans.**
+Application Android qui choisit les matchs « plus de 1,5 but » et te guide pendant le match, selon la
+méthode live de Steven (Team Soccer Bet). Thème sombre, plein écran, explications pas à pas. Les infos des matchs
+sont cherchées par Claude (gratuit avec ton abonnement), tout le reste fonctionne hors ligne. **Réservée aux plus de 18 ans.**
 
 ## Télécharger l'APK
 
@@ -16,45 +16,41 @@ Lien direct vers la dernière version :
 
 Toutes les versions : https://github.com/Phoenixgott/carnet-foot/releases
 
-## Écrans
+## Comment ça marche (version 2 : la méthode live de la vidéo)
 
-| Onglet | Contenu |
+L'app suit la vidéo « Over 1.5 buts » de Steven (Team Soccer Bet) et te guide à chaque écran avec un encadré
+**« 👉 Ce que tu fais maintenant »** : des étapes numérotées, en mots simples.
+
+| Onglet | Ce qu'il fait |
 | --- | --- |
-| **Accueil** | Bankroll (réelle ou fictive) et sa courbe, réussite, bénéfice, ROI, cote moyenne, **taux minimum rentable (1 ÷ cote)**, mise fixe conseillée, limite de pertes de la semaine, matchs du jour (mode auto), derniers paris. |
-| **Analyser** | Les 6 étapes obligatoires : Championnat → Équipes → Domicile/Extérieur → Blessés → Confrontations directes → Cote. Puis le score sur 100 et le verdict **FEUX OUVERTS** (vert), **PRUDENCE** (orange) ou **NE PAS PARIER** (rouge). |
-| **Ligues** | % de matchs +1.5 sur 90 min (Ligue 1 89 %, Bundesliga 87 %, Premier League 81 %, Serie A 78 %, Liga 75 %), modifiables. Seuil réglable (85 % par défaut). Ajout de ligues « hors méthode ». |
-| **Historique** | Tous les paris (match, cote, mise, verdict de l'app, résultat), réussite par couleur de verdict, saisie des résultats. |
-| **Réglages** | Bankroll, % de mise, limite hebdo, mode TEST, pondérations, critères bloquants, clé d'API, export/import JSON, 18+ et Joueurs Info Service. |
+| **Matchs** | 5 étapes guidées pour « Demander à Claude » : copier la demande → ouvrir Claude → coller et envoyer → copier la réponse → la coller dans l'app. Claude cherche les infos sur le web (toutes compétitions : championnats, Ligue des champions, Ligue Europa, Ligue des nations, Brésil…). L'app analyse chaque match et met un feu 🟢 🟠 🔴. |
+| **Fiche d'un match** | Le feu, une phrase, « Le plan pour ce match », et les 4 critères expliqués (« Pourquoi c'est important ? »). On peut corriger une info à la main. |
+| **Live** | Chrono depuis le coup d'envoi. Vers la 15e–20e minute : 0-0 ? match animé ? quelle cote ? → « C'est bon, mise X € » ou « Trop basse, attends ». Bouton **BUT !** → sécurisation (pari contraire « Moins de 1,5 but » ou cash-out) avec le montant exact et le gain garanti. |
+| **Mes paris** | « Gagné X € » / « Perdu X € », courbe de ton argent, « La méthode marche-t-elle pour toi ? » (réussite contre 1 ÷ cote moyenne), limite de la semaine. |
+| **Comprendre** | La méthode en 2 minutes, avec les chiffres de la recherche (où tombent les buts, pourquoi attendre le live, comment sécuriser). |
+| **Réglages** | Ton argent et ta mise (2 %), limite par semaine (10 %), entraînement (20 paris pour de faux), règles du live (cote minimum 1,70, entrée 15e–20e, plus d'entrée après la 30e), sauvegarde, 18+ et Joueurs Info Service. |
 
-## Règles appliquées
+### Les 4 critères (vidéo)
 
-- **Critère bloquant non respecté = rouge forcé** : buteur clé absent (toujours), ligue hors méthode et
-  équipes qui ne marquent ET n'encaissent pas (par défaut), les autres sont activables dans les réglages.
-- **Paris en SIMPLE uniquement** : enregistrer un combiné déclenche un avertissement.
-- **Pari live** : avertissement « déconseillé si tu t'emportes facilement ».
-- **Mode TEST** activé par défaut : les 20 premiers paris sont fictifs, sur une bankroll d'entraînement séparée.
-- **Bankroll** : mise fixe en % de la bankroll (2 % par défaut) et limite de pertes par semaine (10 % par défaut).
-  Une fois la limite atteinte, les paris réels sont bloqués jusqu'au lundi.
+1. **Les deux équipes marquent ET encaissent** : au moins 1 but marqué et 1 encaissé par match (exemple de la vidéo : 27 marqués / 9 encaissés en 16 matchs = écarté).
+2. **Les meilleurs buteurs jouent** : une absence en attaque = signal d'alarme (rouge si un meilleur buteur est absent).
+3. **Beaucoup de matchs avec 2 buts ou plus** : 75 % des matchs de chaque équipe (réglable).
+4. **Pas de pression excessive** : pas de finale, derby, maintien, montée, ni match sans enjeu.
 
-### Calcul du score
+Feu vert = les 4 sont bons. Orange = une info est moyenne ou manquante. Rouge = un critère n'est pas bon.
 
-Chaque étape reçoit une note de 0 à 1, multipliée par son poids (réglable) :
-Championnat 20, Équipes 20, Domicile/Extérieur 25, Blessés 10, Confrontations 15, Cote 10.
-Vert à partir de 75/100 sans critère raté, orange à partir de 55/100, rouge en dessous ou si un critère bloquant n'est pas respecté.
-L'écran du verdict affiche aussi une probabilité estimée (mélange championnat, domicile/extérieur, loi de Poisson sur les buts attendus et confrontations), la cote juste et la value. Ce sont des estimations indicatives.
+### Le live, en chiffres
 
-## Mode automatique (optionnel)
+- Les chances de voir 2 buts sont estimées par une loi de Poisson à partir des buts attendus (attaque et défense des deux équipes)
+  et de la part des buts encore à venir à la minute donnée (répartition des buts par quart d'heure : 11,5 % avant la 15e,
+  24,6 % après la 75e, Premier League 2024, SoccerSTATS).
+- Cote minimum = 1,70 (règle de la méthode), ou plus si le match est moins prometteur (cote juste + 5 %).
+- Sécurisation : mise contraire = mise × cote ÷ cote « Moins de 1,5 » ; le gain est le même quel que soit le résultat.
 
-Dans **Réglages → Données automatiques**, choisis une API et colle ta clé gratuite :
+### Garde-fous
 
-- **API-Football** (api-sports.io) : offre gratuite de 100 requêtes par jour, avec tous les endpoints : matchs du jour,
-  résultats de la saison (stats domicile/extérieur, buts, forme), **blessés**, meilleurs buteurs, confrontations directes et cotes.
-  L'offre gratuite peut limiter les saisons accessibles : l'app affiche clairement l'erreur si c'est le cas.
-- **football-data.org** : offre gratuite avec les 5 grands championnats (matchs, résultats, buteurs, confrontations),
-  10 requêtes par minute, sans blessés ni cotes.
-
-Les réponses sont mises en cache dans le téléphone (matchs du jour 30 min, saison 12 h, buteurs 24 h, blessés 3 h,
-confrontations 24 h, cotes 1 h) pour économiser le quota. Le préremplissage est toujours vérifiable et modifiable étape par étape.
+Paris simples uniquement (avertissement sur les combinés), avertissement sur le live, 20 paris d'entraînement,
+mise fixe en % de la bankroll, paris réels bloqués quand la limite de pertes de la semaine est atteinte.
 
 ## Technique
 
@@ -62,6 +58,7 @@ confrontations 24 h, cotes 1 h) pour économiser le quota. Le préremplissage es
 - Android 8+ (minSdk 26), cible Android 16 (API 36), portrait, plein écran bord à bord (encoches et barre de navigation gérées
   via les variables `--safe-area-inset-*` de Capacitor), bouton retour Android géré.
 - Splash screen natif (API SplashScreen d'Android 12, rétrocompatible) de la même couleur que l'intro animée : pas d'écran blanc.
+- « Demander à Claude » : la demande est copiée avec le plugin Presse-papiers de Capacitor, la réponse JSON est relue et vérifiée par l'app.
 - Données stockées localement (aucun serveur). Sauvegarde : **Réglages → Exporter** (partage du fichier JSON vers Fichiers, Drive, mail…).
 
 ### Développement

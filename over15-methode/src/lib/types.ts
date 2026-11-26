@@ -1,120 +1,53 @@
-// Types partagés de l'application « Over 1.5 – Méthode ».
+// Types partagés de l'application « Over 1.5 – Méthode » (version 2 : méthode live de la vidéo).
 
 export type Verdict = 'GREEN' | 'ORANGE' | 'RED';
 export type Form = 'V' | 'N' | 'D';
+export type Check = 'ok' | 'warn' | 'fail' | 'unknown';
 export type BetResult = 'pending' | 'won' | 'lost' | 'void';
-export type ProviderId = 'none' | 'apifootball' | 'footballdata';
+export type Context = 'normal' | 'finale' | 'derby' | 'maintien' | 'montee' | 'sans_enjeu' | 'inconnu';
 
-export interface League {
-  id: string;
+export interface Scorer {
   name: string;
-  country: string;
-  flag: string;
-  /** % de matchs avec au moins 2 buts sur 90 minutes (valeur de référence). */
-  pct: number;
-  /** false = ligue « exotique », hors méthode. */
-  inMethod: boolean;
-  builtin: boolean;
-  apiFootballId?: number;
-  footballDataCode?: string;
-  /** Dernière valeur calculée via l'API (saison en cours). */
-  apiPct?: number;
-  apiSample?: number;
-  apiAt?: number;
+  goals: number | null;
+  /** true = disponible, false = absent (blessé, suspendu), null = on ne sait pas. */
+  available: boolean | null;
 }
 
-export interface Weights {
-  league: number;
-  teams: number;
-  homeAway: number;
-  injuries: number;
-  h2h: number;
-  odds: number;
-}
-
-export interface BlockingRules {
-  /** Ligue hors méthode → rouge. */
-  outOfMethod: boolean;
-  /** Ligue sous le seuil → rouge. */
-  belowThreshold: boolean;
-  /** Une équipe ne marque pas ET n'encaisse pas assez → rouge. */
-  teams: boolean;
-  /** Cote hors fourchette → rouge. */
-  oddsOutOfRange: boolean;
-  /** Confrontations aux petits scores → rouge. */
-  h2hLow: boolean;
-}
-
-export interface Settings {
-  bankrollInitial: number;
-  stakePct: number;
-  weeklyLossLimitPct: number;
-  testMode: boolean;
-  testBetsTarget: number;
-  leagueThreshold: number;
-  weights: Weights;
-  greenMin: number;
-  orangeMin: number;
-  teamMinScored: number;
-  teamMinConceded: number;
-  homeAwayMin: number;
-  oddsMin: number;
-  oddsMax: number;
-  blocking: BlockingRules;
-  haptics: boolean;
-  intro: boolean;
-  provider: ProviderId;
-  apiKey: string;
-  ageConfirmed: boolean;
-}
-
-export interface TeamInput {
-  id?: string;
+export interface TeamData {
   name: string;
+  /** Saison en cours, toutes compétitions. */
   played: number | null;
   scored: number | null;
   conceded: number | null;
-  form: Form[];
-  logo?: string;
+  /** Nombre de matchs avec au moins 2 buts. */
+  over15: number | null;
+  scorers: Scorer[];
+  /** Autres absents importants en attaque. */
+  absents: string[];
 }
 
-export interface InjuryLine {
-  side: 'home' | 'away';
-  player: string;
-  reason: string;
-}
-
-export interface FixtureLink {
-  provider: Exclude<ProviderId, 'none'>;
+export interface MatchData {
   id: string;
-  leagueRef: string;
-  season: number | null;
-}
-
-export interface AnalysisInput {
-  id: string;
-  step: number;
   date: string;
-  fixture?: FixtureLink;
-  leagueId: string | null;
-  /** Nom saisi quand la ligue n'est pas dans la liste (forcément hors méthode). */
-  otherLeagueName: string;
-  leaguePct: number | null;
-  home: TeamInput;
-  away: TeamInput;
-  homePct: number | null;
-  awayPct: number | null;
-  homeScorer: string;
-  awayScorer: string;
-  homeScorerOk: boolean | null;
-  awayScorerOk: boolean | null;
-  otherAbsences: number;
-  injuries: InjuryLine[];
+  time: string;
+  competition: string;
+  home: TeamData;
+  away: TeamData;
+  /** Derniers scores des confrontations directes, « 2-1 ». */
   h2h: string[];
-  h2hNone: boolean;
-  odds: number | null;
-  /** Infos venant de l'API (affichage). */
-  notes: string[];
+  context: Context;
+  contextDetail: string;
+  preOdds: number | null;
+  sources: string[];
+  importedAt: string;
+}
+
+export interface Hedge {
+  kind: 'contraire' | 'cashout';
+  /** Cote du pari contraire « Moins de 1,5 but ». */
+  odds?: number;
+  /** Mise du pari contraire, ou montant du cash-out encaissé. */
+  amount: number;
 }
 
 export interface Bet {
@@ -135,12 +68,59 @@ export interface Bet {
   result: BetResult;
   settledAt?: string;
   note?: string;
+  /** Minute d'entrée en live. */
+  minute?: number | null;
+  hedge?: Hedge | null;
+  /** Gain ou perte réel quand le pari a été sécurisé. */
+  pnl?: number;
+}
+
+export type LiveStage = 'attente' | 'chrono' | 'parie' | 'but' | 'fini';
+
+export interface LiveSession {
+  matchId: string | null;
+  label: string;
+  competition: string;
+  /** Buts attendus sur le match (pour estimer les chances en live). */
+  lambda: number;
+  verdict: Verdict | null;
+  /** Horodatage du coup d'envoi (ms), corrigé quand on recale la minute. */
+  kickoffAt: number | null;
+  stage: LiveStage;
+  betId: string | null;
+  /** Étape de questions pendant la fenêtre d'entrée. */
+  q: 'score' | 'anime' | 'cote';
+  endText?: string;
+}
+
+export interface Settings {
+  bankrollInitial: number;
+  stakePct: number;
+  weeklyLossLimitPct: number;
+  testMode: boolean;
+  testBetsTarget: number;
+  /** Cote minimum pour entrer en live (Steven : en moyenne plus de 1,70). */
+  minLiveOdds: number;
+  entryFrom: number;
+  entryTo: number;
+  /** Après cette minute, on n'entre plus. */
+  lastEntry: number;
+  /** Buts marqués ET encaissés minimum par match. */
+  teamMin: number;
+  /** % minimum de matchs à +1,5 but pour chaque équipe. */
+  over15Min: number;
+  maxMatches: number;
+  competitions: string;
+  haptics: boolean;
+  intro: boolean;
+  ageConfirmed: boolean;
 }
 
 export interface AppData {
-  version: 1;
+  version: 2;
   settings: Settings;
-  leagues: League[];
+  matches: MatchData[];
+  matchesDate: string | null;
   bets: Bet[];
-  draft: AnalysisInput | null;
+  live: LiveSession | null;
 }

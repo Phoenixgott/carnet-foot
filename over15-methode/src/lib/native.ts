@@ -4,6 +4,7 @@ import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
 import { Browser } from '@capacitor/browser';
 import { App } from '@capacitor/app';
 import { SplashScreen } from '@capacitor/splash-screen';
+import { Clipboard } from '@capacitor/clipboard';
 import { getState } from './store';
 
 export const isNative = Capacitor.isNativePlatform();
@@ -54,6 +55,30 @@ export async function openUrl(url: string) {
     }
   }
   window.open(url, '_blank', 'noopener');
+}
+
+/** Copie un texte dans le presse-papiers. */
+export async function copyText(text: string): Promise<boolean> {
+  try {
+    if (isNative) await Clipboard.write({ string: text });
+    else await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Lit le texte du presse-papiers (null si impossible). */
+export async function readText(): Promise<string | null> {
+  try {
+    if (isNative) {
+      const r = await Clipboard.read();
+      return typeof r.value === 'string' ? r.value : null;
+    }
+    return await navigator.clipboard.readText();
+  } catch {
+    return null;
+  }
 }
 
 export function hideSplash() {
