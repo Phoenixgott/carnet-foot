@@ -1,0 +1,3 @@
+# Projet Android régénéré à chaque build (npx cap add android + scripts/preparer-android.mjs)
+android/
+package-lock.json
