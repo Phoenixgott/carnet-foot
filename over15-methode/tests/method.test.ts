@@ -46,9 +46,18 @@ test('derby, finale, sans enjeu = rouge ; contexte inconnu = orange', () => {
 });
 
 test('info manquante = orange (on vérifie)', () => {
-  const a = analyze(match({ home: team({ over15: null }) }), S);
+  const a = analyze(match({ home: team({ played: null, over15: null }) }), S);
+  assert.equal(a.criteria[0].status, 'unknown');
   assert.equal(a.criteria[2].status, 'unknown');
   assert.equal(a.verdict, 'ORANGE');
+});
+
+test('% de matchs à +1,5 manquant : estimé avec les buts, ou pris en %', () => {
+  const est = analyze(match({ home: team({ over15: null }) }), S).criteria[2];
+  assert.notEqual(est.status, 'unknown');
+  assert.match(est.detail, /estimé/);
+  const pctOnly = analyze(match({ home: team({ over15: null, over15Pct: 81 }) }), S).criteria[2];
+  assert.match(pctOnly.detail, /81 %/);
 });
 
 test('temps restant : presque tout au début, rien à la fin', () => {

@@ -36,9 +36,18 @@ export function perMatch(t: TeamData): { scored: number; conceded: number } | nu
   return { scored: t.scored / t.played, conceded: t.conceded / t.played };
 }
 
+/** % de matchs à 2 buts ou plus : chiffre trouvé, sinon estimé à partir des buts marqués + encaissés. */
+export function over15Info(t: TeamData): { rate: number; estimated: boolean } | null {
+  if (isNum(t.played) && t.played > 0 && isNum(t.over15)) return { rate: clamp(t.over15 / t.played, 0, 1), estimated: false };
+  if (isNum(t.over15Pct)) return { rate: clamp(t.over15Pct / 100, 0, 1), estimated: false };
+  const p = perMatch(t);
+  if (!p) return null;
+  const mu = p.scored + p.conceded;
+  return { rate: clamp(1 - Math.exp(-mu) * (1 + mu), 0, 1), estimated: true };
+}
+
 export function over15Rate(t: TeamData): number | null {
-  if (!isNum(t.played) || t.played <= 0 || !isNum(t.over15)) return null;
-  return clamp(t.over15 / t.played, 0, 1);
+  return over15Info(t)?.rate ?? null;
 }
 
 export function parseScore(s: string): [number, number] | null {
@@ -113,10 +122,11 @@ function critButeurs(m: MatchData): Criterion {
 function critPourcentage(m: MatchData, s: Settings): Criterion {
   const min = s.over15Min / 100;
   const one = (t: TeamData) => {
-    const r = over15Rate(t);
-    if (r === null) return { st: 'unknown' as Check, txt: `${t.name} : chiffre manquant` };
+    const info = over15Info(t);
+    if (info === null) return { st: 'unknown' as Check, txt: `${t.name} : chiffre manquant` };
+    const r = info.rate;
     const st: Check = r >= min ? 'ok' : r >= min - 0.15 ? 'warn' : 'fail';
-    return { st, txt: `${t.name} : ${Math.round(r * 100)} % de ses matchs avec 2 buts ou plus` };
+    return { st, txt: `${t.name} : ${info.estimated ? 'environ ' : ''}${Math.round(r * 100)} % de ses matchs avec 2 buts ou plus${info.estimated ? ' (estimé avec ses buts)' : ''}` };
   };
   const h = one(m.home);
   const a = one(m.away);

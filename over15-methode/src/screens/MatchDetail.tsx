@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { buildMatchPrompt, mergeMatch } from '../lib/claude';
+import { FetchFlow } from './FetchFlow';
 import { actions, useStore } from '../lib/store';
 import { analyze, CONTEXT_LABEL, VERDICT_COLOR } from '../lib/method';
 import { fixedStake, nextBetIsTest } from '../lib/stats';
@@ -6,7 +8,7 @@ import { money, num, odds as fmtOdds } from '../lib/format';
 import type { Context, MatchData, TeamData } from '../lib/types';
 import { haptic, openUrl } from '../lib/native';
 import { ask, BigButton, Explain, Guide, NumberField, Sheet, StatusIcon, toast } from '../components/ui';
-import { IconBolt, IconTrash } from '../components/Icons';
+import { IconBolt, IconSpark, IconTrash } from '../components/Icons';
 
 const STATUS_WORD = { ok: 'Oui ✓', warn: 'Moyen', fail: 'Non ✗', unknown: 'On ne sait pas' } as const;
 
@@ -16,8 +18,10 @@ export function MatchDetail({ id, onClose, goLive }: { id: string | null; onClos
   const bets = useStore((st) => st.bets);
   const live = useStore((st) => st.live);
   const [edit, setEdit] = useState(false);
+  const [complete, setComplete] = useState(false);
   if (!m) return null;
   const a = analyze(m, s);
+  const missing = a.criteria.filter((c) => c.status === 'unknown').length;
   const stake = fixedStake(bets, s, nextBetIsTest(bets, s));
   const color = VERDICT_COLOR[a.verdict];
 
@@ -46,7 +50,8 @@ export function MatchDetail({ id, onClose, goLive }: { id: string | null; onClos
     a.verdict === 'RED'
       ? [<>On <b>ne joue pas</b> ce match.</>, <>Choisis un autre match <b style={{ color: 'var(--green)' }}>vert</b>, ou ne joue pas aujourd'hui. Passer son tour, c'est aussi ça, la méthode.</>]
       : [
-          ...(a.verdict === 'ORANGE' ? [<>D'abord, vérifie le point <b style={{ color: 'var(--orange)' }}>orange</b> plus bas. Dans le doute, on ne joue pas.</>] : []),
+          ...(missing ? [<>Il manque des infos : touche <b>« Compléter avec Claude »</b> juste en dessous.</>] : []),
+          ...(a.verdict === 'ORANGE' && !missing ? [<>D'abord, vérifie le point <b style={{ color: 'var(--orange)' }}>orange</b> plus bas. Dans le doute, on ne joue pas.</>] : []),
           <>Ne parie <b>pas</b> avant le match : la cote est trop basse.</>,
           <>Au coup d'envoi{m.time ? ` (${m.time})` : ''}, touche <b>« Suivre ce match en live »</b> puis <b>« Coup d'envoi »</b>.</>,
           <>Vers la <b>{s.entryFrom}e–{s.entryTo}e minute</b>, l'app te pose 3 questions : 0-0 ? match animé ? quelle cote ?</>,
@@ -74,8 +79,11 @@ export function MatchDetail({ id, onClose, goLive }: { id: string | null; onClos
 
         <Guide title="Le plan pour ce match" tone={a.verdict === 'GREEN' ? 'green' : a.verdict === 'ORANGE' ? 'orange' : 'red'} steps={plan} />
 
+        {missing > 0 && (
+          <BigButton icon={<IconSpark size={24} />} title="Compléter avec Claude" sub={`${missing} info(s) manquante(s) : Claude les cherche pour ce match`} onClick={() => setComplete(true)} />
+        )}
         {a.verdict !== 'RED' ? (
-          <BigButton icon={<IconBolt size={24} />} title="Suivre ce match en live" sub="À faire au coup d'envoi" onClick={follow} />
+          <BigButton icon={<IconBolt size={24} />} title="Suivre ce match en live" sub="À faire au coup d'envoi" onClick={follow} tone={missing ? 'plain' : 'primary'} />
         ) : (
           <button className="btn ghost block small" onClick={follow}>
             Le suivre quand même (déconseillé)
@@ -118,9 +126,14 @@ export function MatchDetail({ id, onClose, goLive }: { id: string | null; onClos
           )}
         </div>
 
-        <button className="btn block" onClick={() => setEdit(true)}>
-          Corriger une info
-        </button>
+        <div className="grid2">
+          <button className="btn" onClick={() => setEdit(true)}>
+            Corriger une info
+          </button>
+          <button className="btn" onClick={() => setComplete(true)}>
+            Redemander à Claude
+          </button>
+        </div>
         {m.sources.length > 0 && (
           <div className="tiny faint">
             Sources trouvées par Claude :{' '}
@@ -144,6 +157,23 @@ export function MatchDetail({ id, onClose, goLive }: { id: string | null; onClos
         </button>
       </div>
       {edit && <EditMatch m={m} onClose={() => setEdit(false)} />}
+      {complete && (
+        <Sheet open onClose={() => setComplete(false)} title="Compléter avec Claude" top>
+          <div className="stack">
+            <Guide steps={[<>Fais les 5 étapes, comme d'habitude.</>, <>Cette fois, Claude cherche <b>seulement ce match</b> : il trouve plus d'infos.</>, <>L'app ajoute ce qui manquait et recalcule le feu.</>]} />
+            <FetchFlow
+              fallbackDate={m.date}
+              buildPrompt={() => buildMatchPrompt(m.home.name, m.away.name, m.date)}
+              onImported={(ms) => {
+                const fresh = ms[0];
+                if (fresh) actions.updateMatch(m.id, mergeMatch(m, fresh));
+                setComplete(false);
+                toast('Match complété ✓');
+              }}
+            />
+          </div>
+        </Sheet>
+      )}
     </Sheet>
   );
 }

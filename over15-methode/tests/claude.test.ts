@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildDayPrompt, buildMatchPrompt, parseClaude, toContext } from '../src/lib/claude';
+import { readFileSync } from 'node:fs';
+import { buildDayPrompt, buildMatchPrompt, cleanJson, mergeMatch, parseClaude, toContext } from '../src/lib/claude';
 import { DEFAULT_SETTINGS } from '../src/lib/defaults';
 
 const reply = `Voici les matchs :
@@ -55,4 +56,28 @@ test('les demandes contiennent la date et le format', () => {
   assert.match(p, /2026-11-26/);
   assert.match(p, /matchs_plus_1_5/);
   assert.match(buildMatchPrompt('Lens', 'Lille', '2026-11-26'), /Lens contre Lille/);
+});
+
+test('réponse copiée depuis l\'app Claude avec des références « (Wikipedia) » hors du JSON', () => {
+  const text = readFileSync(new URL('./fixtures/reponse-claude-citations.txt', import.meta.url), 'utf8');
+  const r = parseClaude(text, '2026-11-26');
+  assert.equal(r.matches.length, 3);
+  assert.equal(r.matches[0].home.name, 'Heart of Midlothian (Hearts)');
+  assert.equal(r.matches[0].home.scorers[1].available, false);
+  assert.deepEqual(r.matches[1].h2h, ['0-1']);
+  assert.equal(r.matches[2].away.absents.length, 4);
+});
+
+test('le nettoyage ne touche pas au texte entre guillemets', () => {
+  assert.equal(cleanJson('{"a": "x (y) // z", "b": [1, 2,],} (Source)'), '{"a": "x (y) // z", "b": [1, 2]} ');
+});
+
+test('compléter un match garde les anciens chiffres quand les nouveaux sont vides', () => {
+  const [old] = parseClaude(reply, '2026-11-26').matches;
+  const fresh = { ...old, home: { ...old.home, played: null, scored: 50 }, h2h: [], context: 'inconnu' as const };
+  const m = mergeMatch(old, fresh);
+  assert.equal(m.home.played, 20);
+  assert.equal(m.home.scored, 50);
+  assert.equal(m.context, 'normal');
+  assert.equal(m.id, old.id);
 });

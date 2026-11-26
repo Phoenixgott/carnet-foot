@@ -11,11 +11,11 @@ const FORMAT = `{
       "heure": "21:00",
       "domicile": {
         "nom": "Équipe A",
-        "matchs": 20, "marques": 35, "encaisses": 22, "matchs_plus_1_5": 16,
+        "matchs": 20, "marques": 35, "encaisses": 22, "matchs_plus_1_5": 16, "pourcentage_plus_1_5": 80,
         "buteurs": [{ "nom": "Joueur", "buts": 12, "disponible": true }],
         "absents_attaque": ["Joueur blessé"]
       },
-      "exterieur": { "nom": "Équipe B", "matchs": 19, "marques": 30, "encaisses": 25, "matchs_plus_1_5": 15, "buteurs": [], "absents_attaque": [] },
+      "exterieur": { "nom": "Équipe B", "matchs": 19, "marques": 30, "encaisses": 25, "matchs_plus_1_5": null, "pourcentage_plus_1_5": 79, "buteurs": [], "absents_attaque": [] },
       "confrontations": ["2-1", "1-1", "3-2"],
       "contexte": "normal",
       "contexte_detail": "",
@@ -25,16 +25,16 @@ const FORMAT = `{
   ]
 }`;
 
-const RULES = `Pour CHAQUE équipe, sur la saison en cours, TOUTES compétitions confondues (championnat + coupes d'Europe + coupes nationales + sélections pour les équipes nationales) :
-- "matchs" : matchs joués ; "marques" : buts marqués ; "encaisses" : buts encaissés ;
-- "matchs_plus_1_5" : nombre de ses matchs terminés avec au moins 2 buts au total (temps réglementaire) ;
+const RULES = `Pour CHAQUE équipe, sur la saison en cours, toutes compétitions confondues si possible (championnat + coupes d'Europe + coupes ; pour une sélection nationale, ses derniers matchs officiels) :
+- "matchs" : matchs joués ; "marques" : buts marqués ; "encaisses" : buts encaissés. C'EST LE PLUS IMPORTANT : ne laisse jamais ces 3 chiffres vides. Si tu ne trouves pas le total toutes compétitions, prends au minimum le classement du championnat (matchs joués, buts pour, buts contre) ;
+- "matchs_plus_1_5" : nombre de ses matchs terminés avec au moins 2 buts au total ; sinon "pourcentage_plus_1_5" : le % de ses matchs « Over 1.5 » (FootyStats, SoccerSTATS, Flashscore…) ;
 - "buteurs" : ses 2 meilleurs buteurs, avec leurs buts et "disponible" : true (joue), false (blessé, suspendu, forfait) ou null (incertain) ;
 - "absents_attaque" : les autres absents importants en attaque.
 Pour le match :
 - "confrontations" : les scores des 5 dernières confrontations directes, du plus récent au plus ancien (score de l'équipe à domicile de ce jour en premier si possible) ;
 - "contexte" : un seul mot parmi normal, finale, derby, maintien, montee, sans_enjeu ; explique en quelques mots dans "contexte_detail" ;
 - "cote_avant_match" : la cote « Plus de 1,5 but » avant le match si tu la trouves, sinon null.
-Règles : cherche sur le web (sites officiels, L'Équipe, Flashscore, SofaScore, FBref, Transfermarkt…), n'invente JAMAIS un chiffre (mets null si tu ne trouves pas), et réponds UNIQUEMENT avec le bloc JSON ci-dessous, écrit directement dans ta réponse (pas dans un fichier ni un artefact), sans aucun texte avant ou après.`;
+Règles : cherche sur le web (sites officiels, L'Équipe, Flashscore, SofaScore, FBref, FootyStats, Transfermarkt…), n'invente JAMAIS un chiffre (mets null si tu ne trouves pas), ne mets aucune référence ni source à l'intérieur du JSON (seulement dans "sources"), et réponds UNIQUEMENT avec le bloc JSON ci-dessous, écrit directement dans ta réponse (pas dans un fichier ni un artefact), sans aucun texte avant ou après.`;
 
 function dayLabel(date: string): string {
   const d = new Date(date + 'T12:00:00');
@@ -116,9 +116,49 @@ function team(x: Json): TeamData {
     scored: num(t.marques ?? t.scored),
     conceded: num(t.encaisses ?? t.conceded),
     over15: num(t.matchs_plus_1_5 ?? t.over15),
+    over15Pct: num(t.pourcentage_plus_1_5 ?? t.over15_pct),
     scorers,
     absents,
   };
+}
+
+/**
+ * Nettoie ce que l'app Claude ajoute en copiant : références de sources « (Wikipedia) », « 【1】 »,
+ * commentaires « // … », virgules en trop. Ne touche jamais au texte entre guillemets.
+ */
+export function cleanJson(body: string): string {
+  let out = '';
+  let inStr = false;
+  let esc = false;
+  let depth = 0;
+  for (let i = 0; i < body.length; i++) {
+    const ch = body[i];
+    if (inStr) {
+      out += ch;
+      if (esc) esc = false;
+      else if (ch === '\\') esc = true;
+      else if (ch === '"') inStr = false;
+      continue;
+    }
+    if (depth > 0) {
+      if (ch === '(' || ch === '【') depth++;
+      else if (ch === ')' || ch === '】') depth--;
+      continue;
+    }
+    if (ch === '"') {
+      inStr = true;
+      out += ch;
+    } else if (ch === '(' || ch === '【') {
+      depth = 1;
+    } else if (ch === '/' && body[i + 1] === '/') {
+      while (i < body.length && body[i] !== '\n') i++;
+      out += '\n';
+    } else {
+      out += ch;
+    }
+  }
+  // Virgules en trop avant } ou ] (hors guillemets : les textes n'en contiennent pas à cet endroit).
+  return out.replace(/,(\s*[}\]])/g, '$1');
 }
 
 /** Extrait le JSON d'une réponse (bloc ```json, ou du premier { au dernier }). */
@@ -129,7 +169,8 @@ export function extractJson(text: string): Json {
   const b = body.lastIndexOf('}');
   if (a < 0 || b <= a) throw new Error('Je ne trouve pas de données dans ce texte. As-tu bien copié la réponse de Claude ?');
   body = body.slice(a, b + 1);
-  const attempts = [body, body.replace(/,\s*([}\]])/g, '$1').replace(/[“”]/g, '"')];
+  const cleaned = cleanJson(body);
+  const attempts = [body, cleaned, cleanJson(body.replace(/[“”]/g, '"'))];
   for (const t of attempts) {
     try {
       return JSON.parse(t);
@@ -165,4 +206,30 @@ export function parseClaude(text: string, fallbackDate: string): { matches: Matc
     .filter((m) => m.home.name !== '?' && m.away.name !== '?');
   if (!matches.length) throw new Error('Aucun match lisible dans la réponse. Redemande à Claude, puis recopie toute sa réponse.');
   return { matches, date };
+}
+
+/** Complète un match avec une nouvelle réponse de Claude : les nouveaux chiffres remplacent les anciens, les vides sont gardés. */
+export function mergeMatch(old: MatchData, fresh: MatchData): MatchData {
+  const team = (o: TeamData, f: TeamData): TeamData => ({
+    name: o.name,
+    played: f.played ?? o.played,
+    scored: f.scored ?? o.scored,
+    conceded: f.conceded ?? o.conceded,
+    over15: f.over15 ?? o.over15,
+    over15Pct: f.over15Pct ?? o.over15Pct ?? null,
+    scorers: f.scorers.length ? f.scorers : o.scorers,
+    absents: f.absents.length ? f.absents : o.absents,
+  });
+  return {
+    ...old,
+    time: old.time || fresh.time,
+    competition: old.competition || fresh.competition,
+    home: team(old.home, fresh.home),
+    away: team(old.away, fresh.away),
+    h2h: fresh.h2h.length ? fresh.h2h : old.h2h,
+    context: fresh.context !== 'inconnu' ? fresh.context : old.context,
+    contextDetail: fresh.contextDetail || old.contextDetail,
+    preOdds: fresh.preOdds ?? old.preOdds,
+    sources: [...new Set([...fresh.sources, ...old.sources])].slice(0, 8),
+  };
 }

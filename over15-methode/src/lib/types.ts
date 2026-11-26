@@ -21,6 +21,8 @@ export interface TeamData {
   conceded: number | null;
   /** Nombre de matchs avec au moins 2 buts. */
   over15: number | null;
+  /** Ou directement le % de matchs avec au moins 2 buts (sites de stats). */
+  over15Pct?: number | null;
   scorers: Scorer[];
   /** Autres absents importants en attaque. */
   absents: string[];

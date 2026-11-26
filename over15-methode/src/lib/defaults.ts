@@ -15,7 +15,7 @@ export const DEFAULT_SETTINGS: Settings = {
   lastEntry: 30,
   teamMin: 1,
   over15Min: 75,
-  maxMatches: 8,
+  maxMatches: 6,
   competitions: DEFAULT_COMPETITIONS,
   haptics: true,
   intro: true,
