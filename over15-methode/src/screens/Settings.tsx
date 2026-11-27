@@ -1,8 +1,9 @@
 import { useRef, useState } from 'react';
 import { actions, getState, useStore } from '../lib/store';
-import { DEFAULT_COMPETITIONS, DEFAULT_SETTINGS } from '../lib/defaults';
+import { DEFAULT_BOOKMAKERS, DEFAULT_COMPETITIONS, DEFAULT_SETTINGS } from '../lib/defaults';
 import { exportBackup, parseBackup } from '../lib/backup';
 import { money, num, odds as fmtOdds } from '../lib/format';
+import { signedPct } from '../lib/value';
 import { testCount } from '../lib/stats';
 import { haptic, openUrl } from '../lib/native';
 import { ask, Explain, NumberField, Stepper, toast, ToggleRow } from '../components/ui';
@@ -54,7 +55,7 @@ export function Settings({ goLearn }: { goLearn: () => void }) {
         <div className="field">
           <label>Ma mise : {num(s.stakePct, 1)} % de mon argent</label>
           <Stepper value={s.stakePct} min={0.5} max={10} step={0.5} onChange={(v) => set({ stakePct: v })} format={(v) => `${num(v, 1)} %`} />
-          <span className="tiny faint">Soit environ {money((s.bankrollInitial * s.stakePct) / 100)} par pari. Toujours la même mise.</span>
+          <span className="tiny faint">Soit environ {money((s.bankrollInitial * s.stakePct) / 100)} par pari. Toujours la même mise. Pour les outsiders, 1 % est conseillé : on perd souvent plusieurs fois de suite.</span>
         </div>
         <div className="field">
           <label>Limite de pertes par semaine</label>
@@ -70,7 +71,7 @@ export function Settings({ goLearn }: { goLearn: () => void }) {
           on={s.testMode}
           onChange={async (v) => {
             if (!v && tc < s.testBetsTarget) {
-              const ok = await ask({ title: 'Arrêter l\'entraînement ?', message: `Tu n'as fait que ${tc} paris pour de faux sur ${s.testBetsTarget}. Steven conseille de s'entraîner avant de miser de l'argent.`, confirm: 'Passer pour de vrai', tone: 'danger' });
+              const ok = await ask({ title: 'Arrêter l\'entraînement ?', message: `Tu n'as fait que ${tc} paris pour de faux sur ${s.testBetsTarget}. Mieux vaut s'entraîner avant de miser de l'argent.`, confirm: 'Passer pour de vrai', tone: 'danger' });
               if (!ok) return;
             }
             set({ testMode: v });
@@ -82,48 +83,38 @@ export function Settings({ goLearn }: { goLearn: () => void }) {
         </div>
       </Section>
 
-      <Section title="Règles du live">
+      <Section title="Règles de la value">
         <div className="field">
-          <label>Cote minimum pour entrer : {fmtOdds(s.minLiveOdds)}</label>
-          <Stepper value={s.minLiveOdds} min={1.3} max={2.5} step={0.05} onChange={(v) => set({ minLiveOdds: v })} format={(v) => fmtOdds(v)} />
+          <label>« OK » à partir d'une value de {signedPct(s.valueMin)}</label>
+          <Stepper value={Math.round(s.valueMin * 100)} min={0} max={30} onChange={(v) => set({ valueMin: v / 100 })} format={(v) => `+${v} %`} />
         </div>
-        <div className="grid2">
-          <div className="field">
-            <label>Entrer à partir de</label>
-            <Stepper value={s.entryFrom} min={5} max={s.entryTo} onChange={(v) => set({ entryFrom: v })} format={(v) => `${v}e`} />
+        <div className="field">
+          <label>Un outsider, c'est une cote d'au moins {fmtOdds(s.minOdds)}</label>
+          <Stepper value={s.minOdds} min={2} max={10} step={0.5} onChange={(v) => set({ minOdds: v })} format={(v) => fmtOdds(v)} />
+        </div>
+        <div className="field">
+          <label>Nombre d'outsiders par recherche</label>
+          <Stepper value={s.maxPicks} min={3} max={12} onChange={(v) => set({ maxPicks: v })} />
+        </div>
+        <Explain q="Réglages avancés">
+          <div className="stack" style={{ gap: 10, marginTop: 6 }}>
+            <NumberField label="Marge Pinnacle retirée (une seule cote), en %" value={Math.round(s.pinnacleMargin * 1000) / 10} onChange={(v) => v !== null && v >= 0 && v < 15 && set({ pinnacleMargin: v / 100 })} suffix="%" />
+            <div className="field">
+              <label>Bookmakers à comparer</label>
+              <input className="input" value={s.bookmakers} onChange={(e) => set({ bookmakers: e.target.value })} />
+            </div>
+            <div className="field">
+              <label>Compétitions que Claude doit chercher</label>
+              <textarea className="input" style={{ fontFamily: 'var(--body)', fontSize: 14, minHeight: 90 }} value={s.competitions} onChange={(e) => set({ competitions: e.target.value })} />
+            </div>
+            <button
+              className="btn small ghost"
+              onClick={() => set({ valueMin: DEFAULT_SETTINGS.valueMin, minOdds: DEFAULT_SETTINGS.minOdds, pinnacleMargin: DEFAULT_SETTINGS.pinnacleMargin, maxPicks: DEFAULT_SETTINGS.maxPicks, competitions: DEFAULT_COMPETITIONS, bookmakers: DEFAULT_BOOKMAKERS })}
+            >
+              <IconRefresh size={15} /> Remettre les règles par défaut
+            </button>
           </div>
-          <div className="field">
-            <label>Idéalement avant</label>
-            <Stepper value={s.entryTo} min={s.entryFrom} max={s.lastEntry} onChange={(v) => set({ entryTo: v })} format={(v) => `${v}e`} />
-          </div>
-        </div>
-        <div className="field">
-          <label>Ne plus entrer après la</label>
-          <Stepper value={s.lastEntry} min={s.entryTo} max={45} onChange={(v) => set({ lastEntry: v })} format={(v) => `${v}e minute`} />
-        </div>
-      </Section>
-
-      <Section title="Les critères (avancé)">
-        <div className="grid2">
-          <NumberField label="Buts marqués et encaissés mini / match" value={s.teamMin} onChange={(v) => v !== null && set({ teamMin: v })} />
-          <NumberField label="% mini de matchs à 2 buts ou +" value={s.over15Min} onChange={(v) => v !== null && set({ over15Min: v })} suffix="%" min={0} max={100} />
-        </div>
-        <div className="field">
-          <label>Compétitions que Claude doit chercher</label>
-          <textarea className="input" style={{ fontFamily: 'var(--body)', fontSize: 14, minHeight: 90 }} value={s.competitions} onChange={(e) => set({ competitions: e.target.value })} />
-        </div>
-        <div className="field">
-          <label>Nombre de matchs maximum par recherche</label>
-          <Stepper value={s.maxMatches} min={3} max={15} onChange={(v) => set({ maxMatches: v })} />
-        </div>
-        <button
-          className="btn small ghost"
-          onClick={() =>
-            set({ teamMin: DEFAULT_SETTINGS.teamMin, over15Min: DEFAULT_SETTINGS.over15Min, competitions: DEFAULT_COMPETITIONS, maxMatches: DEFAULT_SETTINGS.maxMatches, minLiveOdds: DEFAULT_SETTINGS.minLiveOdds, entryFrom: DEFAULT_SETTINGS.entryFrom, entryTo: DEFAULT_SETTINGS.entryTo, lastEntry: DEFAULT_SETTINGS.lastEntry })
-          }
-        >
-          <IconRefresh size={15} /> Remettre les règles par défaut
-        </button>
+        </Explain>
       </Section>
 
       <Section title="Sauvegarde">
@@ -164,7 +155,7 @@ export function Settings({ goLearn }: { goLearn: () => void }) {
         <button
           className="btn danger block small"
           onClick={async () => {
-            if (await ask({ title: 'Tout effacer ?', message: 'Paris, matchs et réglages reviennent à zéro. Pense à sauvegarder avant.', confirm: 'Tout effacer', tone: 'danger' })) {
+            if (await ask({ title: 'Tout effacer ?', message: 'Paris, outsiders et réglages reviennent à zéro. Pense à sauvegarder avant.', confirm: 'Tout effacer', tone: 'danger' })) {
               actions.resetAll();
               toast('Remis à zéro');
             }
@@ -176,9 +167,9 @@ export function Settings({ goLearn }: { goLearn: () => void }) {
 
       <Section title="Confort">
         <ToggleRow title="Vibrations" desc="Petites vibrations quand tu valides." on={s.haptics} onChange={(v) => set({ haptics: v })} />
-        <ToggleRow title="Animation d'ouverture" desc="Le ballon et le logo +1.5 au lancement." on={s.intro} onChange={(v) => set({ intro: v })} />
+        <ToggleRow title="Animation d'ouverture" desc="Le ballon et le logo au lancement." on={s.intro} onChange={(v) => set({ intro: v })} />
         <button className="btn block" onClick={goLearn}>
-          Comprendre la méthode
+          Comprendre la value
         </button>
       </Section>
 
@@ -195,7 +186,7 @@ export function Settings({ goLearn }: { goLearn: () => void }) {
         <button className="btn block ghost" onClick={() => openUrl('tel:0974751313')}>
           Appeler le 09 74 75 13 13 (non surtaxé)
         </button>
-        <div className="tiny faint">Méthode inspirée des vidéos de Steven (Team Soccer Bet). App indépendante, non affiliée. Version {__APP_VERSION__}.</div>
+        <div className="tiny faint">Outsiders – application indépendante, non affiliée à un bookmaker. Version {__APP_VERSION__}.</div>
       </Section>
     </div>
   );

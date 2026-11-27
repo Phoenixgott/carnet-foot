@@ -1,22 +1,22 @@
 import type { AppData, Settings } from './types';
 
 export const DEFAULT_COMPETITIONS =
-  'toutes les grandes compétitions : Ligue 1, Premier League, Liga, Serie A, Bundesliga, Ligue des champions, Ligue Europa, Ligue Conférence, Ligue des nations, Série A brésilienne, et les autres championnats suivis';
+  'les championnats européens (Ligue 1, Premier League, Liga, Serie A, Bundesliga, Pays-Bas, Portugal, Belgique, Turquie…), les coupes d\'Europe, et les autres championnats suivis par les bookmakers français (Arabie saoudite, Brésil…)';
+
+export const DEFAULT_BOOKMAKERS = 'Winamax, Unibet, Betclic ou Parions Sport';
 
 export const DEFAULT_SETTINGS: Settings = {
   bankrollInitial: 200,
-  stakePct: 2,
+  stakePct: 1,
   weeklyLossLimitPct: 10,
   testMode: true,
   testBetsTarget: 20,
-  minLiveOdds: 1.7,
-  entryFrom: 15,
-  entryTo: 20,
-  lastEntry: 30,
-  teamMin: 1,
-  over15Min: 75,
-  maxMatches: 6,
+  valueMin: 0.05,
+  minOdds: 3,
+  pinnacleMargin: 0.03,
+  maxPicks: 6,
   competitions: DEFAULT_COMPETITIONS,
+  bookmakers: DEFAULT_BOOKMAKERS,
   haptics: true,
   intro: true,
   ageConfirmed: false,
@@ -33,11 +33,10 @@ export function todayISO(d = new Date()): string {
 
 export function defaultData(): AppData {
   return {
-    version: 2,
+    version: 3,
     settings: structuredClone(DEFAULT_SETTINGS),
-    matches: [],
-    matchesDate: null,
+    picks: [],
+    picksDate: null,
     bets: [],
-    live: null,
   };
 }

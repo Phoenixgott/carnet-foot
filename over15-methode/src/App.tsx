@@ -5,28 +5,25 @@ import { AskHost, ToastHost } from './components/ui';
 import { hideSplash, initBackButton, openUrl } from './lib/native';
 import { actions, getState, useStore } from './lib/store';
 import { nextBetIsTest, testCount } from './lib/stats';
-import { Matches } from './screens/Matches';
-import { MatchDetail } from './screens/MatchDetail';
-import { Live } from './screens/Live';
+import { Outsiders } from './screens/Outsiders';
+import { Calc } from './screens/Calc';
 import { Bets } from './screens/Bets';
 import { Learn } from './screens/Learn';
 import { Settings } from './screens/Settings';
 
 const TITLES: Record<Tab, { title: string; sub: string }> = {
-  matches: { title: 'Over 1.5', sub: 'Les matchs à jouer, expliqués simplement' },
-  live: { title: 'Live', sub: 'Je te guide pendant le match' },
-  bets: { title: 'Mes paris', sub: 'Ce que tu as gagné ou perdu' },
-  learn: { title: 'Comprendre', sub: 'La méthode en 2 minutes' },
+  outsiders: { title: 'Outsiders', sub: 'Les grosses cotes qui valent le coup' },
+  calc: { title: 'Calculer', sub: 'Bonne affaire ou piège ? En 2 chiffres' },
+  bets: { title: 'Mes paris', sub: 'Ce qui marche, ce qui ne marche pas' },
+  learn: { title: 'Comprendre', sub: 'La value en 2 minutes' },
   settings: { title: 'Réglages', sub: 'Ton argent, les règles, la sauvegarde' },
 };
 
 export function App() {
   const settings = useStore((s) => s.settings);
   const bets = useStore((s) => s.bets);
-  const live = useStore((s) => s.live);
   const [introDone, setIntroDone] = useState(!settings.intro);
-  const [tab, setTab] = useState<Tab>(live && live.stage !== 'fini' ? 'live' : 'matches');
-  const [detail, setDetail] = useState<string | null>(null);
+  const [tab, setTab] = useState<Tab>('outsiders');
   const tabRef = useRef(tab);
   tabRef.current = tab;
 
@@ -34,8 +31,8 @@ export function App() {
     // Le splash natif s'efface dès que l'interface (ou l'intro, de la même couleur) est prête.
     requestAnimationFrame(() => hideSplash());
     initBackButton(() => {
-      if (tabRef.current !== 'matches') {
-        setTab('matches');
+      if (tabRef.current !== 'outsiders') {
+        setTab('outsiders');
         return true;
       }
       return false;
@@ -54,7 +51,7 @@ export function App() {
   return (
     <div className="app">
       <header className="topbar">
-        <div className="logo-mini">+1.5</div>
+        <div className="logo-mini">+EV</div>
         <div className="grow">
           <h1>{head.title}</h1>
           <div className="sub">{head.sub}</div>
@@ -62,14 +59,13 @@ export function App() {
         <span className={`mode-chip ${isTest ? '' : 'real'}`}>{isTest ? `Entraînement ${tc}/${settings.testBetsTarget}` : 'Pour de vrai'}</span>
       </header>
       <main className="screen" key={tab}>
-        {tab === 'matches' && <Matches openMatch={setDetail} goLearn={() => go('learn')} />}
-        {tab === 'live' && <Live goMatches={() => go('matches')} goBets={() => go('bets')} />}
+        {tab === 'outsiders' && <Outsiders goLearn={() => go('learn')} goBets={() => go('bets')} />}
+        {tab === 'calc' && <Calc goBets={() => go('bets')} />}
         {tab === 'bets' && <Bets />}
         {tab === 'learn' && <Learn />}
         {tab === 'settings' && <Settings goLearn={() => go('learn')} />}
       </main>
-      <BottomNav tab={tab} onChange={go} liveActive={!!live && live.stage !== 'fini'} />
-      <MatchDetail id={detail} onClose={() => setDetail(null)} goLive={() => go('live')} />
+      <BottomNav tab={tab} onChange={go} pending={bets.filter((b) => b.result === 'pending' && b.test === isTest).length} />
       {introDone && !settings.ageConfirmed && <AgeGate />}
       <ToastHost />
       <AskHost />
@@ -82,10 +78,10 @@ function AgeGate() {
   return (
     <div className="age-gate">
       <div className="stack" style={{ maxWidth: 420, width: '100%', textAlign: 'center' }}>
-        <div className="logo-mini" style={{ width: 84, height: 84, fontSize: 34, borderRadius: 24, margin: '0 auto' }}>+1.5</div>
-        <h1 style={{ fontFamily: 'var(--display)', fontWeight: 800, fontSize: 34, margin: '6px 0 0', textTransform: 'uppercase' }}>Over 1.5 – Méthode</h1>
+        <div className="logo-mini" style={{ width: 84, height: 84, fontSize: 34, borderRadius: 24, margin: '0 auto' }}>+EV</div>
+        <h1 style={{ fontFamily: 'var(--display)', fontWeight: 800, fontSize: 34, margin: '6px 0 0', textTransform: 'uppercase' }}>Outsiders</h1>
         <p className="muted" style={{ margin: 0 }}>
-          L'app te dit quels matchs jouer et te guide pendant le match, étape par étape. Tes {settingsTarget()} premiers paris sont pour de faux, pour t'entraîner.
+          L'app te dit si une grosse cote est une bonne affaire ou un piège, étape par étape. Tes {settingsTarget()} premiers paris sont pour de faux, pour t'entraîner.
         </p>
         <div className="banner red" style={{ textAlign: 'left' }}>
           <span className="logo-mini" style={{ width: 34, height: 34, fontSize: 13, background: 'var(--red)', color: '#fff', boxShadow: 'none' }}>18+</span>

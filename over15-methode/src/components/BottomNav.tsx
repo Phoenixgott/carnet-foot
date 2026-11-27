@@ -1,17 +1,17 @@
 import { haptic } from '../lib/native';
-import { IconBolt, IconBook, IconGear, IconHome, IconList } from './Icons';
+import { IconBook, IconGear, IconHome, IconList, IconTarget } from './Icons';
 
-export type Tab = 'matches' | 'live' | 'bets' | 'learn' | 'settings';
+export type Tab = 'outsiders' | 'calc' | 'bets' | 'learn' | 'settings';
 
 const ITEMS: { id: Tab; label: string; icon: (p: { size?: number }) => React.ReactNode }[] = [
-  { id: 'matches', label: 'Matchs', icon: IconHome },
-  { id: 'live', label: 'Live', icon: IconBolt },
+  { id: 'outsiders', label: 'Outsiders', icon: IconHome },
+  { id: 'calc', label: 'Calculer', icon: IconTarget },
   { id: 'bets', label: 'Mes paris', icon: IconList },
   { id: 'learn', label: 'Comprendre', icon: IconBook },
   { id: 'settings', label: 'Réglages', icon: IconGear },
 ];
 
-export function BottomNav({ tab, onChange, liveActive }: { tab: Tab; onChange: (t: Tab) => void; liveActive: boolean }) {
+export function BottomNav({ tab, onChange, pending }: { tab: Tab; onChange: (t: Tab) => void; pending: number }) {
   return (
     <nav className="bottom-nav" aria-label="Navigation principale">
       {ITEMS.map(({ id, label, icon: Icon }) => (
@@ -27,7 +27,7 @@ export function BottomNav({ tab, onChange, liveActive }: { tab: Tab; onChange: (
         >
           <span style={{ position: 'relative' }}>
             <Icon size={23} />
-            {id === 'live' && liveActive && <span className="dot RED" style={{ position: 'absolute', top: -3, right: -6, width: 10, height: 10 }} />}
+            {id === 'bets' && pending > 0 && <span className="nav-badge">{pending}</span>}
           </span>
           <span>{label}</span>
         </button>

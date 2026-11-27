@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import type { Form } from '../lib/types';
-import type { Check } from '../lib/types';
+type Form = 'V' | 'N' | 'D';
+type Check = 'ok' | 'warn' | 'fail' | 'unknown';
 
 type Status = Check | 'block' | 'todo';
 import { fmtInput, parseNum } from '../lib/format';

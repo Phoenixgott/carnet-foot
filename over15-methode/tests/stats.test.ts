@@ -39,7 +39,7 @@ test('bankroll, ROI et seuil de rentabilité', () => {
 });
 
 test('mise fixe = % de la bankroll', () => {
-  assert.equal(fixedStake([], S, false), 2);
+  assert.equal(fixedStake([], S, false), 1);
 });
 
 test('mode TEST : 20 premiers paris fictifs', () => {

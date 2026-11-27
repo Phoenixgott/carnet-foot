@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.phoenixgott.over15methode',
-  appName: 'Over 1.5 – Méthode',
+  appName: 'Outsiders',
   webDir: 'dist',
   backgroundColor: '#050b08',
   android: {

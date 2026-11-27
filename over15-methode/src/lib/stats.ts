@@ -1,5 +1,6 @@
 // Bankroll, mises et tableau de bord.
-import type { Bet, Settings, Verdict } from './types';
+import type { Bet, Settings } from './types';
+import { BANDS, oddsBand } from './value';
 
 export function profit(b: Bet): number {
   if (b.result === 'pending') return 0;
@@ -69,7 +70,6 @@ export interface Dashboard {
   breakEven: number | null;
   bankroll: number;
   curve: { x: number; y: number; label: string }[];
-  byVerdict: Record<Verdict, { n: number; won: number; rate: number | null }>;
   streak: { kind: 'won' | 'lost' | null; n: number };
 }
 
@@ -89,13 +89,6 @@ export function dashboard(bets: Bet[], s: Settings, test: boolean): Dashboard {
     y += profit(b);
     curve.push({ x: i + 1, y: round2(y), label: b.match });
   });
-  const byVerdict = { GREEN: { n: 0, won: 0, rate: null }, ORANGE: { n: 0, won: 0, rate: null }, RED: { n: 0, won: 0, rate: null } } as Dashboard['byVerdict'];
-  for (const b of decided) {
-    if (!b.verdict) continue;
-    byVerdict[b.verdict].n++;
-    if (b.result === 'won') byVerdict[b.verdict].won++;
-  }
-  for (const v of Object.values(byVerdict)) v.rate = v.n ? v.won / v.n : null;
   let streak: Dashboard['streak'] = { kind: null, n: 0 };
   for (let i = decided.length - 1; i >= 0; i--) {
     const r = decided[i].result as 'won' | 'lost';
@@ -118,7 +111,6 @@ export function dashboard(bets: Bet[], s: Settings, test: boolean): Dashboard {
     breakEven: avgOdds ? 1 / avgOdds : null,
     bankroll: round2(s.bankrollInitial + p),
     curve,
-    byVerdict,
     streak,
   };
 }
@@ -130,4 +122,49 @@ export function testCount(bets: Bet[]): number {
 /** Le prochain pari doit-il être fictif (mode TEST) ? */
 export function nextBetIsTest(bets: Bet[], s: Settings): boolean {
   return s.testMode && testCount(bets) < s.testBetsTarget;
+}
+
+export interface GroupStat {
+  label: string;
+  n: number;
+  won: number;
+  rate: number | null;
+  profit: number;
+  staked: number;
+  roi: number | null;
+  /** Taux de réussite minimum pour être rentable à la cote moyenne du groupe. */
+  breakEven: number | null;
+}
+
+function group(bets: Bet[], keyOf: (b: Bet) => string, order?: string[]): GroupStat[] {
+  const map = new Map<string, Bet[]>();
+  for (const b of bets) {
+    if (b.result !== 'won' && b.result !== 'lost') continue;
+    const k = keyOf(b) || 'Autre';
+    map.set(k, [...(map.get(k) ?? []), b]);
+  }
+  const keys = order ? order.filter((k) => map.has(k)) : [...map.keys()].sort((a, b) => (map.get(b)!.length - map.get(a)!.length) || a.localeCompare(b));
+  return keys.map((label) => {
+    const list = map.get(label)!;
+    const won = list.filter((b) => b.result === 'won').length;
+    const staked = round2(list.reduce((a, b) => a + b.stake, 0));
+    const p = round2(list.reduce((a, b) => a + profit(b), 0));
+    const avg = list.reduce((a, b) => a + b.odds, 0) / list.length;
+    return { label, n: list.length, won, rate: won / list.length, profit: p, staked, roi: staked > 0 ? p / staked : null, breakEven: avg > 1 ? 1 / avg : null };
+  });
+}
+
+/** Bilan par tranche de cote (moins de 3, 3 à 5, 5 à 8, plus de 8). */
+export function byBand(bets: Bet[]): GroupStat[] {
+  return group(bets, (b) => oddsBand(b.odds), BANDS);
+}
+
+/** Bilan par championnat. */
+export function byLeague(bets: Bet[]): GroupStat[] {
+  return group(bets, (b) => b.league);
+}
+
+/** Bilan selon la value annoncée au moment du pari. */
+export function byValue(bets: Bet[]): GroupStat[] {
+  return group(bets, (b) => (typeof b.value !== 'number' ? 'Sans calcul' : b.value >= 0.05 ? 'Value OK' : b.value >= 0 ? 'Value bof' : 'Pas de value'), ['Value OK', 'Value bof', 'Pas de value', 'Sans calcul']);
 }

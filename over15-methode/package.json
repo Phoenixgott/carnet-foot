@@ -1,7 +1,7 @@
 {
   "name": "over15-methode",
-  "version": "2.0.0",
-  "description": "Over 1.5 – Méthode : assistant d'analyse +1.5 buts en 6 étapes (méthode Team Soccer Bet), suivi de bankroll. Application Android (Capacitor).",
+  "version": "3.0.0",
+  "description": "Outsiders : repère les grosses cotes qui valent le coup (value), avec Claude et la cote Pinnacle, et suit ton bilan. Application Android (Capacitor).",
   "private": true,
   "type": "module",
   "scripts": {

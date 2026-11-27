@@ -1,14 +1,17 @@
 import { useState } from 'react';
-import { actions, useStore } from '../lib/store';
-import { todayISO, uid } from '../lib/defaults';
-import { dashboard, fixedStake, nextBetIsTest, profit, testCount, weekStatus } from '../lib/stats';
-import { dateShort, money, odds as fmtOdds, pct, signedMoney } from '../lib/format';
-import { VERDICT_COLOR } from '../lib/method';
+import { actions, getState, useStore } from '../lib/store';
+import { buildResultsPrompt, parseResults } from '../lib/claude';
+import { byBand, byLeague, byValue, dashboard, profit, testCount, weekStatus, type GroupStat } from '../lib/stats';
+import { dateShort, money, odds as fmtOdds, signedMoney } from '../lib/format';
 import type { Bet, BetResult } from '../lib/types';
 import { haptic } from '../lib/native';
 import { BankrollChart } from '../components/Charts';
-import { ask, Banner, Explain, Guide, NumberField, Segmented, Sheet, TextField, toast } from '../components/ui';
-import { IconPlus, IconTrash } from '../components/Icons';
+import { Donut, SaveBet } from '../components/Value';
+import { ask, Banner, BigButton, Explain, Guide, NumberField, Segmented, Sheet, TextField, toast } from '../components/ui';
+import { IconPlus, IconSpark, IconTrash } from '../components/Icons';
+import { FetchFlow } from './FetchFlow';
+
+const pc = (x: number | null) => (x === null ? '—' : `${Math.round(x * 100)} %`);
 
 export function Bets() {
   const bets = useStore((st) => st.bets);
@@ -18,21 +21,16 @@ export function Bets() {
   const [view, setView] = useState<'real' | 'test'>(realCount > 0 ? 'real' : 'test');
   const [edit, setEdit] = useState<Bet | null>(null);
   const [add, setAdd] = useState(false);
+  const [results, setResults] = useState(false);
   const isTest = view === 'test';
+  const mine = bets.filter((b) => b.test === isTest);
   const d = dashboard(bets, s, isTest);
   const week = weekStatus(bets, s);
-  const list = bets.filter((b) => b.test === isTest).sort((a, b) => (b.date + b.createdAt).localeCompare(a.date + a.createdAt));
+  const pending = mine.filter((b) => b.result === 'pending');
   const decided = d.won + d.lost;
   const trainingDone = s.testMode && tc >= s.testBetsTarget;
-
-  let verdict: { tone: 'green' | 'red' | 'blue'; text: React.ReactNode };
-  if (decided < 10 || d.hitRate === null || d.breakEven === null) {
-    verdict = { tone: 'blue', text: <>Encore <b>{Math.max(0, 10 - decided)} pari(s)</b> à terminer avant de savoir si la méthode marche pour toi.</> };
-  } else if (d.hitRate > d.breakEven) {
-    verdict = { tone: 'green', text: <>👍 <b>La méthode marche pour toi.</b> Tu gagnes {Math.round(d.hitRate * 100)} paris sur 100, il en fallait au moins {Math.ceil(d.breakEven * 100)}.</> };
-  } else {
-    verdict = { tone: 'red', text: <>👎 <b>Pas encore rentable.</b> Tu gagnes {Math.round(d.hitRate * 100)} paris sur 100, il en faut au moins {Math.ceil(d.breakEven * 100)}. Fais une pause et relis la méthode.</> };
-  }
+  const list = [...mine].sort((a, b) => (b.date + b.createdAt).localeCompare(a.date + a.createdAt));
+  const rentable = d.hitRate !== null && d.breakEven !== null ? d.hitRate > d.breakEven : null;
 
   const setResult = (b: Bet, r: BetResult) => {
     if (r === 'won') haptic.success();
@@ -58,7 +56,7 @@ export function Bets() {
             <button
               className="btn small primary"
               onClick={async () => {
-                if (await ask({ title: 'Passer aux paris pour de vrai ?', message: 'Mise fixe, paris simples, limite par semaine : les règles restent les mêmes.', confirm: 'Oui, passer pour de vrai' })) {
+                if (await ask({ title: 'Passer aux paris pour de vrai ?', message: 'Mise fixe, paris simples, limite par semaine : les règles restent les mêmes.', confirm: 'Oui, pour de vrai' })) {
                   actions.updateSettings({ testMode: false });
                   setView('real');
                 }
@@ -73,23 +71,55 @@ export function Bets() {
         </Banner>
       )}
 
-      <div className="card hero">
-        <div className="label">{isTest ? 'ENTRAÎNEMENT : TON RÉSULTAT' : 'TON RÉSULTAT'}</div>
-        <div className={`big-number ${d.profit > 0 ? 'pos' : d.profit < 0 ? 'neg' : ''}`} style={{ marginTop: 4 }}>
+      {pending.length > 0 && (
+        <>
+          <Guide steps={[<>Tu as <b>{pending.length} pari(s) en attente</b> de résultat.</>, <>Touche le bouton : Claude trouve les scores, et l'app met « gagné » ou « perdu » toute seule.</>]} />
+          <BigButton icon={<IconSpark size={24} />} title="Trouver mes résultats" sub="Avec Claude, en 5 étapes" onClick={() => setResults(true)} />
+        </>
+      )}
+
+      <div className="card hero center">
+        <div className="label">{isTest ? 'ENTRAÎNEMENT' : 'MON BILAN'}</div>
+        <div style={{ margin: '10px 0' }}>
+          <Donut won={d.won} lost={d.lost} />
+        </div>
+        <div className="row" style={{ justifyContent: 'center', gap: 16 }}>
+          <span className="chip green">✅ {d.won} gagné(s)</span>
+          <span className="chip red">❌ {d.lost} perdu(s)</span>
+        </div>
+        <div className={`big-number ${d.profit > 0 ? 'pos' : d.profit < 0 ? 'neg' : ''}`} style={{ fontSize: 34, marginTop: 12 }}>
           {d.profit >= 0 ? 'Gagné ' : 'Perdu '}
           {money(Math.abs(d.profit))}
         </div>
-        <div className="small muted" style={{ marginBottom: 8 }}>
-          {d.won} gagné(s) sur {decided} · ton argent : <b style={{ color: 'var(--text)' }}>{money(d.bankroll)}</b>
-        </div>
-        <BankrollChart points={d.curve} start={s.bankrollInitial} />
+        <div className="small muted">ton argent : {money(d.bankroll)}</div>
       </div>
 
-      <Banner tone={verdict.tone}>{verdict.text}</Banner>
-      <Explain q="Comment on sait si c'est rentable ?">
-        Avec une cote de {fmtOdds(d.avgOdds ?? 1.7)}, il faut gagner au moins <b>{Math.ceil((1 / (d.avgOdds ?? 1.7)) * 100)} paris sur 100</b> pour ne pas perdre d'argent (1 ÷ la cote). Au-dessus, tu gagnes. En dessous, tu perds.
-        {d.hitRate !== null && <> Toi : {pct(d.hitRate)} de réussite, ROI {d.roi === null ? '—' : `${(d.roi * 100).toFixed(1).replace('.', ',')} %`}.</>}
-      </Explain>
+      {decided > 0 && d.breakEven !== null && (
+        <div className="card tight stack" style={{ gap: 10 }}>
+          <b>Est-ce que ça marche ?</b>
+          <CompareBar label="Ta réussite" value={d.hitRate ?? 0} color={rentable ? 'var(--green)' : 'var(--red)'} />
+          <CompareBar label="Il faut au moins" value={d.breakEven} color="var(--muted)" />
+          <div className="small">
+            {rentable ? '✅ OK : tu gagnes plus souvent qu\'il ne faut, tu es rentable.' : '❌ Pas OK : tu ne gagnes pas encore assez souvent pour tes cotes.'}
+            {decided < 30 && <span className="muted"> (seulement {decided} pari(s) : il en faut au moins 100 pour être sûr)</span>}
+          </div>
+          <Explain q="Pourquoi « il faut au moins » ?">
+            Avec une cote moyenne de {fmtOdds(d.avgOdds)}, tu gagnes beaucoup quand ça passe. Il suffit donc de gagner {pc(d.breakEven)} de tes paris pour ne pas perdre d'argent (1 ÷ la cote). Avec les outsiders, c'est normal de perdre souvent : ce qui compte, c'est ce chiffre.
+          </Explain>
+        </div>
+      )}
+
+      {decided > 0 && (
+        <>
+          <Groups title="Par cote" rows={byBand(mine)} />
+          <Groups title="Selon la value calculée" rows={byValue(mine)} />
+          <Groups title="Par championnat" rows={byLeague(mine).slice(0, 8)} />
+          <div className="card hero">
+            <div className="label">MON ARGENT</div>
+            <BankrollChart points={d.curve} start={s.bankrollInitial} />
+          </div>
+        </>
+      )}
 
       {!isTest && s.weeklyLossLimitPct > 0 && (
         <div className="card tight stack" style={{ gap: 8 }}>
@@ -111,30 +141,31 @@ export function Bets() {
           <IconPlus size={14} /> Ajouter
         </button>
       </div>
-      {list.some((b) => b.result === 'pending') && <Guide steps={[<>Quand un match est fini, touche <b>Gagné</b> ou <b>Perdu</b> sur son pari.</>]} />}
       {list.length === 0 && (
         <div className="empty card">
           <span className="ball">⚽</span>
-          Pas encore de pari ici. Va dans <b>Matchs</b>, choisis un match vert, puis suis-le en <b>Live</b>.
+          Pas encore de pari. Va dans <b>Outsiders</b> ou <b>Calculer</b>, puis touche « J'ai parié ».
         </div>
       )}
       {list.map((b) => {
         const p = profit(b);
+        const color = b.result === 'pending' ? 'var(--line-2)' : p > 0 ? 'var(--green)' : p < 0 ? 'var(--red)' : 'var(--muted)';
         return (
-          <div key={b.id} className="card bet-card match-card" style={{ ['--stripe' as string]: b.verdict ? VERDICT_COLOR[b.verdict] : 'var(--line-2)' }}>
+          <div key={b.id} className="card bet-card match-card" style={{ ['--stripe' as string]: color }}>
             <div onClick={() => setEdit(b)} role="button">
               <div className="league">
                 <span className="ellipsis grow">
                   {b.league || 'Match'} · {dateShort(b.date)}
                 </span>
-                {b.live && <span className="chip orange">Live{b.minute ? ` ${b.minute}'` : ''}</span>}
-                {b.hedge && <span className="chip green">Sécurisé</span>}
-                {b.kind === 'combine' && <span className="chip red">Combiné</span>}
+                {typeof b.value === 'number' && <span className={`chip ${b.value >= s.valueMin ? 'green' : b.value >= 0 ? 'orange' : 'red'}`}>value {b.value >= 0 ? '+' : '−'}{Math.abs(Math.round(b.value * 100))} %</span>}
               </div>
               <div className="row" style={{ marginTop: 6 }}>
                 <div className="grow" style={{ minWidth: 0 }}>
-                  <div className="ellipsis" style={{ fontWeight: 700, fontSize: 15.5 }}>{b.match}</div>
-                  <div className="small muted">Mise {money(b.stake)}</div>
+                  <div className="ellipsis" style={{ fontWeight: 700, fontSize: 15.5 }}>{b.pick || b.match}</div>
+                  <div className="small muted ellipsis">
+                    {b.pick ? `${b.match} · ` : ''}mise {money(b.stake)}
+                    {b.finalScore ? ` · score ${b.finalScore}` : ''}
+                  </div>
                 </div>
                 <span className="odds-tag">{fmtOdds(b.odds)}</span>
               </div>
@@ -142,15 +173,15 @@ export function Bets() {
             {b.result === 'pending' ? (
               <div className="result-btns" style={{ gridTemplateColumns: '1fr 1fr' }}>
                 <button className="won" onClick={() => setResult(b, 'won')}>
-                  ✓ Gagné
+                  ✅ Gagné
                 </button>
                 <button className="lost" onClick={() => setResult(b, 'lost')}>
-                  ✗ Perdu
+                  ❌ Perdu
                 </button>
               </div>
             ) : (
               <div className="row between" style={{ marginTop: 8 }}>
-                <span className={`chip ${p > 0 ? 'green' : p < 0 ? 'red' : ''}`}>{p > 0 ? 'Gagné' : p < 0 ? 'Perdu' : 'Remboursé'}</span>
+                <span className={`chip ${p > 0 ? 'green' : p < 0 ? 'red' : ''}`}>{p > 0 ? '✅ OK' : p < 0 ? '❌ Pas OK' : 'Remboursé'}</span>
                 <b className={p > 0 ? 'pos' : p < 0 ? 'neg' : 'muted'}>{signedMoney(p)}</b>
               </div>
             )}
@@ -158,8 +189,74 @@ export function Bets() {
         );
       })}
       {edit && <EditBet bet={edit} onClose={() => setEdit(null)} />}
-      {add && <AddBet onClose={() => setAdd(false)} />}
+      {add && <SaveBet preset={{ match: '', pick: '', odds: null, result: null }} onClose={() => setAdd(false)} />}
+      {results && <Results pending={pending} onClose={() => setResults(false)} />}
     </div>
+  );
+}
+
+function CompareBar({ label, value, color }: { label: string; value: number; color: string }) {
+  return (
+    <div className="vg-row">
+      <span className="vg-label">{label}</span>
+      <div className="vg-track">
+        <div className="vg-bar" style={{ width: `${Math.min(100, value * 100)}%`, background: color }} />
+      </div>
+      <b className="vg-val" style={{ color }}>{pc(value)}</b>
+    </div>
+  );
+}
+
+function Groups({ title, rows }: { title: string; rows: GroupStat[] }) {
+  if (!rows.length) return null;
+  return (
+    <div className="card tight stack" style={{ gap: 8 }}>
+      <b>{title}</b>
+      {rows.map((g) => {
+        const okk = g.profit > 0;
+        return (
+          <div key={g.label} className="group-row">
+            <span className="ellipsis">{g.label}</span>
+            <span className="muted tiny">{g.n} pari(s)</span>
+            <span className="tiny">
+              {pc(g.rate)} <span className="faint">/ {pc(g.breakEven)}</span>
+            </span>
+            <b className={okk ? 'pos' : g.profit < 0 ? 'neg' : 'muted'}>{okk ? '✅' : g.profit < 0 ? '❌' : '➖'} {signedMoney(g.profit).replace(',00', '')}</b>
+          </div>
+        );
+      })}
+      <div className="tiny faint">Réussite / réussite minimum pour être rentable. ✅ = tu gagnes de l'argent sur ce groupe.</div>
+    </div>
+  );
+}
+
+function Results({ pending, onClose }: { pending: Bet[]; onClose: () => void }) {
+  return (
+    <Sheet open onClose={onClose} title="Trouver mes résultats" top>
+      <div className="stack">
+        <Guide steps={[<>Fais les 5 étapes, comme pour les outsiders.</>, <>Claude cherche le score de tes {pending.length} match(s).</>, <>L'app met « gagné » ou « perdu » toute seule.</>]} />
+        <FetchFlow
+          buildPrompt={() => buildResultsPrompt(pending)}
+          pasteHint="L'app lit les scores et met à jour tes paris."
+          onText={(text) => {
+            const res = parseResults(text);
+            const ids = new Set(getState().bets.map((b) => b.id));
+            let n = 0;
+            for (const r of res) {
+              if (!ids.has(r.id)) continue;
+              if (r.won === null) {
+                if (r.score) actions.updateBet(r.id, { finalScore: r.score });
+                continue;
+              }
+              actions.updateBet(r.id, { result: r.won ? 'won' : 'lost', finalScore: r.score || undefined, settledAt: new Date().toISOString() });
+              n++;
+            }
+            onClose();
+            return n ? `${n} résultat(s) mis à jour ✓` : 'Pas encore de résultat : matchs pas finis';
+          }}
+        />
+      </div>
+    </Sheet>
   );
 }
 
@@ -167,11 +264,12 @@ function EditBet({ bet, onClose }: { bet: Bet; onClose: () => void }) {
   const [result, setResult] = useState<BetResult>(bet.result);
   const [odds, setOdds] = useState<number | null>(bet.odds);
   const [stake, setStake] = useState<number | null>(bet.stake);
+  const [pick, setPick] = useState(bet.pick ?? '');
   return (
     <Sheet open onClose={onClose} title="Modifier le pari">
       <div className="stack">
         <div className="muted">{bet.match}</div>
-        {bet.hedge && <Banner tone="green">Pari sécurisé : résultat {signedMoney(profit(bet))}.</Banner>}
+        <TextField label="Mon pari" value={pick} onChange={setPick} />
         <div className="grid2">
           <NumberField label="Cote" value={odds} onChange={setOdds} />
           <NumberField label="Mise" value={stake} onChange={setStake} suffix="€" />
@@ -190,7 +288,7 @@ function EditBet({ bet, onClose }: { bet: Bet; onClose: () => void }) {
           className="btn primary block"
           onClick={() => {
             if (!odds || odds <= 1 || !stake || stake <= 0) return toast('Cote ou mise invalide', 'warn');
-            actions.updateBet(bet.id, { odds, stake, result, settledAt: result === 'pending' ? undefined : bet.settledAt ?? new Date().toISOString(), ...(bet.hedge ? {} : { pnl: undefined }) });
+            actions.updateBet(bet.id, { odds, stake, pick, result, settledAt: result === 'pending' ? undefined : bet.settledAt ?? new Date().toISOString(), pnl: undefined });
             toast('Modifié ✓');
             onClose();
           }}
@@ -207,52 +305,6 @@ function EditBet({ bet, onClose }: { bet: Bet; onClose: () => void }) {
           }}
         >
           <IconTrash /> Supprimer
-        </button>
-      </div>
-    </Sheet>
-  );
-}
-
-function AddBet({ onClose }: { onClose: () => void }) {
-  const bets = useStore((st) => st.bets);
-  const s = useStore((st) => st.settings);
-  const test = nextBetIsTest(bets, s);
-  const [match, setMatch] = useState('');
-  const [odds, setOdds] = useState<number | null>(null);
-  const [stake, setStake] = useState<number | null>(fixedStake(bets, s, test));
-  const [kind, setKind] = useState<'simple' | 'combine'>('simple');
-  const save = async () => {
-    if (!match.trim() || !odds || odds <= 1 || !stake) return toast('Écris le match, la cote et la mise', 'warn');
-    if (kind === 'combine') {
-      const go = await ask({ title: 'Combiné : hors méthode', message: 'La méthode, c\'est des paris SIMPLES uniquement. Avec un combiné, un seul match raté et tout est perdu.', confirm: 'Enregistrer quand même', cancel: 'Revenir en simple', tone: 'danger' });
-      if (!go) return setKind('simple');
-    }
-    const [home, away] = match.split(/\s+[-–]\s+/);
-    actions.addBet({ id: uid(), createdAt: new Date().toISOString(), date: todayISO(), match: match.trim(), home: home ?? match, away: away ?? '', league: '', odds, stake, kind, live: false, test, verdict: null, score: null, result: 'pending' });
-    haptic.success();
-    toast('Pari ajouté ✓');
-    onClose();
-  };
-  return (
-    <Sheet open onClose={onClose} title="Ajouter un pari">
-      <div className="stack">
-        <TextField label="Match" value={match} onChange={setMatch} placeholder="Ex. Lens – Lille" />
-        <div className="grid2">
-          <NumberField label="Cote" value={odds} onChange={setOdds} />
-          <NumberField label="Mise" value={stake} onChange={setStake} suffix="€" />
-        </div>
-        <Segmented
-          value={kind}
-          onChange={setKind}
-          options={[
-            { value: 'simple', label: 'Simple' },
-            { value: 'combine', label: 'Combiné' },
-          ]}
-        />
-        {kind === 'combine' && <Banner tone="red">Paris en <b>SIMPLE uniquement</b> : un combiné n'est pas dans la méthode.</Banner>}
-        {test && <Banner tone="blue">Ce pari sera noté <b>pour de faux</b> (entraînement).</Banner>}
-        <button className="btn primary block" onClick={save}>
-          Ajouter
         </button>
       </div>
     </Sheet>

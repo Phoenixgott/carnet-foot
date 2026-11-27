@@ -1,6 +1,6 @@
-name: Over 1.5 – APK Android
+name: Outsiders – APK Android
 
-# Compile l'APK signée de « Over 1.5 – Méthode » à chaque push touchant l'app,
+# Compile l'APK signée de « Outsiders » à chaque push touchant l'app,
 # puis la publie dans une GitHub Release (lien de téléchargement direct).
 on:
   push:
@@ -26,7 +26,7 @@ jobs:
         working-directory: over15-methode
     env:
       VERSION_CODE: ${{ github.run_number }}
-      VERSION_NAME: 2.0.${{ github.run_number }}
+      VERSION_NAME: 3.0.${{ github.run_number }}
     steps:
       - name: Récupération du code
         uses: actions/checkout@v5
@@ -89,15 +89,17 @@ jobs:
           "$BT/apksigner" verify --print-certs "$APK" | head -4
           "$BT/aapt2" dump badging "$APK" | grep -E "^(package|sdkVersion|targetSdkVersion|application-label:)" || true
           mkdir -p ../release
+          cp "$APK" ../release/Outsiders.apk
+          cp "$APK" "../release/Outsiders-v${VERSION_NAME}.apk"
+          # Ancien nom gardé pour que l'ancien lien de téléchargement marche toujours.
           cp "$APK" ../release/Over15-Methode.apk
-          cp "$APK" "../release/Over15-Methode-v${VERSION_NAME}.apk"
           ls -la ../release
 
       - name: Copie de l'APK (artefact du build)
         uses: actions/upload-artifact@v4
         with:
-          name: Over15-Methode-v${{ env.VERSION_NAME }}
-          path: release/Over15-Methode.apk
+          name: Outsiders-v${{ env.VERSION_NAME }}
+          path: release/Outsiders.apk
           retention-days: 30
 
       - name: Publication dans une GitHub Release
@@ -105,25 +107,25 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="over15-v${VERSION_NAME}"
+          TAG="outsiders-v${VERSION_NAME}"
           cat > "$RUNNER_TEMP/notes.md" <<NOTES
-          ## Over 1.5 – Méthode v${VERSION_NAME}
+          ## Outsiders v${VERSION_NAME}
 
           **Installer sur ton téléphone Android (Samsung) :**
-          1. Touche **Over15-Methode.apk** ci-dessous pour la télécharger.
+          1. Touche **Outsiders.apk** ci-dessous pour la télécharger.
           2. Ouvre le fichier téléchargé (notification ou appli *Mes fichiers* → *Téléchargements*).
           3. Si Android le demande, autorise l'installation depuis ton navigateur (*Paramètres → Installer des applis inconnues*).
           4. Touche **Installer** (ou **Mettre à jour**). Tes données sont conservées d'une version à l'autre.
 
           Lien permanent vers la dernière version :
-          https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/Over15-Methode.apk
+          https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/Outsiders.apk
 
           Android 8 ou plus récent · build ${GITHUB_SHA::7} · 18+ · Joueurs Info Service : 09 74 75 13 13
           NOTES
-          gh release create "$TAG" release/Over15-Methode.apk "release/Over15-Methode-v${VERSION_NAME}.apk" \
+          gh release create "$TAG" release/Outsiders.apk "release/Outsiders-v${VERSION_NAME}.apk" release/Over15-Methode.apk \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
-            --title "Over 1.5 – Méthode v${VERSION_NAME}" \
+            --title "Outsiders v${VERSION_NAME}" \
             --notes-file "$RUNNER_TEMP/notes.md" \
             --latest
-          echo "APK : https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/Over15-Methode.apk" >> "$GITHUB_STEP_SUMMARY"
+          echo "APK : https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/Outsiders.apk" >> "$GITHUB_STEP_SUMMARY"

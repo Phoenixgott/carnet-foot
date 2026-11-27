@@ -1,18 +1,9 @@
 import { useStore } from '../lib/store';
-import { chanceOver15, hedgePlan } from '../lib/method';
-import { money, odds as fmtOdds } from '../lib/format';
+import { computeValue } from '../lib/value';
+import { odds as fmtOdds } from '../lib/format';
 import { openUrl } from '../lib/native';
-import { Explain } from '../components/ui';
+import { ValueGauge } from '../components/Value';
 import { IconExternal } from '../components/Icons';
-
-const GOALS = [
-  { label: '0-15e', v: 11.5 },
-  { label: '16-30e', v: 14.1 },
-  { label: '31-45e', v: 15.9 },
-  { label: '46-60e', v: 15.7 },
-  { label: '61-75e', v: 18.2 },
-  { label: '76-90e', v: 24.6 },
-];
 
 function Section({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
   return (
@@ -28,97 +19,95 @@ function Section({ n, title, children }: { n: number; title: string; children: R
 
 export function Learn() {
   const s = useStore((st) => st.settings);
-  const c0 = Math.round(chanceOver15(2.8, 0) * 100);
-  const c20 = Math.round(chanceOver15(2.8, 20) * 100);
-  const ex = hedgePlan(4, 1.8, 4);
-  const need = (o: number) => Math.ceil((1 / o) * 100);
+  const pTrue = 1 / 7 / (1 + s.pinnacleMargin);
+  const ex = computeValue(8.4, pTrue, 'pinnacle1', s, 'Al Feiha');
+  const exBad = computeValue(8.4, 0.08, 'perso', s, 'Al Feiha');
+  const loseStreak = Math.round(Math.pow(5 / 6, 10) * 100);
   return (
     <div className="stack">
-      <Section n={1} title="C'est quoi « Over 1.5 » ?">
+      <Section n={1} title="C'est quoi un outsider ?">
         <p>
-          Tu paries qu'il y aura <b>au moins 2 buts</b> dans le match. Peu importe qui gagne.
-        </p>
-        <p>
-          Tu perds seulement si le match finit <b>0-0, 1-0 ou 0-1</b>.
+          C'est l'équipe qui n'est <b>pas favorite</b>. Sa cote est grosse (au moins {fmtOdds(s.minOdds)}) : elle gagne rarement, mais quand elle gagne, ça rapporte beaucoup.
         </p>
       </Section>
 
-      <Section n={2} title="Pourquoi pas avant le match ?">
+      <Section n={2} title="Grosse cote ≠ bonne affaire">
         <p>
-          Avant le match, la cote est souvent de <b>1,20 à 1,30</b>. C'est trop peu : à 1,25, il faut gagner <b>{need(1.25)} paris sur 100</b> juste pour ne pas perdre d'argent.
+          Une cote, c'est une chance cachée. Pour la voir : <b>1 ÷ cote</b>.
         </p>
-        <p>À {fmtOdds(s.minLiveOdds)}, il suffit d'en gagner {need(s.minLiveOdds)} sur 100. C'est plus atteignable… à condition de bien choisir le match avec les 4 critères.</p>
-      </Section>
-
-      <Section n={3} title="L'astuce : attendre le live">
         <p>
-          Il y a <b>peu de buts au début</b> d'un match, et beaucoup à la fin. Voici où tombent les buts (Premier League, saison 2024) :
+          Al Feiha à <b>8,40</b> : 1 ÷ 8,40 = <b>11,9 %</b>. Le bookmaker pense qu'Al Feiha a environ 12 chances sur 100 de gagner.
         </p>
-        {GOALS.map((g) => (
-          <div key={g.label} className="bar-row">
-            <span className="muted">{g.label}</span>
-            <div className="bar" style={{ width: `${(g.v / 25) * 100}%` }} />
-            <b>{g.v.toString().replace('.', ',')} %</b>
-          </div>
-        ))}
         <p>
-          Donc si c'est encore <b>0-0 à la {s.entryFrom}e–{s.entryTo}e minute</b>, presque tous les buts sont encore à venir… mais la cote, elle, a déjà monté. Pour un match où on attend environ 3 buts, les chances de voir 2 buts passent seulement de {c0} % au coup d'envoi à {c20} % à la 20e minute.
+          Si la <b>vraie</b> chance est plus grande que ça, la cote est trop généreuse : c'est une <b>bonne affaire ✅</b>. Si elle est plus petite, c'est un <b>piège ❌</b>.
         </p>
       </Section>
 
-      <Section n={4} title="Les 4 critères pour choisir le match">
+      <Section n={3} title="Où trouver la vraie chance ?">
         <p>
-          <b>1. Les deux équipes marquent ET encaissent</b> : au moins {s.teamMin.toString().replace('.', ',')} but marqué et encaissé par match. Une équipe qui ne prend jamais de but, c'est mauvais pour nous.
+          L'astuce des pros : <b>Pinnacle</b>, le bookmaker qui a les cotes les plus justes du monde. L'app retire sa petite marge et obtient la vraie chance.
         </p>
         <p>
-          <b>2. Les meilleurs buteurs jouent</b> : un attaquant blessé ou suspendu, c'est un signal d'alarme.
+          Exemple : Winamax propose 8,40, Pinnacle 7,00 → vraie chance ≈ {(pTrue * 100).toFixed(1).replace('.', ',')} %.
         </p>
-        <p>
-          <b>3. Beaucoup de matchs avec 2 buts ou plus</b> : au moins {s.over15Min} % des matchs de chaque équipe.
+        <ValueGauge r={ex} />
+        <p className="small muted">
+          Sans Pinnacle, l'app prend l'estimation de Claude (moins fiable) ou la tienne. Avec une vraie chance de 8 %, la même cote 8,40 serait un piège :
         </p>
-        <p>
-          <b>4. Pas de pression excessive</b> : pas de finale, de derby, de match pour le maintien ou la montée, ni de match sans enjeu.
-        </p>
-        <p>L'app vérifie tout ça pour toi et met un feu : 🟢 on peut jouer, 🟠 prudence, 🔴 on ne joue pas.</p>
+        <ValueGauge r={exBad} compact />
       </Section>
 
-      <Section n={5} title="Quand entrer dans le match">
+      <Section n={4} title="Quand on parie">
         <p>
-          Les 3 questions, vers la {s.entryFrom}e–{s.entryTo}e minute :
+          Seulement quand la <b>value</b> est d'au moins <b>+{Math.round(s.valueMin * 100)} %</b> (✅ OK).
         </p>
         <p>
-          ① C'est <b>0-0</b> ? ② Le match est <b>animé</b> (des tirs, des occasions) ? ③ La cote « Plus de 1,5 but » est au moins à <b>{fmtOdds(s.minLiveOdds)}</b> ?
+          La value, c'est ce que tu gagnes « en moyenne » pour 1 € misé : vraie chance × cote − 1. Exemple : {(pTrue * 100).toFixed(1).replace('.', ',')} % × 8,40 − 1 = <b>+{Math.round(ex.value * 100)} %</b>.
+        </p>
+        <p>Toujours en pari <b>simple</b>, toujours la <b>même mise</b>.</p>
+      </Section>
+
+      <Section n={5} title="Les signaux qui aident">
+        <p>🎯 <b>Les xG</b> (buts attendus) : un outsider qui se crée beaucoup d'occasions mais perd de peu est souvent sous-coté.</p>
+        <p>📊 <b>La forme</b> sur 5 à 10 matchs, à domicile et à l'extérieur séparément.</p>
+        <p>📈 <b>Le classement Elo</b> : une note de force pour chaque équipe.</p>
+        <p>🚑 <b>Les absents chez le favori</b>, surtout le gardien ou le buteur.</p>
+        <p>😴 <b>La fatigue</b> : un favori qui a joué la Coupe d'Europe en semaine fait souvent tourner.</p>
+        <p>🔥 <b>La motivation</b> : maintien, derby, fin de saison sans enjeu.</p>
+        <p>📉 <b>La cote qui baisse</b> avant le match : des parieurs bien informés misent dessus.</p>
+        <p className="small muted">Claude cherche tout ça pour toi et l'affiche sur chaque outsider.</p>
+      </Section>
+
+      <Section n={6} title="Il faut être patient">
+        <p>
+          Avec une cote de 6, tu gagnes environ <b>1 fois sur 6</b>. Perdre <b>10 fois de suite</b>, ça arrive dans {loseStreak} % des cas, même avec de bons paris.
         </p>
         <p>
-          Trois fois oui ? Tu mises ta <b>mise fixe</b>. Sinon, tu attends un peu (la cote monte toute seule tant qu'il n'y a pas de but). Après la {s.lastEntry}e minute, on n'entre plus.
+          C'est pour ça qu'on mise peu ({String(s.stakePct).replace('.', ',')} % de ton argent par pari) et toujours pareil. Jamais de « je me refais ».
         </p>
       </Section>
 
-      <Section n={6} title="Sécuriser au premier but">
-        <p>Dès le premier but, il ne manque plus qu'un but pour gagner. On en profite pour assurer un gain :</p>
+      <Section n={7} title="Ton bilan perso">
         <p>
-          <b>Exemple</b> : tu as misé {money(4)} à 1,80. But ! La cote « Moins de 1,5 but » est à 4,00. L'app te dit de miser <b>{money(ex.stake)}</b> dessus. Résultat : tu gagnes <b>{money(ex.gain)}</b> quoi qu'il arrive.
+          Note <b>tous</b> tes paris. Au bout de <b>100 à 200 paris</b>, l'onglet <b>Mes paris</b> te montre noir sur blanc quels outsiders te réussissent : par tranche de cote (3 à 5, 5 à 8, plus de 8) et par championnat.
         </p>
-        <Explain q="Et le cash-out ?">L'appli de paris te propose de te racheter ton pari tout de suite. Tape le montant dans l'app : elle te dit si ça vaut le coup.</Explain>
-      </Section>
-
-      <Section n={7} title="Les règles d'or">
-        <p>✅ Toujours la même mise ({s.stakePct.toString().replace('.', ',')} % de ton argent).</p>
-        <p>✅ Paris <b>simples</b> uniquement : jamais de combiné.</p>
-        <p>✅ Une limite de pertes par semaine : quand elle est atteinte, on arrête jusqu'au lundi.</p>
-        <p>✅ {s.testBetsTarget} paris pour de faux avant de jouer pour de vrai.</p>
-        <p>❌ Ne jamais essayer de « se refaire » après une perte.</p>
-        <p>❌ Le live, c'est rapide : si tu t'énerves facilement, ce n'est pas pour toi.</p>
+        <p>✅ = tu gagnes de l'argent sur ce groupe. ❌ = arrête ce type de pari.</p>
       </Section>
 
       <Section n={8} title="À savoir, honnêtement">
         <p>
-          Aucune méthode ne gagne à tous les coups. Les chances affichées sont des <b>estimations</b> calculées à partir des chiffres trouvés par Claude, qui peut se tromper : vérifie si un chiffre te paraît bizarre.
+          Aucune méthode ne gagne à tous les coups. Les championnats exotiques (Azerbaïdjan, Géorgie…) ont peu de données : les cotes y sont parfois mal ajustées, mais c'est plus dur à analyser. Pinnacle sert ici de <b>référence</b> : il n'est pas autorisé en France, on n'y parie pas.
         </p>
         <p>Réservé aux plus de 18 ans. Besoin d'aide : 09 74 75 13 13 (Joueurs Info Service, appel non surtaxé).</p>
         <div className="row wrap" style={{ gap: 8, marginTop: 8 }}>
-          <button className="btn small" onClick={() => openUrl('https://www.soccerstats.com/stats.asp?page=10')}>
-            Source : buts par quart d'heure <IconExternal />
+          <button className="btn small" onClick={() => openUrl('https://www.oddsportal.com/')}>
+            OddsPortal (cotes Pinnacle) <IconExternal />
+          </button>
+          <button className="btn small" onClick={() => openUrl('http://clubelo.com/')}>
+            ClubElo <IconExternal />
+          </button>
+          <button className="btn small" onClick={() => openUrl('https://www.football-data.co.uk/')}>
+            football-data.co.uk <IconExternal />
           </button>
           <button className="btn small" onClick={() => openUrl('https://www.joueurs-info-service.fr/')}>
             Joueurs Info Service <IconExternal />

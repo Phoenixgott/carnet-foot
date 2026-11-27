@@ -1,7 +1,5 @@
 import { useState } from 'react';
-import { parseClaude } from '../lib/claude';
 import { copyText, haptic, openUrl, readText } from '../lib/native';
-import type { MatchData } from '../lib/types';
 import { Banner, BigButton, Explain, toast } from '../components/ui';
 import { IconCopy, IconExternal, IconPaste } from '../components/Icons';
 
@@ -9,7 +7,7 @@ import { IconCopy, IconExternal, IconPaste } from '../components/Icons';
  * Les 5 étapes « Demander à Claude », expliquées très simplement :
  * copier la demande → ouvrir Claude → coller et envoyer → copier la réponse → la coller ici.
  */
-export function FetchFlow({ buildPrompt, fallbackDate, onImported }: { buildPrompt: () => string; fallbackDate: string; onImported: (matches: MatchData[], date: string) => void }) {
+export function FetchFlow({ buildPrompt, onText, pasteLabel = 'Colle la réponse ici', pasteHint = 'L\'app lit la réponse de Claude et fait les calculs toute seule.' }: { buildPrompt: () => string; onText: (text: string) => string; pasteLabel?: string; pasteHint?: string }) {
   const [copied, setCopied] = useState(false);
   const [opened, setOpened] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,11 +28,10 @@ export function FetchFlow({ buildPrompt, fallbackDate, onImported }: { buildProm
 
   const importText = (text: string) => {
     try {
-      const r = parseClaude(text, fallbackDate);
+      const msg = onText(text);
       haptic.success();
       setError(null);
-      toast(`${r.matches.length} match(s) reçu(s) ✓`);
-      onImported(r.matches, r.date);
+      toast(msg);
     } catch (e) {
       haptic.error();
       setError(e instanceof Error ? e.message : String(e));
@@ -105,8 +102,8 @@ export function FetchFlow({ buildPrompt, fallbackDate, onImported }: { buildProm
 
       <div className={`card step-card ${opened ? '' : 'later'}`}>
         <span className="step-badge">5</span>
-        <b>Colle la réponse ici</b>
-        <div className="small muted" style={{ margin: '2px 0 10px' }}>L'app lit la réponse de Claude et analyse chaque match toute seule.</div>
+        <b>{pasteLabel}</b>
+        <div className="small muted" style={{ margin: '2px 0 10px' }}>{pasteHint}</div>
         <BigButton icon={<IconPaste size={24} />} title={busy ? 'Lecture…' : 'Coller la réponse'} onClick={paste} tone={opened ? 'primary' : 'plain'} disabled={busy} />
       </div>
 

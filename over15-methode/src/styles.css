@@ -1934,3 +1934,85 @@ textarea.input {
   transform-origin: left;
   animation: grow 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
+
+/* ---------- Value (v3) ---------- */
+.value-gauge {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vg-row {
+  display: grid;
+  grid-template-columns: 112px 1fr 58px;
+  align-items: center;
+  gap: 8px;
+}
+
+.vg-label {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.2;
+}
+
+.vg-track {
+  height: 14px;
+  border-radius: 7px;
+  background: var(--surface-3);
+  overflow: hidden;
+}
+
+.vg-bar {
+  height: 100%;
+  border-radius: 7px;
+  transform-origin: left;
+  animation: grow 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.vg-bar.book {
+  background: linear-gradient(90deg, #4b5d54, #8aa197);
+}
+
+.vg-val {
+  text-align: right;
+  font-family: var(--display);
+  font-size: 18px;
+}
+
+.vg-verdict {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 32px;
+  letter-spacing: 0.6px;
+  animation: verdictIn 0.6s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+
+.group-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.group-row:last-of-type {
+  border-bottom: 0;
+}
+
+.nav-badge {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--red);
+}

@@ -87,14 +87,14 @@ export function Intro({ onDone }: { onDone: () => void }) {
       </div>
       <div className="intro-burst" />
       <div className="intro-logo">
-        <div className="intro-plus">+1.5</div>
-        <div className="intro-methode">MÉTHODE</div>
+        <div className="intro-plus">+EV</div>
+        <div className="intro-methode">OUTSIDERS</div>
         <div className="intro-counter">
-          <span className="intro-c-label">BUTS</span>
+          <span className="intro-c-label">COTE</span>
           <span key={goals} className={`intro-c-num ${goals >= 2 ? 'win' : ''}`}>
-            {goals}
+            {['1,00', '3,50', '8,40'][goals]}
           </span>
-          <span className={`intro-over ${goals >= 2 ? 'on' : ''}`}>OVER ✓</span>
+          <span className={`intro-over ${goals >= 2 ? 'on' : ''}`}>VALUE ✓</span>
         </div>
       </div>
       <div className="intro-skip">Touchez pour passer</div>

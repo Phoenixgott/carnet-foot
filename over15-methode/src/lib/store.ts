@@ -1,11 +1,11 @@
 // Stockage local (100 % hors ligne) avec abonnement React.
 import { useSyncExternalStore } from 'react';
 import { DEFAULT_SETTINGS, defaultData } from './defaults';
-import type { AppData, Bet, LiveSession, MatchData, Settings } from './types';
+import type { AppData, Bet, Outsider, Settings } from './types';
 
-const KEY = 'over15:data:v2';
-const OLD_KEY = 'over15:data:v1';
-const BACKUP_KEY = 'over15:data:avant-import';
+const KEY = 'outsiders:data:v3';
+const OLD_KEYS = ['over15:data:v2', 'over15:data:v1'];
+const BACKUP_KEY = 'outsiders:data:avant-import';
 
 function safeParse(raw: string | null): unknown {
   if (!raw) return null;
@@ -28,7 +28,7 @@ const BET_DEFAULTS: Pick<Bet, 'kind' | 'live' | 'test' | 'verdict' | 'score' | '
   away: '',
 };
 
-/** Complète des données (version 1, version 2 ou importées) avec les valeurs par défaut. */
+/** Complète des données (anciennes versions ou importées) avec les valeurs par défaut. */
 export function normalize(input: unknown): AppData {
   const base = defaultData();
   if (!input || typeof input !== 'object') return base;
@@ -41,18 +41,26 @@ export function normalize(input: unknown): AppData {
   const bets: Bet[] = Array.isArray(d.bets)
     ? d.bets.filter((b) => b && typeof b.id === 'string' && typeof b.odds === 'number' && typeof b.stake === 'number').map((b) => ({ ...BET_DEFAULTS, ...b }))
     : [];
-  const matches: MatchData[] = Array.isArray(d.matches) ? d.matches.filter((m) => m && typeof m.id === 'string' && m.home && m.away) : [];
-  const live: LiveSession | null = d.live && typeof d.live === 'object' && 'stage' in d.live ? (d.live as LiveSession) : null;
-  return { version: 2, settings, matches, matchesDate: typeof d.matchesDate === 'string' ? d.matchesDate : null, bets, live };
+  const picks: Outsider[] = Array.isArray(d.picks) ? d.picks.filter((p) => p && typeof p.id === 'string' && typeof p.team === 'string') : [];
+  return { version: 3, settings, picks, picksDate: typeof d.picksDate === 'string' ? d.picksDate : null, bets };
 }
 
 function load(): AppData {
   try {
     const cur = safeParse(localStorage.getItem(KEY));
     if (cur) return normalize(cur);
-    // Reprise des données de la version 1 (bankroll, réglages communs, paris).
-    const old = safeParse(localStorage.getItem(OLD_KEY));
-    return normalize(old);
+    // Reprise des anciennes versions : bankroll, réglages communs et paris (marqués « Over 1.5 »).
+    for (const k of OLD_KEYS) {
+      const old = safeParse(localStorage.getItem(k)) as { bets?: Bet[] } | null;
+      if (old) {
+        const bets = (old.bets ?? []).map((b) => ({ ...b, pick: b.pick ?? 'Plus de 1,5 but (ancienne méthode)' }));
+        const data = normalize({ ...old, bets });
+        // Outsiders : mise conseillée de 1 % (l'ancienne valeur par défaut était 2 %).
+        if (data.settings.stakePct === 2) data.settings.stakePct = 1;
+        return data;
+      }
+    }
+    return defaultData();
   } catch {
     return defaultData();
   }
@@ -115,17 +123,14 @@ export const actions = {
   updateSettings(patch: Partial<Settings>) {
     setState((s) => ({ ...s, settings: { ...s.settings, ...patch } }));
   },
-  setMatches(matches: MatchData[], date: string) {
-    setState((s) => ({ ...s, matches, matchesDate: date }));
+  setPicks(picks: Outsider[], date: string) {
+    setState((s) => ({ ...s, picks, picksDate: date }));
   },
-  addMatches(matches: MatchData[]) {
-    setState((s) => ({ ...s, matches: [...matches, ...s.matches] }));
+  updatePick(id: string, patch: Partial<Outsider>) {
+    setState((s) => ({ ...s, picks: s.picks.map((p) => (p.id === id ? { ...p, ...patch } : p)) }));
   },
-  updateMatch(id: string, patch: Partial<MatchData>) {
-    setState((s) => ({ ...s, matches: s.matches.map((m) => (m.id === id ? { ...m, ...patch } : m)) }));
-  },
-  deleteMatch(id: string) {
-    setState((s) => ({ ...s, matches: s.matches.filter((m) => m.id !== id) }));
+  deletePick(id: string) {
+    setState((s) => ({ ...s, picks: s.picks.filter((p) => p.id !== id) }));
   },
   addBet(bet: Bet) {
     setState((s) => ({ ...s, bets: [bet, ...s.bets] }));
@@ -135,12 +140,6 @@ export const actions = {
   },
   deleteBet(id: string) {
     setState((s) => ({ ...s, bets: s.bets.filter((b) => b.id !== id) }));
-  },
-  setLive(live: LiveSession | null) {
-    setState((s) => ({ ...s, live }));
-  },
-  updateLive(patch: Partial<LiveSession>) {
-    setState((s) => (s.live ? { ...s, live: { ...s.live, ...patch } } : s));
   },
   replaceAll(data: AppData) {
     backupNow();

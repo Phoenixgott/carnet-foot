@@ -8,18 +8,18 @@ import type { AppData } from './types';
 
 export interface BackupFile {
   app: 'over15-methode';
-  format: 2;
+  format: 3;
   exportedAt: string;
   data: AppData;
 }
 
 export function buildBackup(data: AppData): string {
-  const file: BackupFile = { app: 'over15-methode', format: 2, exportedAt: new Date().toISOString(), data: { ...data, settings: { ...data.settings } } };
+  const file: BackupFile = { app: 'over15-methode', format: 3, exportedAt: new Date().toISOString(), data: { ...data, settings: { ...data.settings } } };
   return JSON.stringify(file, null, 2);
 }
 
 export function backupFileName() {
-  return `over15-sauvegarde-${todayISO()}.json`;
+  return `outsiders-sauvegarde-${todayISO()}.json`;
 }
 
 /** Exporte : partage du fichier sur Android (Fichiers, Drive, mail…), téléchargement sur le web. */
@@ -28,7 +28,7 @@ export async function exportBackup(data: AppData): Promise<'shared' | 'downloade
   const name = backupFileName();
   if (isNative) {
     const res = await Filesystem.writeFile({ path: name, data: json, directory: Directory.Cache, encoding: Encoding.UTF8 });
-    await Share.share({ title: 'Sauvegarde Over 1.5', text: 'Sauvegarde de mes données Over 1.5 – Méthode', files: [res.uri], dialogTitle: 'Enregistrer la sauvegarde' });
+    await Share.share({ title: 'Sauvegarde Outsiders', text: 'Sauvegarde de mes données Outsiders', files: [res.uri], dialogTitle: 'Enregistrer la sauvegarde' });
     return 'shared';
   }
   const blob = new Blob([json], { type: 'application/json' });
@@ -54,6 +54,6 @@ export function parseBackup(text: string): AppData {
   if (!raw || typeof raw !== 'object') throw new Error('Fichier vide ou illisible.');
   const obj = raw as Partial<BackupFile> & Partial<AppData>;
   const data = obj.app === 'over15-methode' && obj.data ? obj.data : obj.settings || obj.bets ? (obj as AppData) : null;
-  if (!data) throw new Error('Ce fichier ne vient pas de l\'application Over 1.5 – Méthode.');
+  if (!data) throw new Error('Ce fichier ne vient pas de l\'application Outsiders.');
   return normalize(data);
 }
