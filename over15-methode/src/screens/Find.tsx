@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react';
 import { actions, useStore } from '../lib/store';
 import { todayISO } from '../lib/defaults';
-import { buildOutsidersPrompt, parseOutsiders } from '../lib/claude';
+import { buildHuntPrompt, buildOutsidersPrompt, parseOutsiders } from '../lib/claude';
 import { fixedStake, nextBetIsTest } from '../lib/stats';
 import { money, odds as fmtOdds } from '../lib/format';
-import { pickValue, signedPct, valueInWords, type ValueResult } from '../lib/value';
-import { computeSignals, countSignals, formPoints, type Signal } from '../lib/signals';
+import { pickValue, signedPct, SOURCE_LABEL, valueInWords, type ValueResult } from '../lib/value';
+import { computeSignals, countSignals, dataQuality, formPoints, type Signal } from '../lib/signals';
 import type { Outsider, TeamFacts } from '../lib/types';
 import { haptic, openUrl } from '../lib/native';
 import { Coach } from '../components/Coach';
@@ -22,6 +22,7 @@ export function Find({ goBets }: { goBets: () => void }) {
   const s = useStore((st) => st.settings);
   const picks = useStore((st) => st.picks);
   const [day, setDay] = useState<'today' | 'tomorrow'>('today');
+  const [mode, setMode] = useState<'hunt' | 'perso'>('hunt');
   const [searching, setSearching] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
   const date = day === 'today' ? todayISO() : todayISO(new Date(Date.now() + 86400000));
@@ -34,9 +35,28 @@ export function Find({ goBets }: { goBets: () => void }) {
   const current = picks.find((p) => p.id === open) ?? null;
 
   if (searching || !picks.length) {
+    const huntMin = s.huntMinOdds.toFixed(2).replace('.', ',');
     return (
       <div className="stack">
-        <Coach mood="think">Je demande à Claude les grosses cotes du jour. Regarde la vidéo, puis touche les 3 boutons !</Coach>
+        <Coach mood="think">
+          {mode === 'hunt' ? (
+            <>
+              Claude passe en revue <b>tous les matchs européens</b> du jour et garde les <b>{s.huntCount} meilleures bonnes affaires</b> à {huntMin} ou plus. Touche les 3 boutons.
+            </>
+          ) : (
+            <>Recherche selon tes réglages (cote dès {String(s.minOdds).replace('.', ',')}). Touche les 3 boutons.</>
+          )}
+        </Coach>
+        <div className="mode-switch">
+          <button className={mode === 'hunt' ? 'on' : ''} onClick={() => setMode('hunt')}>
+            Chasse {huntMin}+
+            <small>Europe · {s.huntCount} meilleures</small>
+          </button>
+          <button className={mode === 'perso' ? 'on' : ''} onClick={() => setMode('perso')}>
+            Ma recherche
+            <small>Selon mes réglages</small>
+          </button>
+        </div>
         <Segmented
           value={day}
           onChange={setDay}
@@ -46,8 +66,8 @@ export function Find({ goBets }: { goBets: () => void }) {
           ]}
         />
         <FetchFlow
-          key={date}
-          buildPrompt={() => buildOutsidersPrompt(date, s)}
+          key={date + mode}
+          buildPrompt={() => (mode === 'hunt' ? buildHuntPrompt(date, s) : buildOutsidersPrompt(date, s))}
           onText={(text) => {
             const r = parseOutsiders(text, date);
             actions.setPicks(r.picks, r.date);
@@ -226,11 +246,11 @@ function PickSheet({ p, onClose, goBets }: { p: Outsider; onClose: () => void; g
         </div>
 
         <div className="grid2">
-          <div className="card tight center" style={{ background: 'var(--green-soft)', borderColor: '#b7ebc8', boxShadow: '0 3px 0 #b7ebc8' }}>
+          <div className="card tight center" style={{ background: 'var(--green-soft)', borderColor: '#dcf3e3' }}>
             <div style={{ fontSize: 30, fontWeight: 900, color: 'var(--green-d)' }}>👍 {c.pour}</div>
             <div className="tiny" style={{ fontWeight: 800 }}>signaux pour</div>
           </div>
-          <div className="card tight center" style={{ background: 'var(--red-soft)', borderColor: '#f8c4c4', boxShadow: '0 3px 0 #f8c4c4' }}>
+          <div className="card tight center" style={{ background: 'var(--red-soft)', borderColor: '#fbdddd' }}>
             <div style={{ fontSize: 30, fontWeight: 900, color: 'var(--red-d)' }}>👎 {c.contre}</div>
             <div className="tiny" style={{ fontWeight: 800 }}>signaux contre</div>
           </div>
@@ -245,7 +265,10 @@ function PickSheet({ p, onClose, goBets }: { p: Outsider; onClose: () => void; g
               </span>
             </div>
             <ValueGauge r={r} compact />
-            <div style={{ fontWeight: 800 }}>{valueInWords(r.value)}</div>
+            <div style={{ fontWeight: 600 }}>{valueInWords(r.value)}</div>
+            <div className="tiny muted">
+              Vraie chance : {SOURCE_LABEL[r.source]} · fiabilité des données : <b>{Math.round(dataQuality(p) * 100)} %</b>
+            </div>
             <Explain q="Comment je lis ça ?">
               <b>Chance selon ta cote</b> = 1 ÷ cote : ce que le bookmaker pense. <b>Vraie chance</b> = la cote de Pinnacle, le bookmaker le plus juste, sans sa marge
               {r.source === 'claude' ? ' (ici, faute de Pinnacle : l\'estimation de Claude, moins fiable)' : ''}. Si la vraie chance est plus grande, la cote est trop généreuse.

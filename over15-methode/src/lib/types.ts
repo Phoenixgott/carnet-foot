@@ -2,7 +2,7 @@
 
 export type BetResult = 'pending' | 'won' | 'lost' | 'void';
 export type Verdict = 'OK' | 'BOF' | 'NON';
-export type ProbSource = 'pinnacle' | 'pinnacle1' | 'claude' | 'perso';
+export type ProbSource = 'pinnacle' | 'pinnacle1' | 'mix' | 'elo' | 'claude' | 'perso';
 
 export interface PinnacleOdds {
   /** Cote Pinnacle de l'outsider. */
@@ -146,6 +146,9 @@ export interface Settings {
   /** Marge retirée quand on n'a que la cote Pinnacle de l'outsider. */
   pinnacleMargin: number;
   maxPicks: number;
+  /** Chasse aux grosses cotes : cote minimum et nombre de matchs. */
+  huntMinOdds: number;
+  huntCount: number;
   competitions: string;
   bookmakers: string;
   haptics: boolean;

@@ -104,7 +104,7 @@ write('app/src/main/res/mipmap-anydpi/ic_launcher_round.xml', adaptive);
 // 3. Couleurs, thème et splash (aucun écran blanc : tout est sur le fond de l'intro).
 write('app/src/main/res/values/o15_colors.xml', `<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="o15_bg">#F6F8F3</color>
+    <color name="o15_bg">#FAFAF9</color>
     <color name="o15_green">#3DFF9F</color>
 </resources>
 `);

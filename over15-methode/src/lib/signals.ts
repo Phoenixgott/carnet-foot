@@ -117,3 +117,16 @@ export function computeSignals(p: Outsider): Signal[] {
 export function countSignals(list: Signal[]) {
   return { pour: list.filter((s) => s.side === 'pour').length, contre: list.filter((s) => s.side === 'contre').length };
 }
+
+/** Fiabilité des données : part des infos importantes que Claude a bien trouvées (0 à 1). */
+export function dataQuality(p: Outsider): number {
+  const o = p.out;
+  const f = p.fav;
+  const checks: unknown[] = [p.odds, p.pinnacle.out, p.pinnacle.fav];
+  if (o && f) {
+    checks.push(o.form || null, f.form || null, o.scored, f.conceded, o.xgFor, f.xgFor, o.rank, f.rank, o.elo, f.elo, o.venue, f.venue, o.scorers.length || null, f.scorers.length || null, o.restDays, f.restDays, o.goal || null, p.ctx?.stakes || null);
+  } else {
+    checks.push(p.estimate, p.signals.xg || null, p.signals.motivation || null);
+  }
+  return checks.filter((x) => x !== null && x !== undefined && x !== '').length / checks.length;
+}

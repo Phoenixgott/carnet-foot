@@ -1,6 +1,6 @@
 // « Demander à Claude » : l'app prépare une demande, tu la colles dans l'app Claude
 // (avec la recherche web), puis tu recolles sa réponse ici. Gratuit avec ton abonnement Claude.
-import { uid } from './defaults';
+import { EUROPE_COMPETITIONS, uid } from './defaults';
 import type { Bet, MatchContext, Outsider, Settings, TeamFacts, Venue } from './types';
 
 function dayLabel(date: string): string {
@@ -58,15 +58,7 @@ const OUTSIDERS_FORMAT = `{
   ]
 }`;
 
-export function buildOutsidersPrompt(date: string, s: Settings): string {
-  const n = Math.min(Math.max(1, s.maxPicks), 5);
-  return `Tu m'aides à repérer des OUTSIDERS (l'équipe qui n'est pas favorite) qui valent le coup. Utilise la recherche web et va chercher loin : je veux des CHIFFRES pour décider moi-même.
-
-Date : ${dayLabel(date)} (${date}), heure de Paris.
-Compétitions : ${s.competitions}.
-
-1. Parmi les matchs de cette date, choisis les ${n} outsiders les plus intéressants : cote de victoire d'au moins ${String(s.minOdds).replace('.', ',')} chez ${s.bookmakers}.
-2. Pour chacun, remplis la fiche complète, pour l'OUTSIDER et pour le FAVORI :
+const FICHE = `Pour chacun, remplis la fiche complète, pour l'OUTSIDER et pour le FAVORI :
 - cotes : chez le bookmaker et chez Pinnacle (OddsPortal ou un autre comparateur), et la cote du nul ;
 - classement, points, matchs joués, écart avec la zone de relégation (+ si au-dessus, − si dedans), objectif (maintien, titre, europe, milieu, montée) ;
 - forme sur les 5 derniers matchs (V, N, D, le plus récent à gauche) ;
@@ -77,13 +69,48 @@ Compétitions : ${s.competitions}.
 - entraîneur, et s'il est nouveau (effet « nouvel entraîneur ») ;
 - classement Elo (ClubElo) ;
 - l'enjeu du match, le lien entre les équipes (derby, rivalité), les 5 dernières confrontations, le mouvement de la cote, la météo, l'arbitre, et toute autre info utile (déplacement long, terrain, ambiance, presse locale).
-3. "proba_estimee" : TA propre estimation, en %, des chances de victoire de l'outsider.
+"proba_estimee" : TA propre estimation, en %, des chances de victoire de l'outsider.`;
 
-Règles pour que mon application puisse lire ta réponse :
+const JSON_RULES = `Règles pour que mon application puisse lire ta réponse :
 - réponds UNIQUEMENT avec le bloc JSON ci-dessous, dans un bloc \`\`\`json, écrit directement dans ta réponse (pas dans un fichier ni un artefact), sans texte avant ou après ;
 - guillemets droits " uniquement, jamais de guillemets à l'intérieur d'un texte (utilise « » ou ') ;
 - décimales avec un point (6.20), pas de %, pas de commentaires, aucune référence ni source dans le JSON (seulement dans "sources") ;
-- n'invente JAMAIS un chiffre : mets null si tu ne trouves pas.
+- n'invente JAMAIS un chiffre : mets null si tu ne trouves pas.`;
+
+export function buildOutsidersPrompt(date: string, s: Settings): string {
+  const n = Math.min(Math.max(1, s.maxPicks), 5);
+  return `Tu m'aides à repérer des OUTSIDERS (l'équipe qui n'est pas favorite) qui valent le coup. Utilise la recherche web et va chercher loin : je veux des CHIFFRES pour décider moi-même.
+
+Date : ${dayLabel(date)} (${date}), heure de Paris.
+Compétitions : ${s.competitions}.
+
+1. Parmi les matchs de cette date, choisis les ${n} outsiders les plus intéressants : cote de victoire d'au moins ${String(s.minOdds).replace('.', ',')} chez ${s.bookmakers}.
+2. ${FICHE}
+
+${JSON_RULES}
+
+${OUTSIDERS_FORMAT}`;
+}
+
+/** La chasse : toutes les cotes européennes à 3,80 ou plus du jour, et seulement les meilleures bonnes affaires. */
+export function buildHuntPrompt(date: string, s: Settings): string {
+  const min = s.huntMinOdds.toFixed(2).replace('.', ',');
+  const n = Math.min(Math.max(1, s.huntCount), 8);
+  return `Tu es mon analyste de paris « value ». Mission : trouver les MEILLEURES BONNES AFFAIRES du jour sur des cotes d'au moins ${min}, uniquement sur des matchs EUROPÉENS. Utilise la recherche web et prends le temps de tout passer en revue.
+
+Date : ${dayLabel(date)} (${date}), heure de Paris.
+Compétitions : ${EUROPE_COMPETITIONS}.
+Bookmakers : ${s.bookmakers}.
+
+Méthode, étape par étape :
+1. Fais la liste de TOUS les matchs européens de cette date (pas seulement les plus connus).
+2. Garde chaque équipe dont la cote de victoire est d'au moins ${min} chez un de ces bookmakers.
+3. Pour chacune, compare à Pinnacle (OddsPortal ou un autre comparateur) : retire la marge de Pinnacle (normalise les 3 cotes 1-N-2) pour obtenir la vraie chance, puis calcule la value = vraie chance × cote du bookmaker − 1. Si Pinnacle est introuvable, estime la vraie chance avec le classement Elo (ClubElo), les xG, la forme, les absents et l'enjeu.
+4. Élimine tout ce qui n'a pas de value positive. Puis vérifie les infos qui font gagner un outsider : absents chez le favori, fatigue et rotation (Coupe d'Europe en semaine, long déplacement), motivation (maintien, derby, rien à perdre), nouvel entraîneur, bons xG malgré des défaites serrées, cote qui baisse.
+5. Classe et garde au maximum les ${n} meilleures bonnes affaires (la plus grosse value d'abord). S'il y en a moins de ${n}, n'en invente pas : donne seulement les vraies.
+6. ${FICHE}
+
+${JSON_RULES}
 
 ${OUTSIDERS_FORMAT}`;
 }

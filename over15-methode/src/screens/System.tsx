@@ -43,9 +43,9 @@ export function System() {
 
       <BestOdds n={n} />
 
-      <div className="card center" style={{ background: 'var(--purple-soft)', borderColor: '#d8ccfb', boxShadow: '0 3px 0 #d8ccfb' }}>
+      <div className="card center">
         <div className="small" style={{ fontWeight: 800 }}>Avec 2 bons pronostics, chaque match gagnant doit avoir une cote d'environ</div>
-        <div style={{ fontWeight: 900, fontSize: 46, color: 'var(--purple-d)', lineHeight: 1.1 }}>{fmtOdds(same)}</div>
+        <div style={{ fontWeight: 800, fontSize: 48, letterSpacing: '-0.04em', lineHeight: 1.1 }}>{fmtOdds(same)}</div>
         <div className="small" style={{ fontWeight: 800 }}>minimum pour que tu sois remboursé (si les deux cotes sont proches).</div>
         <div className="tiny muted" style={{ marginTop: 6 }}>Ce minimum est le même quelle que soit ta mise par double (0,10 €, 0,20 €, 0,50 € ou 1 €).</div>
       </div>
@@ -76,7 +76,7 @@ export function System() {
               Avec <b>{k} bons</b>
             </span>
             <span>
-              environ <b style={{ color: 'var(--purple-d)', fontSize: 20 }}>{fmtOdds(minOddsWithKGood(n, k))}</b> par match
+              environ <b style={{ fontSize: 19 }}>{fmtOdds(minOddsWithKGood(n, k))}</b> par match
             </span>
           </div>
         ))}

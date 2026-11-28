@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import './intro.css';
 
-const TOTAL_MS = 2750;
 
 function pentagon(cx: number, cy: number, r: number, rot: number): string {
   return Array.from({ length: 5 }, (_, k) => {
@@ -49,8 +48,10 @@ export function Ball({ size = 64 }: { size?: number }) {
   );
 }
 
+const TOTAL_FILM_MS = 4100;
+
+/** Vidéo d'ouverture minimaliste (≈ 4 s, touchez pour passer) : un trait, un ballon, +EV, puis 3 plans. */
 export function Intro({ onDone }: { onDone: () => void }) {
-  const [goals, setGoals] = useState(0);
   const [leaving, setLeaving] = useState(false);
   const done = useRef(false);
 
@@ -62,42 +63,44 @@ export function Intro({ onDone }: { onDone: () => void }) {
   };
 
   useEffect(() => {
-    const t = [
-      setTimeout(() => setGoals(1), 1450),
-      setTimeout(() => setGoals(2), 1850),
-      setTimeout(finish, TOTAL_MS),
-    ];
-    return () => t.forEach(clearTimeout);
+    const t = setTimeout(finish, TOTAL_FILM_MS);
+    return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <div className={`intro ${leaving ? 'leaving' : ''}`} onPointerDown={finish} role="presentation">
-      <div className="intro-pitch">
-        <div className="intro-circle" />
-        <div className="intro-line" />
+    <div className={`film ${leaving ? 'leaving' : ''}`} onPointerDown={finish} role="presentation">
+      <div className="film-bars">
+        <span>
+          <i />
+        </span>
+        <span>
+          <i />
+        </span>
+        <span>
+          <i />
+        </span>
       </div>
-      <div className="intro-ball-x">
-        <div className="intro-ball-y">
-          <div className="intro-trail" />
-          <div className="intro-ball-r">
-            <Ball size={68} />
-          </div>
+      <div className="film-center">
+        <div className="film-line" />
+        <div className="film-ball">
+          <Ball size={34} />
         </div>
-      </div>
-      <div className="intro-burst" />
-      <div className="intro-logo">
-        <div className="intro-plus">+EV</div>
-        <div className="intro-methode">OUTSIDERS</div>
-        <div className="intro-counter">
-          <span className="intro-c-label">COTE</span>
-          <span key={goals} className={`intro-c-num ${goals >= 2 ? 'win' : ''}`}>
-            {['1,00', '3,50', '8,40'][goals]}
+        <div className="film-logo">+EV</div>
+        <div className="film-captions">
+          <span className="c1">
+            <b>1</b> Claude cherche.
           </span>
-          <span className={`intro-over ${goals >= 2 ? 'on' : ''}`}>VALUE ✓</span>
+          <span className="c2">
+            <b>2</b> L'app calcule.
+          </span>
+          <span className="c3">
+            <b>3</b> Tu décides.
+          </span>
         </div>
       </div>
-      <div className="intro-skip">Touchez pour passer</div>
+      <div className="film-skip">Touchez pour passer</div>
     </div>
   );
 }
+

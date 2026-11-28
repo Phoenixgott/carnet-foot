@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { BottomNav, type Tab } from './components/BottomNav';
 import { Intro } from './components/Intro';
-import { CoachBall } from './components/Coach';
 import { AskHost, ToastHost } from './components/ui';
 import { hideSplash, initBackButton, openUrl } from './lib/native';
 import { actions, getState, useStore } from './lib/store';
@@ -15,7 +14,7 @@ import { HowTo } from './screens/HowTo';
 import { Settings } from './screens/Settings';
 
 const TITLES: Record<Tab, string> = {
-  home: 'Outsiders',
+  home: '',
   find: 'Trouver',
   check: 'Vérifier',
   system: 'Système',
@@ -59,7 +58,7 @@ export function App() {
           <div className="logo-mini">+EV</div>
         ) : (
           <button className="icon-btn" onClick={() => go('home')} aria-label="Retour à l'accueil">
-            <span style={{ fontSize: 20, fontWeight: 900 }}>←</span>
+            <span style={{ fontSize: 18, fontWeight: 600 }}>←</span>
           </button>
         )}
         <div className="grow">
@@ -67,7 +66,11 @@ export function App() {
         </div>
         {tab !== 'settings' && (
           <button className="icon-btn" onClick={() => go('settings')} aria-label="Réglages">
-            <span style={{ fontSize: 20 }}>⚙️</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              <path d="M4 7h10M18 7h2M4 17h4M12 17h8" />
+              <circle cx="16" cy="7" r="2" />
+              <circle cx="10" cy="17" r="2" />
+            </svg>
           </button>
         )}
       </header>
@@ -93,8 +96,8 @@ function AgeGate() {
   return (
     <div className="age-gate">
       <div className="stack" style={{ maxWidth: 420, width: '100%', textAlign: 'center', alignItems: 'center' }}>
-        <CoachBall size={110} />
-        <h1 style={{ fontWeight: 900, fontSize: 34, margin: 0 }}>Outsiders</h1>
+        <div className="logo-mini" style={{ width: 72, height: 72, fontSize: 24, borderRadius: 20 }}>+EV</div>
+        <h1 style={{ fontWeight: 700, fontSize: 30, margin: 0, letterSpacing: '-0.03em' }}>Outsiders</h1>
         <p className="muted" style={{ margin: 0, fontSize: 17 }}>
           Je te dis si une grosse cote est une <b>bonne affaire</b> ou un <b>piège</b>. Tes {getState().settings.testBetsTarget} premiers paris sont pour de faux, pour t'entraîner.
         </p>

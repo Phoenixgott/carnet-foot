@@ -46,6 +46,8 @@ export interface ValueResult {
 export const SOURCE_LABEL: Record<ProbSource, string> = {
   pinnacle: 'Pinnacle (le plus fiable)',
   pinnacle1: 'Pinnacle (une seule cote)',
+  mix: 'Elo + estimation de Claude',
+  elo: 'classement Elo',
   claude: 'estimation de Claude',
   perso: 'ton estimation',
 };
@@ -67,13 +69,40 @@ export function computeValue(odds: number, trueProb: number, source: ProbSource,
   return { bookProb, trueProb, source, value, verdict, fairOdds, minOdds, isOutsider, sentence };
 }
 
-/** Value d'un outsider proposé par Claude (Pinnacle d'abord, sinon l'estimation de Claude). */
+/**
+ * Chance de victoire d'après l'Elo (ClubElo) : score attendu avec ~65 points d'avantage du terrain,
+ * moins la moitié de la chance de nul.
+ */
+export function eloWinProb(outElo: number, favElo: number, outsiderAtHome: boolean, drawProb = 0.26): number {
+  const diff = outElo - favElo + (outsiderAtHome ? 65 : -65);
+  const expected = 1 / (1 + Math.pow(10, -diff / 400));
+  return Math.min(0.95, Math.max(0.02, expected - drawProb / 2));
+}
+
+/**
+ * La meilleure estimation de la vraie chance, par ordre de fiabilité :
+ * Pinnacle sans marge → mélange Elo + estimation de Claude → estimation de Claude → Elo seul.
+ */
+export function bestProb(p: Outsider, s: Settings): { p: number; source: ProbSource } | null {
+  const pin = pinnacleProb(p.pinnacle, s.pinnacleMargin);
+  if (pin) return pin;
+  const est = typeof p.estimate === 'number' && p.estimate > 0 && p.estimate < 1 ? p.estimate : null;
+  let elo: number | null = null;
+  if (p.out && p.fav && typeof p.out.elo === 'number' && typeof p.fav.elo === 'number') {
+    const draw = p.ctx?.drawOdds && p.ctx.drawOdds > 1 ? Math.min(0.4, 1 / p.ctx.drawOdds / 1.05) : 0.26;
+    elo = eloWinProb(p.out.elo, p.fav.elo, p.home === (p.out.name || p.team), draw);
+  }
+  if (est !== null && elo !== null) return { p: (est + elo) / 2, source: 'mix' };
+  if (est !== null) return { p: est, source: 'claude' };
+  if (elo !== null) return { p: elo, source: 'elo' };
+  return null;
+}
+
+/** Value d'un outsider proposé par Claude, avec la meilleure estimation disponible. */
 export function pickValue(p: Outsider, s: Settings): ValueResult | null {
   if (!ok(p.odds)) return null;
-  const pin = pinnacleProb(p.pinnacle, s.pinnacleMargin);
-  if (pin) return computeValue(p.odds, pin.p, pin.source, s, p.team);
-  if (typeof p.estimate === 'number' && p.estimate > 0 && p.estimate < 1) return computeValue(p.odds, p.estimate, 'claude', s, p.team);
-  return null;
+  const b = bestProb(p, s);
+  return b ? computeValue(p.odds, b.p, b.source, s, p.team) : null;
 }
 
 export const VERDICT_WORD: Record<Verdict, string> = { OK: 'BONNE AFFAIRE', BOF: 'BOF', NON: 'PIÈGE' };

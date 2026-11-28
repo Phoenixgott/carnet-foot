@@ -54,3 +54,30 @@ test('tranches de cote du bilan', () => {
   assert.equal(oddsBand(5), '5 à 8');
   assert.equal(oddsBand(8.4), 'Plus de 8');
 });
+
+test('vraie chance sans Pinnacle : mélange Elo + Claude, puis Elo seul', async () => {
+  const { bestProb, eloWinProb } = await import('../src/lib/value');
+  const team = (name: string, elo: number) => ({ name, odds: null, pinnacle: null, rank: null, points: null, played: null, zoneGap: null, goal: '', form: '', venue: null, scored: null, conceded: null, xgFor: null, xgAgainst: null, scorers: [], absents: [], lastMatch: '', restDays: null, europe: null, coach: '', newCoach: null, elo });
+  const p = {
+    id: 'x', date: '', time: '', competition: '', home: 'Petit', away: 'Gros', team: 'Petit', bet: '', odds: 4.5, bookmaker: '',
+    pinnacle: { out: null, draw: null, fav: null }, estimate: 0.2, reasonsFor: [], reasonsAgainst: [],
+    signals: { xg: '', absentsFav: [], fatigueFav: null, motivation: '', oddsMove: 'inconnu' as const }, sources: [], importedAt: '',
+    out: team('Petit', 1550), fav: team('Gros', 1750),
+  };
+  const e = eloWinProb(1550, 1750, true);
+  assert.ok(e > 0.15 && e < 0.3, `elo = ${e}`);
+  const mix = bestProb(p, S)!;
+  assert.equal(mix.source, 'mix');
+  assert.ok(Math.abs(mix.p - (0.2 + e) / 2) < 1e-12);
+  assert.equal(bestProb({ ...p, estimate: null }, S)!.source, 'elo');
+  assert.equal(bestProb({ ...p, pinnacle: { out: 4, draw: 3.6, fav: 1.9 } }, S)!.source, 'pinnacle');
+});
+
+test('la chasse : cotes européennes à 3,80 ou plus, 6 au maximum', async () => {
+  const { buildHuntPrompt } = await import('../src/lib/claude');
+  const p = buildHuntPrompt('2026-11-28', S);
+  assert.match(p, /cotes d'au moins 3,80/);
+  assert.match(p, /EUROPÉENS/);
+  assert.match(p, /les 6 meilleures bonnes affaires/);
+  assert.match(p, /ecart_zone_rouge/);
+});

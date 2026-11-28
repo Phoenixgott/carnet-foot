@@ -34,6 +34,20 @@ Avec N matchs, on joue C(N, 2) doubles (6 matchs = 15 doubles). Si seulement 2 m
 il faut cote 1 × cote 2 ≥ nombre de doubles pour récupérer la mise totale, quelle que soit la mise par double.
 Avec k bons pronostics de cotes proches : cote minimum ≈ √(doubles ÷ C(k, 2)), arrondie au 0,05 supérieur.
 
+## Chasse 3,80+ Europe (v6)
+
+Le mode par défaut de **Trouver** : Claude passe en revue tous les matchs européens du jour (1re et 2e divisions,
+coupes d'Europe, coupes nationales), garde les cotes d'au moins 3,80, les compare à Pinnacle (marge retirée), calcule la value,
+élimine tout ce qui n'a pas de value, vérifie absents, fatigue, motivation, nouvel entraîneur, xG et cotes qui bougent,
+puis renvoie au maximum les 6 meilleures bonnes affaires avec leur fiche complète (réglable : cote minimum et nombre).
+« Ma recherche » garde l'ancienne recherche selon les réglages.
+
+En arrière-plan, la vraie chance vient de Pinnacle sans marge ; sinon d'un mélange Elo (ClubElo, avantage du terrain,
+part du nul retirée) + estimation de Claude ; sinon de l'un des deux. Chaque fiche affiche la fiabilité des données.
+
+Design v6 : minimaliste (Inter, noir et blanc, une couleur pour le bon et une pour le mauvais) et vidéo d'ouverture
+d'environ 4 secondes (touchez pour passer) : « Claude cherche. L'app calcule. Tu décides. »
+
 ## La fiche d'un outsider (v5)
 
 La demande à Claude réclame une **fiche chiffrée** pour l'outsider ET le favori : cotes (bookmaker et Pinnacle, nul),

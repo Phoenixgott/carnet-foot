@@ -3,6 +3,9 @@ import type { AppData, Settings } from './types';
 export const DEFAULT_COMPETITIONS =
   'les championnats européens (Ligue 1, Premier League, Liga, Serie A, Bundesliga, Pays-Bas, Portugal, Belgique, Turquie…), les coupes d\'Europe, et les autres championnats suivis par les bookmakers français (Arabie saoudite, Brésil…)';
 
+export const EUROPE_COMPETITIONS =
+  'tous les championnats européens de 1re et 2e division (Angleterre, Espagne, Italie, Allemagne, France, Portugal, Pays-Bas, Belgique, Turquie, Écosse, Suisse, Autriche, Grèce, Danemark, Norvège, Suède, Pologne, Tchéquie, Croatie, Serbie…), la Ligue des champions, la Ligue Europa, la Ligue Conférence et les coupes nationales';
+
 export const DEFAULT_BOOKMAKERS = 'Winamax, Unibet, Betclic ou Parions Sport';
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -15,6 +18,8 @@ export const DEFAULT_SETTINGS: Settings = {
   minOdds: 3,
   pinnacleMargin: 0.03,
   maxPicks: 4,
+  huntMinOdds: 3.8,
+  huntCount: 6,
   competitions: DEFAULT_COMPETITIONS,
   bookmakers: DEFAULT_BOOKMAKERS,
   haptics: true,

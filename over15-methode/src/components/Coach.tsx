@@ -44,14 +44,11 @@ export function CoachBall({ size = 64, mood = 'happy' }: { size?: number; mood?:
   );
 }
 
-/** Le coach qui parle : ballon + bulle. */
-export function Coach({ children, mood = 'happy', size = 62 }: { children: ReactNode; mood?: Mood; size?: number }) {
+/** Le conseil : une ligne sobre avec un trait de couleur (design minimaliste). */
+export function Coach({ children, mood = 'happy' }: { children: ReactNode; mood?: Mood; size?: number }) {
   return (
-    <div className="coach">
-      <CoachBall size={size} mood={mood} />
-      <div className="bubble" key={String(children)}>
-        {children}
-      </div>
+    <div className={`hint ${mood}`} key={String(children)}>
+      <div>{children}</div>
     </div>
   );
 }
