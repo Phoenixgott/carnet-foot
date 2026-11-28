@@ -4,11 +4,12 @@ import { todayISO } from '../lib/defaults';
 import { buildOutsidersPrompt, parseOutsiders } from '../lib/claude';
 import { fixedStake, nextBetIsTest } from '../lib/stats';
 import { money, odds as fmtOdds } from '../lib/format';
-import { pickValue, signedPct, type ValueResult } from '../lib/value';
-import type { Outsider } from '../lib/types';
+import { pickValue, signedPct, valueInWords, type ValueResult } from '../lib/value';
+import { computeSignals, countSignals, formPoints, type Signal } from '../lib/signals';
+import type { Outsider, TeamFacts } from '../lib/types';
 import { haptic, openUrl } from '../lib/native';
 import { Coach } from '../components/Coach';
-import { ask, BigButton, Explain, NumberField, Segmented, Sheet } from '../components/ui';
+import { ask, Banner, BigButton, Explain, NumberField, Segmented, Sheet } from '../components/ui';
 import { SaveBet, ValueGauge } from '../components/Value';
 import { FetchFlow } from './FetchFlow';
 
@@ -51,7 +52,7 @@ export function Find({ goBets }: { goBets: () => void }) {
             const r = parseOutsiders(text, date);
             actions.setPicks(r.picks, r.date);
             setSearching(false);
-            return `${r.picks.length} cote(s) reçue(s) ✓`;
+            return r.salvaged ? `${r.picks.length} match(s) lu(s) ✓ (un morceau abîmé a été ignoré)` : `${r.picks.length} match(s) reçu(s) ✓`;
           }}
         />
         {picks.length > 0 && (
@@ -84,8 +85,9 @@ export function Find({ goBets }: { goBets: () => void }) {
               {p.time ? ` · ${p.time}` : ''}
             </span>
             <span className="small" style={{ display: 'block', fontWeight: 900, color: r ? `var(--${r.verdict === 'OK' ? 'green-d' : r.verdict === 'BOF' ? 'orange-d' : 'red-d'})` : 'var(--blue-d)' }}>
-              {r ? `${WORD[r.verdict]} (${signedPct(r.value)})` : 'Touche pour compléter'}
+              {r ? `${WORD[r.verdict]} (${signedPct(r.value)})` : 'Value : cote Pinnacle manquante'}
             </span>
+            <SignalCount p={p} />
           </span>
           <span className="odds-tag">{fmtOdds(p.odds)}</span>
         </button>
@@ -96,23 +98,114 @@ export function Find({ goBets }: { goBets: () => void }) {
   );
 }
 
+function SignalCount({ p }: { p: Outsider }) {
+  const c = countSignals(computeSignals(p));
+  if (!c.pour && !c.contre) return null;
+  return (
+    <span className="tiny" style={{ display: 'block', fontWeight: 800, marginTop: 2 }}>
+      <span style={{ color: 'var(--green-d)' }}>👍 {c.pour} pour</span> · <span style={{ color: 'var(--red-d)' }}>👎 {c.contre} contre</span>
+    </span>
+  );
+}
+
+const dash = (x: unknown) => (x === null || x === undefined || x === '' ? '—' : String(x));
+const n1 = (x: number | null) => (x === null ? '—' : x.toFixed(1).replace('.', ','));
+const per = (n: number | null, t: TeamFacts) => (n !== null && t.played ? n1(n / t.played) : '—');
+
+function FormPills({ form }: { form: string }) {
+  if (!form) return <>—</>;
+  return (
+    <span style={{ display: 'inline-flex', gap: 3 }}>
+      {[...form].map((c, i) => (
+        <span key={i} className={`fpill ${c}`}>
+          {c}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+function FaceAFace({ p }: { p: Outsider }) {
+  const o = p.out!;
+  const f = p.fav!;
+  const venueTxt = (t: TeamFacts) => (t.venue ? `${dash(t.venue.w)}V ${dash(t.venue.d)}N ${dash(t.venue.l)}D · ${dash(t.venue.gf)}-${dash(t.venue.ga)}` : '—');
+  const top = (t: TeamFacts) => {
+    const b = [...t.scorers].sort((a, c) => (c.goals ?? 0) - (a.goals ?? 0))[0];
+    return b ? `${b.name} ${b.goals ?? '?'} buts ${b.available === false ? '❌' : b.available ? '✅' : '❔'}` : '—';
+  };
+  const rows: [string, React.ReactNode, React.ReactNode][] = [
+    ['Cote (ton appli)', p.team === o.name ? fmtOdds(p.odds) : fmtOdds(o.odds), fmtOdds(f.odds)],
+    ['Cote Pinnacle', fmtOdds(o.pinnacle), fmtOdds(f.pinnacle)],
+    ['Classement', o.rank ? `${o.rank}e` : '—', f.rank ? `${f.rank}e` : '—'],
+    ['Points', dash(o.points), dash(f.points)],
+    ['Zone rouge', o.zoneGap === null ? '—' : `${o.zoneGap >= 0 ? '+' : ''}${o.zoneGap} pt`, f.zoneGap === null ? '—' : `${f.zoneGap >= 0 ? '+' : ''}${f.zoneGap} pt`],
+    ['Objectif', dash(o.goal), dash(f.goal)],
+    ['Forme (5 derniers)', <FormPills form={o.form} />, <FormPills form={f.form} />],
+    ['Points sur la forme', dash(formPoints(o.form)), dash(formPoints(f.form))],
+    [p.home === o.name ? 'Dom. / Ext.' : 'Ext. / Dom.', venueTxt(o), venueTxt(f)],
+    ['Buts marqués / match', per(o.scored, o), per(f.scored, f)],
+    ['Buts encaissés / match', per(o.conceded, o), per(f.conceded, f)],
+    ['xG pour / contre', o.xgFor === null ? '—' : `${n1(o.xgFor)} / ${n1(o.xgAgainst)}`, f.xgFor === null ? '—' : `${n1(f.xgFor)} / ${n1(f.xgAgainst)}`],
+    ['Meilleur buteur', top(o), top(f)],
+    ['Absents', o.absents.length ? o.absents.map((a) => a.name).join(', ') : 'aucun', f.absents.length ? f.absents.map((a) => a.name).join(', ') : 'aucun'],
+    ['Repos', o.restDays === null ? '—' : `${o.restDays} j`, f.restDays === null ? '—' : `${f.restDays} j`],
+    ["Coupe d'Europe cette semaine", o.europe === null ? '—' : o.europe ? 'oui' : 'non', f.europe === null ? '—' : f.europe ? 'oui' : 'non'],
+    ['Entraîneur', `${dash(o.coach)}${o.newCoach ? ' 🆕' : ''}`, `${dash(f.coach)}${f.newCoach ? ' 🆕' : ''}`],
+    ['Elo', dash(o.elo === null ? null : Math.round(o.elo)), dash(f.elo === null ? null : Math.round(f.elo))],
+  ];
+  return (
+    <table className="facts">
+      <thead>
+        <tr>
+          <th />
+          <th className="out">{o.name || p.team}</th>
+          <th>{f.name || 'Favori'}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map(([label, a, b]) => (
+          <tr key={label}>
+            <td className="lbl">{label}</td>
+            <td className="out">{a}</td>
+            <td>{b}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+function SignalList({ list }: { list: Signal[] }) {
+  const order = { pour: 0, contre: 1, info: 2 } as const;
+  return (
+    <div className="stack" style={{ gap: 6 }}>
+      {[...list]
+        .sort((a, b) => order[a.side] - order[b.side])
+        .map((s) => (
+          <div key={s.text} className={`signal ${s.side}`}>
+            <span className="signal-ico">{s.side === 'pour' ? '👍' : s.side === 'contre' ? '👎' : s.icon}</span>
+            <span>{s.text}</span>
+          </div>
+        ))}
+    </div>
+  );
+}
+
 function PickSheet({ p, onClose, goBets }: { p: Outsider; onClose: () => void; goBets: () => void }) {
   const s = useStore((st) => st.settings);
   const bets = useStore((st) => st.bets);
   const [save, setSave] = useState(false);
   const r: ValueResult | null = pickValue(p, s);
   const stake = fixedStake(bets, s, nextBetIsTest(bets, s));
-  const sig = p.signals;
-  const why = [
-    ...p.reasonsFor.map((t) => `👍 ${t}`),
-    ...p.reasonsAgainst.map((t) => `👎 ${t}`),
-    sig.xg && `🎯 ${sig.xg}`,
-    sig.absentsFav.length > 0 && `🚑 Absents chez le favori : ${sig.absentsFav.join(', ')}`,
-    sig.fatigueFav === true && '😴 Le favori est fatigué ou fait tourner',
-    sig.motivation && `🔥 ${sig.motivation}`,
-    sig.oddsMove === 'baisse' && '📉 Sa cote baisse : des parieurs bien informés misent dessus',
-    sig.oddsMove === 'hausse' && '📈 Sa cote monte : le marché y croit moins',
-  ].filter(Boolean) as string[];
+  const signals = computeSignals(p);
+  const c = countSignals(signals);
+  const ctx = p.ctx;
+
+  let advice: { mood: 'happy' | 'think' | 'sad' | 'wow'; text: React.ReactNode };
+  if (!r) advice = { mood: 'think', text: <>Il manque la cote Pinnacle pour calculer la value. Regarde les signaux et décide, ou tape la cote dans « Corriger les cotes ».</> };
+  else if (r.verdict === 'OK' && c.pour >= c.contre + 2) advice = { mood: 'wow', text: <>Value ✅ et {c.pour} signaux pour : ça vaut le coup d'essayer, avec ta petite mise de <b>{money(stake)}</b>.</> };
+  else if (r.verdict === 'OK') advice = { mood: 'think', text: <>Value ✅, mais {c.contre} signal(aux) contre. À toi de voir : regarde les 👎 avant de décider.</> };
+  else advice = { mood: 'sad', text: <>La cote n'est pas assez généreuse ({WORD[r.verdict].toLowerCase()}). Même avec de bons signaux, sur le long terme ce genre de pari fait perdre. Mon conseil : on passe.</> };
 
   return (
     <Sheet open onClose={onClose}>
@@ -132,38 +225,94 @@ function PickSheet({ p, onClose, goBets }: { p: Outsider; onClose: () => void; g
           </div>
         </div>
 
+        <div className="grid2">
+          <div className="card tight center" style={{ background: 'var(--green-soft)', borderColor: '#b7ebc8', boxShadow: '0 3px 0 #b7ebc8' }}>
+            <div style={{ fontSize: 30, fontWeight: 900, color: 'var(--green-d)' }}>👍 {c.pour}</div>
+            <div className="tiny" style={{ fontWeight: 800 }}>signaux pour</div>
+          </div>
+          <div className="card tight center" style={{ background: 'var(--red-soft)', borderColor: '#f8c4c4', boxShadow: '0 3px 0 #f8c4c4' }}>
+            <div style={{ fontSize: 30, fontWeight: 900, color: 'var(--red-d)' }}>👎 {c.contre}</div>
+            <div className="tiny" style={{ fontWeight: 800 }}>signaux contre</div>
+          </div>
+        </div>
+
+        <div className="section-title">💰 La value (la cote vaut-elle le coup ?)</div>
         {r ? (
-          <>
+          <div className="card stack" style={{ gap: 10 }}>
             <div className="center">
-              <span className={`stamp ${r.verdict}`}>
-                {EMOJI[r.verdict]} {WORD[r.verdict].toUpperCase()}
+              <span className={`stamp ${r.verdict}`} style={{ fontSize: 20 }}>
+                {EMOJI[r.verdict]} {WORD[r.verdict].toUpperCase()} {signedPct(r.value)}
               </span>
             </div>
-            <div className="card">
-              <ValueGauge r={r} compact />
-            </div>
-            {r.verdict === 'OK' ? (
-              <Coach mood="happy">
-                Mise <b>{money(stake)}</b> sur « {p.bet} » si la cote est encore à <b>{fmtOdds(r.minOdds)}</b> ou plus. Puis touche « J'ai parié ».
-              </Coach>
-            ) : (
-              <Coach mood="sad">On ne parie pas. Ça devient bon à partir d'une cote de {fmtOdds(r.minOdds)}.</Coach>
-            )}
-            {r.verdict === 'OK' && <BigButton icon="💶" title="J'ai parié" sub={`${money(stake)} sur ${p.team}`} onClick={() => setSave(true)} tone="primary" />}
-          </>
+            <ValueGauge r={r} compact />
+            <div style={{ fontWeight: 800 }}>{valueInWords(r.value)}</div>
+            <Explain q="Comment je lis ça ?">
+              <b>Chance selon ta cote</b> = 1 ÷ cote : ce que le bookmaker pense. <b>Vraie chance</b> = la cote de Pinnacle, le bookmaker le plus juste, sans sa marge
+              {r.source === 'claude' ? ' (ici, faute de Pinnacle : l\'estimation de Claude, moins fiable)' : ''}. Si la vraie chance est plus grande, la cote est trop généreuse.
+              <br />✅ <b>Bonne affaire</b> : +{Math.round(s.valueMin * 100)} % ou plus. ➖ <b>Bof</b> : entre 0 et +{Math.round(s.valueMin * 100)} %. ❌ <b>Piège</b> : en dessous de 0.
+              <br />La value ne dit pas si ce match-ci va passer : un outsider perd souvent. Elle dit si, en jouant ce genre de pari 100 fois, tu gagnes ou tu perds.
+              <br />Ça devient une bonne affaire à partir d'une cote de <b>{fmtOdds(r.minOdds)}</b>.
+            </Explain>
+          </div>
         ) : (
-          <Coach mood="think">Il me manque la cote Pinnacle. Tape-la dans « Corriger les cotes » ci-dessous.</Coach>
+          <Banner tone="blue">Pas de cote Pinnacle ni d'estimation : la value ne peut pas être calculée. Tape la cote dans « Corriger les cotes ».</Banner>
         )}
 
-        {why.length > 0 && (
-          <Explain q="Pourquoi ?">
-            {why.map((t) => (
-              <div key={t} style={{ margin: '4px 0' }}>
-                {t}
-              </div>
+        {signals.length > 0 && (
+          <>
+            <div className="section-title">🔍 Les signaux</div>
+            <SignalList list={signals} />
+          </>
+        )}
+
+        {p.out && p.fav && (
+          <>
+            <div className="section-title">⚖️ Face à face</div>
+            <FaceAFace p={p} />
+          </>
+        )}
+
+        {ctx && (ctx.stakes || ctx.link || ctx.h2h.length > 0 || ctx.weather || ctx.referee || ctx.extra.length > 0 || ctx.oddsMoveDetail) && (
+          <>
+            <div className="section-title">📋 Le match</div>
+            <div className="card stack" style={{ gap: 8, fontSize: 15 }}>
+              {ctx.stakes && <div>🔥 <b>Enjeu :</b> {ctx.stakes}</div>}
+              {ctx.link && <div>⚔️ <b>Lien :</b> {ctx.link}</div>}
+              {ctx.h2h.length > 0 && <div>🤝 <b>Confrontations :</b> {ctx.h2h.join(' · ')}</div>}
+              {ctx.oddsMoveDetail && <div>📉 <b>Cote :</b> {ctx.oddsMoveDetail}</div>}
+              {ctx.drawOdds !== null && <div>🟰 <b>Cote du nul :</b> {fmtOdds(ctx.drawOdds)}</div>}
+              {ctx.weather && <div>🌦️ <b>Météo :</b> {ctx.weather}</div>}
+              {ctx.referee && <div>🟨 <b>Arbitre :</b> {ctx.referee}</div>}
+              {ctx.extra.map((t) => (
+                <div key={t}>ℹ️ {t}</div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {(p.reasonsFor.length > 0 || p.reasonsAgainst.length > 0) && (
+          <Explain q="L'avis de Claude">
+            {p.reasonsFor.map((t) => (
+              <div key={t} style={{ margin: '4px 0' }}>👍 {t}</div>
             ))}
+            {p.reasonsAgainst.map((t) => (
+              <div key={t} style={{ margin: '4px 0' }}>👎 {t}</div>
+            ))}
+            {p.estimate !== null && <div style={{ marginTop: 6 }}>Estimation de Claude : {Math.round(p.estimate * 100)} % de chances de victoire.</div>}
           </Explain>
         )}
+
+        <div className="section-title">🧑‍⚖️ À toi de décider</div>
+        <Coach mood={advice.mood}>{advice.text}</Coach>
+        <div className="grid2">
+          <button className="btn primary" onClick={() => setSave(true)}>
+            💶 Je parie
+          </button>
+          <button className="btn" onClick={onClose}>
+            🙅 Je passe
+          </button>
+        </div>
+
         <Explain q="Corriger les cotes">
           <div className="stack" style={{ gap: 8, marginTop: 6 }}>
             <NumberField label={`Cote de ${p.team} (ton appli)`} value={p.odds} onChange={(v) => actions.updatePick(p.id, { odds: v })} />
@@ -177,6 +326,16 @@ function PickSheet({ p, onClose, goBets }: { p: Outsider; onClose: () => void; g
             </button>
           </div>
         </Explain>
+        {p.sources.length > 0 && (
+          <div className="tiny faint">
+            Sources :{' '}
+            {p.sources.map((u, i) => (
+              <button key={u + i} className="tiny" style={{ color: 'var(--blue)', textDecoration: 'underline', marginRight: 8 }} onClick={() => openUrl(u)}>
+                {i + 1}
+              </button>
+            ))}
+          </div>
+        )}
         <button
           className="btn ghost block small"
           onClick={async () => {
@@ -189,7 +348,7 @@ function PickSheet({ p, onClose, goBets }: { p: Outsider; onClose: () => void; g
           🗑️ Retirer de la liste
         </button>
       </div>
-      {save && r && (
+      {save && (
         <SaveBet
           preset={{ match: `${p.home} – ${p.away}`, league: p.competition, pick: p.bet, odds: p.odds, result: r, date: p.date }}
           onClose={() => setSave(false)}

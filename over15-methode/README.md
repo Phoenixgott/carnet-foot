@@ -34,6 +34,21 @@ Avec N matchs, on joue C(N, 2) doubles (6 matchs = 15 doubles). Si seulement 2 m
 il faut cote 1 × cote 2 ≥ nombre de doubles pour récupérer la mise totale, quelle que soit la mise par double.
 Avec k bons pronostics de cotes proches : cote minimum ≈ √(doubles ÷ C(k, 2)), arrondie au 0,05 supérieur.
 
+## La fiche d'un outsider (v5)
+
+La demande à Claude réclame une **fiche chiffrée** pour l'outsider ET le favori : cotes (bookmaker et Pinnacle, nul),
+classement, points, écart avec la zone rouge, objectif, forme sur 5 matchs, bilan domicile/extérieur, buts marqués et encaissés,
+xG, meilleurs buteurs et leur disponibilité, absents (titulaires ou non), repos, Coupe d'Europe dans la semaine, entraîneur
+(nouveau ou pas), Elo, enjeu, lien entre les équipes (derby, rivalité), confrontations, mouvement de cote, météo, arbitre.
+
+L'app range ces chiffres en **signaux 👍 / 👎** (forme, domicile/extérieur, attaque, défense du favori, xG contre résultats,
+buteurs, absents, fatigue, repos, survie, objectif du favori, nouvel entraîneur, Elo, derby, cote qui baisse), affiche un
+**face-à-face** et la **value en mots** (« sur 100 € joués… tu gagnerais en moyenne X € »), puis laisse décider : Je parie / Je passe.
+
+La lecture de la réponse est tolérante : références de sources, commentaires, guillemets non échappés, virgules décimales,
+mots comme N/A, virgules manquantes, réponse coupée ; si un match est illisible, les autres sont gardés, et en cas d'échec
+l'app montre l'endroit exact du problème.
+
 ## Le calcul
 
 - Chance selon ta cote = 1 ÷ cote.

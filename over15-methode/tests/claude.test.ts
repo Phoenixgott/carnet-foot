@@ -66,7 +66,8 @@ test('messages clairs si la réponse est vide ou abîmée', () => {
 test('les demandes contiennent ce qu\'il faut', () => {
   const p = buildOutsidersPrompt('2026-11-27', DEFAULT_SETTINGS);
   assert.match(p, /2026-11-27/);
-  assert.match(p, /cotes_pinnacle/);
+  assert.match(p, /cote_pinnacle/);
+  assert.match(p, /ecart_zone_rouge/);
   const bet = { id: 'zz9', match: 'Lens – Lille', date: '2026-11-27', league: 'Ligue 1', pick: 'Victoire de Lens' } as Bet;
   assert.match(buildResultsPrompt([bet]), /id "zz9" : Lens – Lille/);
 });

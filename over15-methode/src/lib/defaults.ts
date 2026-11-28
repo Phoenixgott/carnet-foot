@@ -14,7 +14,7 @@ export const DEFAULT_SETTINGS: Settings = {
   valueMin: 0.05,
   minOdds: 3,
   pinnacleMargin: 0.03,
-  maxPicks: 6,
+  maxPicks: 4,
   competitions: DEFAULT_COMPETITIONS,
   bookmakers: DEFAULT_BOOKMAKERS,
   haptics: true,

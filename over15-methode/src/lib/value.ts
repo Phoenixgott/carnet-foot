@@ -92,3 +92,12 @@ export const BANDS = ['Moins de 3', '3 à 5', '5 à 8', 'Plus de 8'];
 export function signedPct(v: number): string {
   return `${v >= 0 ? '+' : '−'}${Math.abs(v * 100).toFixed(0)} %`;
 }
+
+/** La value en une phrase de tous les jours : ce que tu gagnes ou perds en moyenne pour 100 € joués. */
+export function valueInWords(v: number): string {
+  const n = Math.round(Math.abs(v) * 100);
+  if (n === 0) return 'Sur 100 € joués sur des paris comme celui-ci, tu ne gagnes ni ne perds rien en moyenne.';
+  return v > 0
+    ? `Sur 100 € joués sur des paris comme celui-ci, tu gagnerais en moyenne ${n} € (en jouant longtemps).`
+    : `Sur 100 € joués sur des paris comme celui-ci, tu perdrais en moyenne ${n} € (en jouant longtemps).`;
+}

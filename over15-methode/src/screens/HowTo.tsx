@@ -28,6 +28,13 @@ export function HowTo() {
 
       <div className="section-title">🎬 2. Bonne affaire ou piège ?</div>
       <ValueVideo />
+      <Card emoji="📏" title="Comment je lis la note ?">
+        Chaque outsider a <b>deux choses</b> :
+        <br />💰 <b>La value</b> : la cote vaut-elle le coup ? « +14 % » veut dire : sur 100 € joués sur des paris comme celui-ci, tu gagnerais en moyenne 14 € (en jouant longtemps). ✅ dès +{Math.round(s.valueMin * 100)} %, ➖ entre 0 et +{Math.round(s.valueMin * 100)} %, ❌ en dessous de 0.
+        <br />🔍 <b>Les signaux</b> : chaque chiffre (forme, buteurs, absents, fatigue, maintien, derby, cote qui baisse…) devient 👍 pour l'outsider ou 👎 contre.
+        <br />Tu vois tout, et <b>c'est toi qui décides</b> : « Je parie » ou « Je passe ».
+      </Card>
+
       <Card emoji="🧮" title="L'astuce">
         Une cote cache une chance : <b>1 ÷ cote</b>. À 8,40, le bookmaker donne <b>12 chances sur 100</b>. Si la <b>vraie</b> chance est plus grande (la cote de <b>Pinnacle</b>, le bookmaker le plus juste, le dit), la cote est trop généreuse : ✅ <b>bonne affaire</b>. Sinon : ❌ <b>piège</b>.
       </Card>
@@ -36,6 +43,28 @@ export function HowTo() {
       <SystemVideo />
       <Card emoji="🎯" title="Remboursé ?">
         Avec 6 matchs, tu joues 15 doubles. Si 2 matchs passent, il faut que <b>cote 1 × cote 2 ≥ 15</b>. L'onglet <b>Système</b> te donne le tableau.
+      </Card>
+
+      <Card emoji="🕵️" title="Où chercher plus d'infos ?">
+        Claude va déjà chercher tout ça pour toi. Si tu veux vérifier toi-même :
+        <div className="stack" style={{ gap: 8, marginTop: 10 }}>
+          {[
+            ['🚑 Blessés et suspendus', 'Transfermarkt', 'https://www.transfermarkt.fr/'],
+            ['🎯 xG (occasions créées)', 'Understat', 'https://understat.com/'],
+            ['📐 Force des équipes (Elo)', 'ClubElo', 'http://clubelo.com/'],
+            ['📉 Cotes Pinnacle et cotes qui bougent', 'OddsPortal', 'https://www.oddsportal.com/'],
+            ['📋 Compositions et stats du match', 'FotMob', 'https://www.fotmob.com/'],
+            ['⚽ Résultats, classements, forme', 'Flashscore', 'https://www.flashscore.fr/'],
+          ].map(([what, site, url]) => (
+            <button key={site} className="btn small block" style={{ justifyContent: 'space-between' }} onClick={() => openUrl(url)}>
+              <span>{what}</span>
+              <span className="muted">{site} ↗</span>
+            </button>
+          ))}
+        </div>
+        <div style={{ marginTop: 10 }}>
+          <b>Les idées qui comptent le plus</b> pour un outsider : les absents chez le favori (compos annoncées 1 h avant le match), la fatigue (Coupe d'Europe en semaine, rotation, long déplacement), la motivation (maintien, derby, rien à perdre), un nouvel entraîneur, des défaites serrées malgré de bons xG, et la cote qui baisse avant le match.
+        </div>
       </Card>
 
       <Card emoji="🧘" title="Les 3 règles d'or">

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { copyText, haptic, openUrl, readText } from '../lib/native';
+import { ParseError } from '../lib/claude';
 import { Banner, BigButton, Explain, toast } from '../components/ui';
 import { ClaudeVideo } from '../components/Videos';
 
@@ -11,6 +12,7 @@ export function FetchFlow({ buildPrompt, onText, video = true }: { buildPrompt: 
   const [copied, setCopied] = useState(false);
   const [opened, setOpened] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [excerpt, setExcerpt] = useState<string | null>(null);
   const [manual, setManual] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -30,10 +32,12 @@ export function FetchFlow({ buildPrompt, onText, video = true }: { buildPrompt: 
       const msg = onText(text);
       haptic.success();
       setError(null);
+      setExcerpt(null);
       toast(msg);
     } catch (e) {
       haptic.error();
       setError(e instanceof Error ? e.message : String(e));
+      setExcerpt(e instanceof ParseError ? e.excerpt : null);
     }
   };
 
@@ -81,6 +85,12 @@ export function FetchFlow({ buildPrompt, onText, video = true }: { buildPrompt: 
       {error && (
         <Banner tone="red">
           <b>Oups.</b> {error}
+          {excerpt && (
+            <div className="tiny" style={{ marginTop: 6, fontFamily: 'ui-monospace, monospace', wordBreak: 'break-all' }}>
+              Endroit du problème : « {excerpt} »<br />
+              Fais une capture d'écran et envoie-la-moi : je corrigerai.
+            </div>
+          )}
         </Banner>
       )}
 

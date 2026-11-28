@@ -13,6 +13,57 @@ export interface PinnacleOdds {
   fav: number | null;
 }
 
+/** Bilan d'une équipe à domicile (si elle reçoit) ou à l'extérieur. */
+export interface Venue {
+  played: number | null;
+  w: number | null;
+  d: number | null;
+  l: number | null;
+  gf: number | null;
+  ga: number | null;
+}
+
+/** Tous les chiffres d'une équipe, pour décider soi-même. */
+export interface TeamFacts {
+  name: string;
+  odds: number | null;
+  pinnacle: number | null;
+  rank: number | null;
+  points: number | null;
+  played: number | null;
+  /** Points d'avance (+) ou de retard (−) sur la zone de relégation. */
+  zoneGap: number | null;
+  /** maintien, titre, europe, milieu, montée… */
+  goal: string;
+  /** 5 derniers matchs, le plus récent à gauche : « VNDDV ». */
+  form: string;
+  venue: Venue | null;
+  scored: number | null;
+  conceded: number | null;
+  /** xG pour et contre, par match. */
+  xgFor: number | null;
+  xgAgainst: number | null;
+  scorers: { name: string; goals: number | null; available: boolean | null }[];
+  absents: { name: string; reason: string; key: boolean | null }[];
+  lastMatch: string;
+  restDays: number | null;
+  europe: boolean | null;
+  coach: string;
+  newCoach: boolean | null;
+  elo: number | null;
+}
+
+export interface MatchContext {
+  stakes: string;
+  link: string;
+  h2h: string[];
+  oddsMoveDetail: string;
+  weather: string;
+  referee: string;
+  extra: string[];
+  drawOdds: number | null;
+}
+
 /** Un outsider proposé par Claude. */
 export interface Outsider {
   id: string;
@@ -42,6 +93,10 @@ export interface Outsider {
   };
   sources: string[];
   importedAt: string;
+  /** Fiche détaillée (nouveau format) : l'outsider, le favori et le contexte. */
+  out?: TeamFacts;
+  fav?: TeamFacts;
+  ctx?: MatchContext;
 }
 
 export interface Bet {
