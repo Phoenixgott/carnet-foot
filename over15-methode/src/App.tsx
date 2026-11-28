@@ -1,29 +1,34 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { BottomNav, type Tab } from './components/BottomNav';
 import { Intro } from './components/Intro';
+import { CoachBall } from './components/Coach';
 import { AskHost, ToastHost } from './components/ui';
 import { hideSplash, initBackButton, openUrl } from './lib/native';
 import { actions, getState, useStore } from './lib/store';
-import { nextBetIsTest, testCount } from './lib/stats';
-import { Outsiders } from './screens/Outsiders';
-import { Calc } from './screens/Calc';
+import { nextBetIsTest } from './lib/stats';
+import { Home } from './screens/Home';
+import { Find } from './screens/Find';
+import { Check } from './screens/Check';
+import { System } from './screens/System';
 import { Bets } from './screens/Bets';
-import { Learn } from './screens/Learn';
+import { HowTo } from './screens/HowTo';
 import { Settings } from './screens/Settings';
 
-const TITLES: Record<Tab, { title: string; sub: string }> = {
-  outsiders: { title: 'Outsiders', sub: 'Les grosses cotes qui valent le coup' },
-  calc: { title: 'Calculer', sub: 'Bonne affaire ou piège ? En 2 chiffres' },
-  bets: { title: 'Mes paris', sub: 'Ce qui marche, ce qui ne marche pas' },
-  learn: { title: 'Comprendre', sub: 'La value en 2 minutes' },
-  settings: { title: 'Réglages', sub: 'Ton argent, les règles, la sauvegarde' },
+const TITLES: Record<Tab, string> = {
+  home: 'Outsiders',
+  find: 'Trouver',
+  check: 'Vérifier',
+  system: 'Système',
+  bets: 'Mes paris',
+  howto: 'Comment ça marche',
+  settings: 'Réglages',
 };
 
 export function App() {
   const settings = useStore((s) => s.settings);
   const bets = useStore((s) => s.bets);
   const [introDone, setIntroDone] = useState(!settings.intro);
-  const [tab, setTab] = useState<Tab>('outsiders');
+  const [tab, setTab] = useState<Tab>('home');
   const tabRef = useRef(tab);
   tabRef.current = tab;
 
@@ -31,8 +36,8 @@ export function App() {
     // Le splash natif s'efface dès que l'interface (ou l'intro, de la même couleur) est prête.
     requestAnimationFrame(() => hideSplash());
     initBackButton(() => {
-      if (tabRef.current !== 'outsiders') {
-        setTab('outsiders');
+      if (tabRef.current !== 'home') {
+        setTab('home');
         return true;
       }
       return false;
@@ -45,27 +50,37 @@ export function App() {
   }, []);
 
   const isTest = nextBetIsTest(bets, settings);
-  const tc = testCount(bets);
-  const head = TITLES[tab];
+  const pending = bets.filter((b) => b.result === 'pending' && b.test === isTest).length;
 
   return (
     <div className="app">
       <header className="topbar">
-        <div className="logo-mini">+EV</div>
+        {tab === 'home' ? (
+          <div className="logo-mini">+EV</div>
+        ) : (
+          <button className="icon-btn" onClick={() => go('home')} aria-label="Retour à l'accueil">
+            <span style={{ fontSize: 20, fontWeight: 900 }}>←</span>
+          </button>
+        )}
         <div className="grow">
-          <h1>{head.title}</h1>
-          <div className="sub">{head.sub}</div>
+          <h1>{TITLES[tab]}</h1>
         </div>
-        <span className={`mode-chip ${isTest ? '' : 'real'}`}>{isTest ? `Entraînement ${tc}/${settings.testBetsTarget}` : 'Pour de vrai'}</span>
+        {tab !== 'settings' && (
+          <button className="icon-btn" onClick={() => go('settings')} aria-label="Réglages">
+            <span style={{ fontSize: 20 }}>⚙️</span>
+          </button>
+        )}
       </header>
       <main className="screen" key={tab}>
-        {tab === 'outsiders' && <Outsiders goLearn={() => go('learn')} goBets={() => go('bets')} />}
-        {tab === 'calc' && <Calc goBets={() => go('bets')} />}
+        {tab === 'home' && <Home go={go} />}
+        {tab === 'find' && <Find goBets={() => go('bets')} />}
+        {tab === 'check' && <Check goBets={() => go('bets')} />}
+        {tab === 'system' && <System />}
         {tab === 'bets' && <Bets />}
-        {tab === 'learn' && <Learn />}
-        {tab === 'settings' && <Settings goLearn={() => go('learn')} />}
+        {tab === 'howto' && <HowTo />}
+        {tab === 'settings' && <Settings goLearn={() => go('howto')} />}
       </main>
-      <BottomNav tab={tab} onChange={go} pending={bets.filter((b) => b.result === 'pending' && b.test === isTest).length} />
+      <BottomNav tab={tab} onChange={go} pending={pending} />
       {introDone && !settings.ageConfirmed && <AgeGate />}
       <ToastHost />
       <AskHost />
@@ -77,16 +92,16 @@ export function App() {
 function AgeGate() {
   return (
     <div className="age-gate">
-      <div className="stack" style={{ maxWidth: 420, width: '100%', textAlign: 'center' }}>
-        <div className="logo-mini" style={{ width: 84, height: 84, fontSize: 34, borderRadius: 24, margin: '0 auto' }}>+EV</div>
-        <h1 style={{ fontFamily: 'var(--display)', fontWeight: 800, fontSize: 34, margin: '6px 0 0', textTransform: 'uppercase' }}>Outsiders</h1>
-        <p className="muted" style={{ margin: 0 }}>
-          L'app te dit si une grosse cote est une bonne affaire ou un piège, étape par étape. Tes {settingsTarget()} premiers paris sont pour de faux, pour t'entraîner.
+      <div className="stack" style={{ maxWidth: 420, width: '100%', textAlign: 'center', alignItems: 'center' }}>
+        <CoachBall size={110} />
+        <h1 style={{ fontWeight: 900, fontSize: 34, margin: 0 }}>Outsiders</h1>
+        <p className="muted" style={{ margin: 0, fontSize: 17 }}>
+          Je te dis si une grosse cote est une <b>bonne affaire</b> ou un <b>piège</b>. Tes {getState().settings.testBetsTarget} premiers paris sont pour de faux, pour t'entraîner.
         </p>
-        <div className="banner red" style={{ textAlign: 'left' }}>
-          <span className="logo-mini" style={{ width: 34, height: 34, fontSize: 13, background: 'var(--red)', color: '#fff', boxShadow: 'none' }}>18+</span>
+        <div className="banner red" style={{ textAlign: 'left', width: '100%' }}>
+          <span style={{ fontSize: 24 }}>🔞</span>
           <div className="small">
-            Réservé aux personnes majeures. Les paris comportent des risques : endettement, isolement, dépendance. Besoin d'aide : <b>09 74 75 13 13</b> (Joueurs Info Service, appel non surtaxé).
+            Réservé aux personnes majeures. Jouer comporte des risques : endettement, isolement, dépendance. Besoin d'aide : <b>09 74 75 13 13</b> (Joueurs Info Service, appel non surtaxé).
           </div>
         </div>
         <button className="btn primary block" onClick={() => actions.updateSettings({ ageConfirmed: true })}>
@@ -98,8 +113,4 @@ function AgeGate() {
       </div>
     </div>
   );
-}
-
-function settingsTarget() {
-  return getState().settings.testBetsTarget;
 }

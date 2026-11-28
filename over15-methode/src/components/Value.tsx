@@ -25,13 +25,13 @@ export function ValueGauge({ r, compact }: { r: ValueResult; compact?: boolean }
       <div className="vg-row">
         <span className="vg-label">Vraie chance</span>
         <div className="vg-track">
-          <div className="vg-bar" style={{ width: `${(r.trueProb / max) * 100}%`, background: color, boxShadow: `0 0 12px ${color}` }} />
+          <div className="vg-bar" style={{ width: `${(r.trueProb / max) * 100}%`, background: color }} />
         </div>
         <b className="vg-val" style={{ color }}>{p1(r.trueProb)}</b>
       </div>
       {!compact && (
         <div className="center" style={{ marginTop: 12 }}>
-          <div className="vg-verdict" style={{ color, textShadow: `0 0 22px ${color}` }}>
+          <div className="vg-verdict" style={{ color }}>
             {r.verdict === 'OK' ? '✅' : r.verdict === 'BOF' ? '➖' : '❌'} {VERDICT_WORD[r.verdict]}
           </div>
           <div className="small" style={{ marginTop: 4 }}>
@@ -52,11 +52,11 @@ export function Donut({ won, lost, size = 150 }: { won: number; lost: number; si
   return (
     <div style={{ position: 'relative', width: size, height: size, margin: '0 auto' }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ transform: 'rotate(-90deg)' }}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={n ? 'var(--red)' : 'rgba(255,255,255,.08)'} strokeOpacity={n ? 0.85 : 1} strokeWidth="16" />
-        {n > 0 && <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--green)" strokeWidth="16" strokeDasharray={`${c * part} ${c}`} style={{ filter: 'drop-shadow(0 0 6px var(--green))' }} />}
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={n ? 'var(--red)' : 'var(--surface-3)'} strokeOpacity={n ? 0.85 : 1} strokeWidth="16" />
+        {n > 0 && <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--green)" strokeWidth="16" strokeDasharray={`${c * part} ${c}`}  />}
       </svg>
       <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', alignContent: 'center' }}>
-        <div style={{ fontFamily: 'var(--display)', fontWeight: 800, fontSize: 38, lineHeight: 1 }}>{n ? `${Math.round(part * 100)} %` : '—'}</div>
+        <div style={{ fontWeight: 900, fontSize: 38, lineHeight: 1 }}>{n ? `${Math.round(part * 100)} %` : '—'}</div>
         <div className="tiny muted">de réussite</div>
       </div>
     </div>
@@ -131,14 +131,9 @@ export function SaveBet({ preset, onClose, onSaved }: { preset: SavePreset; onCl
   };
 
   return (
-    <Sheet open onClose={onClose} title="J'ai parié" top>
+    <Sheet open onClose={onClose} title="J'ai parié 💶" top>
       <div className="stack">
-        <Guide
-          steps={[
-            <>Vérifie le match, le pari et la cote <b>que tu as vraiment prise</b>.</>,
-            <>Touche <b>Enregistrer</b>. Quand le match est fini, l'app pourra demander le résultat à Claude.</>,
-          ]}
-        />
+        <Guide steps={[<>Vérifie le match, le pari et la cote <b>que tu as vraiment prise</b>.</>, <>Touche <b>Enregistrer</b>.</>]} />
         <TextField label="Match" value={match} onChange={setMatch} placeholder="Ex. Al Feiha – Al Hilal" />
         <TextField label="Mon pari" value={pick} onChange={setPick} placeholder="Ex. Victoire de Al Feiha" />
         <div className="grid2">

@@ -78,7 +78,7 @@ export function pickValue(p: Outsider, s: Settings): ValueResult | null {
 
 export const VERDICT_WORD: Record<Verdict, string> = { OK: 'BONNE AFFAIRE', BOF: 'BOF', NON: 'PIÈGE' };
 export const VERDICT_SHORT: Record<Verdict, string> = { OK: '✅ OK', BOF: '➖ Bof', NON: '❌ Pas OK' };
-export const VERDICT_COLOR: Record<Verdict, string> = { OK: 'var(--green)', BOF: 'var(--orange)', NON: 'var(--red)' };
+export const VERDICT_COLOR: Record<Verdict, string> = { OK: 'var(--green-d)', BOF: 'var(--orange-d)', NON: 'var(--red-d)' };
 
 /** Tranche de cote, pour le bilan. */
 export function oddsBand(o: number): string {

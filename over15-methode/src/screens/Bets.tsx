@@ -7,8 +7,9 @@ import type { Bet, BetResult } from '../lib/types';
 import { haptic } from '../lib/native';
 import { BankrollChart } from '../components/Charts';
 import { Donut, SaveBet } from '../components/Value';
-import { ask, Banner, BigButton, Explain, Guide, NumberField, Segmented, Sheet, TextField, toast } from '../components/ui';
-import { IconPlus, IconSpark, IconTrash } from '../components/Icons';
+import { ask, Banner, BigButton, Explain, NumberField, Segmented, Sheet, TextField, toast } from '../components/ui';
+import { IconPlus, IconTrash } from '../components/Icons';
+import { Coach } from '../components/Coach';
 import { FetchFlow } from './FetchFlow';
 
 const pc = (x: number | null) => (x === null ? '—' : `${Math.round(x * 100)} %`);
@@ -73,8 +74,8 @@ export function Bets() {
 
       {pending.length > 0 && (
         <>
-          <Guide steps={[<>Tu as <b>{pending.length} pari(s) en attente</b> de résultat.</>, <>Touche le bouton : Claude trouve les scores, et l'app met « gagné » ou « perdu » toute seule.</>]} />
-          <BigButton icon={<IconSpark size={24} />} title="Trouver mes résultats" sub="Avec Claude, en 5 étapes" onClick={() => setResults(true)} />
+          <Coach mood="think">Tu as {pending.length} pari{pending.length > 1 ? 's' : ''} en attente. Je demande les scores à Claude ?</Coach>
+          <BigButton icon="🔎" title="Trouver mes résultats" sub="Claude trouve les scores, l'app fait le reste" onClick={() => setResults(true)} tone="primary" />
         </>
       )}
 
@@ -96,7 +97,7 @@ export function Bets() {
 
       {decided > 0 && d.breakEven !== null && (
         <div className="card tight stack" style={{ gap: 10 }}>
-          <b>Est-ce que ça marche ?</b>
+          <b style={{ fontSize: 18 }}>Est-ce que ça marche ?</b>
           <CompareBar label="Ta réussite" value={d.hitRate ?? 0} color={rentable ? 'var(--green)' : 'var(--red)'} />
           <CompareBar label="Il faut au moins" value={d.breakEven} color="var(--muted)" />
           <div className="small">
@@ -144,7 +145,7 @@ export function Bets() {
       {list.length === 0 && (
         <div className="empty card">
           <span className="ball">⚽</span>
-          Pas encore de pari. Va dans <b>Outsiders</b> ou <b>Calculer</b>, puis touche « J'ai parié ».
+          Pas encore de pari. Va dans <b>Trouver</b> ou <b>Vérifier</b>, puis touche « J'ai parié ».
         </div>
       )}
       {list.map((b) => {
@@ -234,10 +235,10 @@ function Results({ pending, onClose }: { pending: Bet[]; onClose: () => void }) 
   return (
     <Sheet open onClose={onClose} title="Trouver mes résultats" top>
       <div className="stack">
-        <Guide steps={[<>Fais les 5 étapes, comme pour les outsiders.</>, <>Claude cherche le score de tes {pending.length} match(s).</>, <>L'app met « gagné » ou « perdu » toute seule.</>]} />
+        <Coach mood="think">Touche les 3 boutons : Claude cherche le score de tes {pending.length} match(s), et je mets « gagné » ou « perdu » tout seul.</Coach>
         <FetchFlow
           buildPrompt={() => buildResultsPrompt(pending)}
-          pasteHint="L'app lit les scores et met à jour tes paris."
+          video={false}
           onText={(text) => {
             const res = parseResults(text);
             const ids = new Set(getState().bets.map((b) => b.id));

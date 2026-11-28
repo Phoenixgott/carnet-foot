@@ -4,9 +4,9 @@ const config: CapacitorConfig = {
   appId: 'com.phoenixgott.over15methode',
   appName: 'Outsiders',
   webDir: 'dist',
-  backgroundColor: '#050b08',
+  backgroundColor: '#f6f8f3',
   android: {
-    backgroundColor: '#050b08',
+    backgroundColor: '#f6f8f3',
     allowMixedContent: false,
     webContentsDebuggingEnabled: false,
   },
@@ -15,13 +15,13 @@ const config: CapacitorConfig = {
     SystemBars: {
       insetsHandling: 'css',
       initialViewportFitValueHint: 'cover',
-      style: 'DARK',
+      style: 'LIGHT',
     },
     SplashScreen: {
       launchShowDuration: 3000,
       launchAutoHide: false,
       launchFadeOutDuration: 250,
-      backgroundColor: '#050b08',
+      backgroundColor: '#f6f8f3',
       showSpinner: false,
       androidScaleType: 'CENTER_CROP',
     },

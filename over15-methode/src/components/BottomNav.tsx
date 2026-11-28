@@ -1,20 +1,19 @@
 import { haptic } from '../lib/native';
-import { IconBook, IconGear, IconHome, IconList, IconTarget } from './Icons';
 
-export type Tab = 'outsiders' | 'calc' | 'bets' | 'learn' | 'settings';
+export type Tab = 'home' | 'find' | 'check' | 'system' | 'bets' | 'howto' | 'settings';
 
-const ITEMS: { id: Tab; label: string; icon: (p: { size?: number }) => React.ReactNode }[] = [
-  { id: 'outsiders', label: 'Outsiders', icon: IconHome },
-  { id: 'calc', label: 'Calculer', icon: IconTarget },
-  { id: 'bets', label: 'Mes paris', icon: IconList },
-  { id: 'learn', label: 'Comprendre', icon: IconBook },
-  { id: 'settings', label: 'Réglages', icon: IconGear },
+const ITEMS: { id: Tab; label: string; emoji: string }[] = [
+  { id: 'home', label: 'Accueil', emoji: '🏠' },
+  { id: 'find', label: 'Trouver', emoji: '🔎' },
+  { id: 'check', label: 'Vérifier', emoji: '✅' },
+  { id: 'system', label: 'Système', emoji: '🎯' },
+  { id: 'bets', label: 'Mes paris', emoji: '📊' },
 ];
 
 export function BottomNav({ tab, onChange, pending }: { tab: Tab; onChange: (t: Tab) => void; pending: number }) {
   return (
     <nav className="bottom-nav" aria-label="Navigation principale">
-      {ITEMS.map(({ id, label, icon: Icon }) => (
+      {ITEMS.map(({ id, label, emoji }) => (
         <button
           key={id}
           type="button"
@@ -26,7 +25,7 @@ export function BottomNav({ tab, onChange, pending }: { tab: Tab; onChange: (t: 
           }}
         >
           <span style={{ position: 'relative' }}>
-            <Icon size={23} />
+            <span className="nav-emoji">{emoji}</span>
             {id === 'bets' && pending > 0 && <span className="nav-badge">{pending}</span>}
           </span>
           <span>{label}</span>

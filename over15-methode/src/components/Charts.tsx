@@ -31,7 +31,7 @@ export function BankrollChart({ points, start, height = 150 }: { points: { x: nu
   const area = `${d} L${X(n).toFixed(1)},${H - pad.b} L${X(0).toFixed(1)},${H - pad.b} Z`;
   const last = points[points.length - 1];
   const up = last.y >= start;
-  const color = up ? 'var(--green)' : 'var(--red)';
+  const color = up ? 'var(--green-d)' : 'var(--red-d)';
   return (
     <svg className="chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Bankroll : ${money(last.y)}`}>
       <defs>
@@ -40,13 +40,13 @@ export function BankrollChart({ points, start, height = 150 }: { points: { x: nu
           <stop offset="1" stopColor={up ? '#2fe68b' : '#ff4f61'} stopOpacity="0" />
         </linearGradient>
       </defs>
-      <line x1={pad.l} x2={W - pad.r} y1={Y(start)} y2={Y(start)} stroke="rgba(255,255,255,.18)" strokeDasharray="4 5" />
+      <line x1={pad.l} x2={W - pad.r} y1={Y(start)} y2={Y(start)} stroke="rgba(0,0,0,.18)" strokeDasharray="4 5" />
       <text x={W - pad.r} y={Y(start) - 5} textAnchor="end" fontSize="10" fill="var(--faint)">
         départ {money(start)}
       </text>
       <path d={area} fill={`url(#g${id})`} style={{ animation: 'fadeIn .9s ease' }} />
       <path className="line" d={d} pathLength={1} fill="none" stroke={color} strokeWidth="2.6" strokeLinejoin="round" strokeLinecap="round" />
-      <circle cx={X(n)} cy={Y(last.y)} r="4.5" fill={color} stroke="#050b08" strokeWidth="2" style={{ animation: 'fadeIn 1.4s ease' }} />
+      <circle cx={X(n)} cy={Y(last.y)} r="4.5" fill={color} stroke="#ffffff" strokeWidth="2" style={{ animation: 'fadeIn 1.4s ease' }} />
       <text x={pad.l} y={H - 4} fontSize="10" fill="var(--faint)">
         1er pari
       </text>

@@ -86,6 +86,7 @@ write('app/src/main/res/drawable/o15_icon_bg.xml', `<?xml version="1.0" encoding
 write('app/src/main/res/drawable/splash_icon.xml', `<?xml version="1.0" encoding="utf-8"?>
 <vector ${NS} android:width="288dp" android:height="288dp" android:viewportWidth="162" android:viewportHeight="162">
     <group android:translateX="27" android:translateY="27">
+    <path android:pathData="M54,10a44,44 0 1,1 0,88a44,44 0 1,1 0,-88" android:fillColor="#0B2B19"/>
     ${logo()}
     </group>
 </vector>
@@ -103,7 +104,7 @@ write('app/src/main/res/mipmap-anydpi/ic_launcher_round.xml', adaptive);
 // 3. Couleurs, thème et splash (aucun écran blanc : tout est sur le fond de l'intro).
 write('app/src/main/res/values/o15_colors.xml', `<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="o15_bg">#050B08</color>
+    <color name="o15_bg">#F6F8F3</color>
     <color name="o15_green">#3DFF9F</color>
 </resources>
 `);

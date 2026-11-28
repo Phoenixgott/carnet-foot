@@ -2,7 +2,7 @@
 
 Application Android qui dit si une **grosse cote est une bonne affaire ou un piège**, en mots simples.
 Elle compare la chance donnée par ta cote (1 ÷ cote) à la **vraie chance** (cote Pinnacle sans sa marge,
-sinon l'estimation de Claude ou la tienne). Thème sombre, plein écran, explications pas à pas à chaque écran.
+sinon l'estimation de Claude ou la tienne). Design clair et coloré, gros boutons, un coach animé et des mini-vidéos qui montrent quoi faire.
 **Réservée aux plus de 18 ans.**
 
 ## Télécharger l'APK
@@ -16,16 +16,23 @@ Lien direct vers la dernière version :
 
 L'ancien lien (`…/Over15-Methode.apk`) fonctionne toujours et donne la même application.
 
-## Les écrans
+## Les écrans (design v4 : clair, gros boutons, un coach qui te guide)
 
-| Onglet | Ce qu'il fait |
+| Écran | Ce qu'il fait |
 | --- | --- |
-| **Outsiders** | 5 étapes guidées pour « Demander à Claude » : copier la demande → ouvrir Claude → coller et envoyer → copier la réponse → la coller dans l'app. Claude cherche les outsiders du jour (cote d'au moins 3), leur cote chez Winamax/Unibet/Betclic, les cotes Pinnacle, et les signaux (xG, forme, Elo, absents du favori, fatigue, motivation, mouvement de cote). L'app calcule la value et classe : ✅ OK, ➖ Bof, ❌ Pas OK. |
-| **Fiche d'un outsider** | Graphique « chance selon ta cote » contre « vraie chance », la value, une phrase simple, le plan (« vérifie que la cote est au moins à X, mise Y € »), les signaux, et « J'ai parié ». |
-| **Calculer** | La calculatrice : ta cote + la cote Pinnacle (ou ton estimation en %) → ✅ bonne affaire ou ❌ piège, avec la cote minimum à exiger. |
-| **Mes paris** | Anneau ✅ gagnés / ❌ perdus avec le % de réussite, « Est-ce que ça marche ? » (ta réussite contre le minimum 1 ÷ cote moyenne), bilan par tranche de cote (moins de 3, 3 à 5, 5 à 8, plus de 8), selon la value calculée et par championnat, courbe de ton argent. Bouton **« Trouver mes résultats »** : Claude trouve les scores, l'app met gagné/perdu toute seule. |
-| **Comprendre** | La value en 2 minutes : 1 ÷ cote, l'astuce Pinnacle, quand parier, les signaux, la patience (séries de défaites normales), le bilan perso. |
-| **Réglages** | Ton argent, ta mise (1 % conseillé), limite de pertes par semaine, entraînement (20 paris pour de faux), règles de la value (+5 %, cote d'outsider ≥ 3), sauvegarde, 18+ et Joueurs Info Service. |
+| **Accueil** | Le coach (un ballon animé) + 4 grosses tuiles : Trouver, Vérifier, Système, Mes paris, et « Comment ça marche ? ». |
+| **🔎 Trouver** | Mini-vidéo + 3 gros boutons : **Copier** → **Ouvrir Claude** → **Coller la réponse**. Claude cherche les outsiders du jour, leurs cotes et la cote Pinnacle ; l'app affiche ✅ bonne affaire, ➖ bof ou ❌ piège, et ce qu'il faut miser. |
+| **✅ Vérifier** | 2 questions (ta cote, puis la cote Pinnacle ou ton estimation en %) → un gros verdict ✅/❌ et « J'ai parié ». |
+| **🎯 Système** | Système de doubles : nombre de matchs (6 = 15 doubles), mise par double (0,10 € à 1 €), cote minimum pour être remboursé avec 2 bons (≈ 3,90 pour 6 matchs), le tableau « cote du 1er match → cote minimum du 2e » (2,00 → 7,50 … 5,00 → 3,00), les minimums avec 3, 4, 5 bons (2,25 · 1,60 · 1,25), et un vérificateur (tape tes cotes, touche ✅/❌ → remboursé ou pas, et combien). |
+| **📊 Mes paris** | Anneau ✅/❌ avec le % de réussite, « Est-ce que ça marche ? », bilan par tranche de cote, selon la value et par championnat, courbe de ton argent, et « Trouver mes résultats » avec Claude. |
+| **🎬 Comment ça marche** | 3 mini-vidéos animées (Claude, bonne affaire ou piège, système de doubles) et les règles d'or. |
+| **⚙️ Réglages** | Ton argent, ta mise (1 % conseillé), limite par semaine, entraînement, règles de la value, sauvegarde, 18+ et Joueurs Info Service. |
+
+### Le système de doubles
+
+Avec N matchs, on joue C(N, 2) doubles (6 matchs = 15 doubles). Si seulement 2 matchs sont gagnés, un seul double rapporte :
+il faut cote 1 × cote 2 ≥ nombre de doubles pour récupérer la mise totale, quelle que soit la mise par double.
+Avec k bons pronostics de cotes proches : cote minimum ≈ √(doubles ÷ C(k, 2)), arrondie au 0,05 supérieur.
 
 ## Le calcul
 
