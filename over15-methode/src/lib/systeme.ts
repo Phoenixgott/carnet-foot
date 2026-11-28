@@ -61,3 +61,62 @@ export function evaluateSystem(odds: number[], won: boolean[], stakePerDouble: n
 
 /** Les lignes du tableau (cote du 1er match → cote minimum du 2e). */
 export const FIRST_ODDS = [2, 2.5, 3, 3.5, 4, 5];
+
+// ---------- Quelle cote prendre sur chaque match ? ----------
+
+/** Marge du bookmaker retirée pour estimer la chance réelle d'un match : 1 ÷ cote ÷ (1 + marge). */
+export const BOOK_MARGIN = 0.05;
+
+function round05(x: number): number {
+  return Math.round(x * 20) / 20;
+}
+
+/** Nombre de bons pronostics nécessaires pour être remboursé, si tous les matchs ont la même cote. */
+export function requiredGood(n: number, odds: number): number {
+  const d = doublesCount(n);
+  for (let k = 2; k <= n; k++) if (choose(k, 2) * odds * odds >= d - 1e-9) return k;
+  return n;
+}
+
+/** Chance d'être au moins remboursé avec n matchs à la même cote (loi binomiale). */
+export function refundChance(n: number, odds: number, margin = BOOK_MARGIN): number {
+  const p = Math.min(0.99, 1 / odds / (1 + margin));
+  const k = requiredGood(n, odds);
+  let s = 0;
+  for (let i = k; i <= n; i++) s += choose(n, i) * Math.pow(p, i) * Math.pow(1 - p, n - i);
+  return s;
+}
+
+export interface Zone {
+  good: number;
+  from: number;
+  to: number;
+  chance: number;
+}
+
+export interface AvoidZone {
+  good: number;
+  from: number;
+  to: number;
+  chanceFrom: number;
+  chanceTo: number;
+}
+
+/** Les zones de cotes qui maximisent la chance d'être remboursé, et celles à éviter. */
+export function refundZones(n: number): { best: Zone[]; avoid: AvoidZone[]; above: number } {
+  const ks: number[] = [];
+  for (let k = Math.max(2, n - 2); k >= 2; k--) ks.push(k);
+  const best = ks.map((k) => {
+    const from = minOddsWithKGood(n, k);
+    const to = round05(from * 1.075);
+    return { good: k, from, to, chance: refundChance(n, (from + to) / 2) };
+  });
+  const avoid: AvoidZone[] = [];
+  for (let i = 0; i < best.length - 1; i++) {
+    const from = round05(best[i].to + 0.1);
+    const to = round05(best[i + 1].from - 0.15);
+    if (to > from) avoid.push({ good: best[i].good, from, to, chanceFrom: refundChance(n, from), chanceTo: refundChance(n, to) });
+  }
+  const last = best[best.length - 1];
+  return { best, avoid, above: last ? round05(last.to + 0.1) : 0 };
+}

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { doublesCount, evaluateSystem, FIRST_ODDS, minOddsWithKGood, minSecondOdds } from '../lib/systeme';
+import { doublesCount, evaluateSystem, FIRST_ODDS, minOddsWithKGood, minSecondOdds, refundChance, refundZones, requiredGood } from '../lib/systeme';
 import { money, odds as fmtOdds, parseNum, signedMoney } from '../lib/format';
 import { haptic } from '../lib/native';
 import { Coach } from '../components/Coach';
@@ -40,6 +40,8 @@ export function System() {
           {n} matchs = <b style={{ color: 'var(--text)' }}>{doubles} doubles</b> · mise totale <b style={{ color: 'var(--text)' }}>{money(doubles * stake)}</b>
         </div>
       </div>
+
+      <BestOdds n={n} />
 
       <div className="card center" style={{ background: 'var(--purple-soft)', borderColor: '#d8ccfb', boxShadow: '0 3px 0 #d8ccfb' }}>
         <div className="small" style={{ fontWeight: 800 }}>Avec 2 bons pronostics, chaque match gagnant doit avoir une cote d'environ</div>
@@ -91,6 +93,76 @@ export function System() {
 
       <div className="tiny faint center">Un système, c'est plusieurs combinés : la marge du bookmaker compte plusieurs fois. Garde de petites mises.</div>
     </div>
+  );
+}
+
+const pc = (x: number) => `~${Math.round(x * 100)} %`;
+
+/** « Quelle cote prendre sur chaque match ? » : les zones qui maximisent la chance d'être remboursé. */
+function BestOdds({ n }: { n: number }) {
+  const z = refundZones(n);
+  const [test, setTest] = useState('');
+  const t = parseNum(test);
+  return (
+    <>
+      <div className="section-title">Quelle cote prendre sur chaque match ?</div>
+      <Coach mood="think">
+        Il n'existe pas de cote parfaite, mais il y a {z.best.length} zone{z.best.length > 1 ? 's' : ''} qui maximisent tes chances d'être au moins remboursé. Prends la <b>même cote, ou presque</b>, sur tes {n} matchs.
+      </Coach>
+      <table className="sys-table">
+        <thead>
+          <tr>
+            <th>Cote sur chaque match</th>
+            <th>Il te faut</th>
+            <th>Chance d'être remboursé</th>
+          </tr>
+        </thead>
+        <tbody>
+          {z.best.map((b) => (
+            <tr key={b.good}>
+              <td>
+                {fmtOdds(b.from)} à {fmtOdds(b.to)}
+              </td>
+              <td style={{ color: 'var(--text)' }}>
+                {b.good} bons sur {n}
+              </td>
+              <td style={{ color: 'var(--green-d)' }}>{pc(b.chance)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {(z.avoid.length > 0 || z.above > 0) && (
+        <div className="card stack" style={{ gap: 8, background: 'var(--red-soft)', borderColor: '#f8c4c4', boxShadow: '0 3px 0 #f8c4c4' }}>
+          <b>🚫 Les zones à éviter</b>
+          {z.avoid.map((a) => (
+            <div key={a.from} className="small">
+              <b>
+                {fmtOdds(a.from)} à {fmtOdds(a.to)}
+              </b>{' '}
+              : il te faut quand même {a.good} bons, mais chaque match passe moins souvent. Tu tombes à {Math.round(a.chanceTo * 100)}–{Math.round(a.chanceFrom * 100)} % de chances.
+            </div>
+          ))}
+          {z.above > 0 && (
+            <div className="small">
+              <b>Plus de {fmtOdds(z.above)}</b> : il faut toujours 2 bons, de plus en plus rares ({Math.round(refundChance(n, z.above + 1) * 100)} % à {fmtOdds(z.above + 1)}).
+            </div>
+          )}
+        </div>
+      )}
+      <div className="card stack" style={{ gap: 8 }}>
+        <b>🧪 Teste une cote</b>
+        <input className="input" inputMode="decimal" placeholder="Ex. 2,30" value={test} onChange={(e) => setTest(e.target.value.replace(/[^\d.,]/g, ''))} />
+        {t && t > 1 ? (
+          <div style={{ fontWeight: 800 }}>
+            À {fmtOdds(t)} sur chaque match : il te faut <b>{requiredGood(n, t)} bons sur {n}</b>, soit environ{' '}
+            <b style={{ color: refundChance(n, t) >= 0.4 ? 'var(--green-d)' : 'var(--red-d)' }}>{Math.round(refundChance(n, t) * 100)} %</b> de chances d'être remboursé.
+          </div>
+        ) : (
+          <div className="tiny faint">Tape une cote : je te dis combien de bons il faut et ta chance d'être remboursé.</div>
+        )}
+      </div>
+      <div className="tiny faint">Chances estimées avec 1 ÷ cote, marge du bookmaker (5 %) retirée. Ce sont des estimations.</div>
+    </>
   );
 }
 

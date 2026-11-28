@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { choose, doublesCount, evaluateSystem, minOddsWithKGood, minSecondOdds } from '../src/lib/systeme';
+import { choose, doublesCount, evaluateSystem, minOddsWithKGood, minSecondOdds, refundZones, requiredGood } from '../src/lib/systeme';
 
 test('6 matchs = 15 doubles', () => {
   assert.equal(doublesCount(6), 15);
@@ -40,4 +40,31 @@ test('calcul complet d\'un système', () => {
   assert.equal(r.payout, 12);
   assert.equal(r.profit, -3);
   assert.equal(r.refunded, false);
+});
+
+test('2e tableau : les 3 zones pour 6 matchs, et les chances', () => {
+  const z = refundZones(6);
+  assert.deepEqual(
+    z.best.map((b) => [b.from, b.to, b.good]),
+    [
+      [1.6, 1.7, 4],
+      [2.25, 2.4, 3],
+      [3.9, 4.2, 2],
+    ],
+  );
+  const pct = z.best.map((b) => Math.round(b.chance * 100));
+  assert.ok(Math.abs(pct[0] - 50) <= 2, `zone 1 : ${pct[0]} %`);
+  assert.ok(Math.abs(pct[1] - 48) <= 2, `zone 2 : ${pct[1]} %`);
+  assert.ok(Math.abs(pct[2] - 44) <= 2, `zone 3 : ${pct[2]} %`);
+});
+
+test('2e tableau : zones à éviter (1,80 à 2,10 puis 2,50 à 3,75)', () => {
+  const z = refundZones(6);
+  assert.deepEqual(z.avoid.map((a) => [a.from, a.to, a.good]), [
+    [1.8, 2.1, 4],
+    [2.5, 3.75, 3],
+  ]);
+  assert.ok(z.avoid[0].chanceFrom < 0.42 && z.avoid[0].chanceTo > 0.24);
+  assert.equal(requiredGood(6, 2.0), 4);
+  assert.equal(requiredGood(6, 2.3), 3);
 });
